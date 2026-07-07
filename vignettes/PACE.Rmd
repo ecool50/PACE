@@ -1,0 +1,111 @@
+---
+title: "Quantifying proximity effects with PACE"
+author: "Elijah Willie"
+package: PACE
+output:
+  BiocStyle::html_document:
+    toc_float: true
+vignette: >
+  %\VignetteIndexEntry{Quantifying proximity effects with PACE}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+# Overview
+
+`r Biocpkg("PACE")` (Proximity-Associated Changes in Expression) quantifies how a
+cell's gene expression changes with proximity to specific neighbouring cell types
+in imaging-based spatial transcriptomics. It fits hierarchical negative binomial
+mixed models with partial pooling across cell types, corrects for transcript
+contamination between adjacent cells, and decomposes expression variance into
+cell-type identity, spatial cell state, contamination, and residual components.
+
+Input follows `r Biocpkg("SpatialExperiment")` conventions.
+
+# Installation
+
+```{r install, eval = FALSE}
+if (!require("BiocManager")) install.packages("BiocManager")
+BiocManager::install("PACE")
+```
+
+# A worked example on synthetic data
+
+We build a small synthetic `SpatialExperiment` with three cell types.
+
+```{r toy, message = FALSE}
+library(PACE)
+library(SpatialExperiment)
+
+set.seed(1)
+n <- 600
+types <- c("A", "B", "C")
+ct <- sample(types, n, replace = TRUE)
+coords <- cbind(x = runif(n, 0, 500), y = runif(n, 0, 500))
+counts <- do.call(rbind, lapply(types, function(t) {
+  lam <- ifelse(ct == t, 8, 1)
+  t(vapply(seq_len(12), function(i) rpois(n, lam), numeric(n)))
+}))
+rownames(counts) <- paste0("g", seq_len(nrow(counts)))
+colnames(counts) <- paste0("c", seq_len(n))
+
+spe <- SpatialExperiment(
+  assays        = list(counts = counts),
+  colData       = DataFrame(cellType = ct),
+  spatialCoords = coords)
+spe
+```
+
+# Fitting the model
+
+```{r fit}
+fit <- paceFit(spe, celltype_col = "cellType",
+               contamination = "none", n_iter = 5, verbose = FALSE)
+fit
+```
+
+# Reading the results
+
+The shrunken per-(gene, focal, neighbour) proximity slopes with their local false
+sign rate:
+
+```{r slopes}
+head(neighbourSlopes(fit))
+```
+
+The per-gene variance decomposition:
+
+```{r decomp}
+head(varianceDecomposition(fit))
+```
+
+The per-pair driver-score tables:
+
+```{r drivers}
+names(topDrivers(fit))
+```
+
+# Multi-sample, condition-stratified cohorts
+
+For a cohort of multiple images or patients with a treatment/response condition,
+supply the grouping and condition columns and enable the per-image kernels and
+the responder random-effect block:
+
+```{r multi, eval = FALSE}
+fit <- paceFit(spe,
+               celltype_col     = "celltype",
+               image_col        = "sampleID",
+               condition_col     = "response",
+               kernel_per_image = TRUE,
+               image_re         = "condition_slopes")
+```
+
+# Session info
+
+```{r sessioninfo}
+sessionInfo()
+```

@@ -1,0 +1,52 @@
+Package: PACE
+Type: Package
+Title: Proximity-Associated Changes in Expression for Spatial Transcriptomics
+Version: 0.99.0
+Authors@R: c(
+    person("Elijah", "Willie", email = "ewillie0004@gmail.com",
+           role = c("aut", "cre")),
+    person("Shreya Rajesh", "Rao", role = "aut"),
+    person("John", "Ormerod", role = "aut"),
+    person("Ellis", "Patrick", role = "aut"))
+Description: PACE (Proximity-Associated Changes in Expression) is a hierarchical
+    empirical Bayes framework that quantifies how a cell's gene expression changes
+    with proximity to specific neighbouring cell types in imaging-based spatial
+    transcriptomics such as Xenium and CosMx. It fits negative binomial mixed models
+    with partial pooling across cell types, corrects for transcript contamination
+    between adjacent cells with a per-cell ambient term, and decomposes expression
+    variance into cell-type identity, spatial cell state, contamination, and residual
+    components. Input and output follow SpatialExperiment conventions.
+License: GPL-3
+Encoding: UTF-8
+biocViews: Spatial, Transcriptomics, GeneExpression, SingleCell, Regression,
+    Bayesian, DifferentialExpression, Software
+Depends:
+    R (>= 4.4.0)
+Imports:
+    methods,
+    stats,
+    Matrix,
+    SpatialExperiment,
+    SummarizedExperiment,
+    S4Vectors,
+    BiocParallel,
+    dplyr,
+    tidyr,
+    tibble,
+    spatstat.geom,
+    dbscan,
+    lme4,
+    limma,
+    mashr,
+    ashr
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown,
+    BiocStyle
+URL: https://github.com/ecool50/PACE
+BugReports: https://github.com/ecool50/PACE/issues
+VignetteBuilder: knitr
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Config/testthat/edition: 3

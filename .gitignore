@@ -1,0 +1,23 @@
+# R
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# build artefacts
+/*.tar.gz
+/*.Rcheck/
+..Rcheck/
+/docs/
+/doc/
+/Meta/
+inst/doc/
+
+# OS
+.DS_Store
+
+# data (never commit fits or large data into the package)
+*.rds
+*.h5ad
+data-raw/*.rds
