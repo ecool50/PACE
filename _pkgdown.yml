@@ -1,0 +1,8 @@
+url: https://ecool50.github.io/PACE
+template:
+  bootstrap: 5
+  bootswatch: flatly
+navbar:
+  structure:
+    left:  [intro, reference, articles]
+    right: [github]
