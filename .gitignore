@@ -21,3 +21,10 @@ inst/doc/
 *.rds
 *.h5ad
 data-raw/*.rds
+# ...except the small shipped example dataset
+!inst/extdata/*.rds
+
+# compiled objects
+src/*.o
+src/*.so
+src/*.dll

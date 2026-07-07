@@ -16,6 +16,8 @@
 #' @name PACE-package
 #' @aliases PACE
 #'
+#' @useDynLib PACE, .registration = TRUE
+#' @importFrom Rcpp evalCpp
 #' @import methods
 #' @import dplyr
 #' @import tibble
