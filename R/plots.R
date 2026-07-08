@@ -22,18 +22,25 @@
 
 ## SS-weighted per-focal block table (Goldstein pooling), from the single frame.
 .pace_focal_blocks <- function(sf) {
-  sf |>
-    dplyr::mutate(ss_cell = .data[["Cell type %"]] / 100 * .data$denom,
-                  ss_sp   = .data[["Spatial %"]]   / 100 * .data$denom,
-                  ss_bl   = .data[["Spillover %"]] / 100 * .data$denom,
-                  ss_rs   = .data[["Residual %"]]  / 100 * .data$denom) |>
+  has_resp <- "Responder spatial %" %in% names(sf)
+  fb <- sf |>
+    dplyr::mutate(
+      ss_cell = .data[["Cell type %"]] / 100 * .data$denom,
+      ss_sp   = .data[["Spatial %"]]   / 100 * .data$denom,
+      ss_bl   = .data[["Spillover %"]] / 100 * .data$denom,
+      ss_rs   = .data[["Residual %"]]  / 100 * .data$denom,
+      ss_rsp  = if (has_resp) .data[["Responder spatial %"]] / 100 * .data$denom
+                else 0) |>
     dplyr::group_by(.data$focal) |>
     dplyr::summarise(
-      `Cell type`          = 100 * sum(.data$ss_cell) / sum(.data$denom),
-      `Spatial cell state` = 100 * sum(.data$ss_sp)   / sum(.data$denom),
-      `Spillover`          = 100 * sum(.data$ss_bl)   / sum(.data$denom),
-      `Residual`           = 100 * sum(.data$ss_rs)   / sum(.data$denom),
+      `Cell type`               = 100 * sum(.data$ss_cell) / sum(.data$denom),
+      `Spatial cell state`      = 100 * sum(.data$ss_sp)   / sum(.data$denom),
+      `Responder spatial state` = 100 * sum(.data$ss_rsp)  / sum(.data$denom),
+      `Spillover`               = 100 * sum(.data$ss_bl)   / sum(.data$denom),
+      `Residual`                = 100 * sum(.data$ss_rs)   / sum(.data$denom),
       .groups = "drop")
+  if (!has_resp) fb[["Responder spatial state"]] <- NULL
+  fb
 }
 
 ## ---------------------------------------------------------------------------
@@ -166,6 +173,74 @@ plot_stacked_bar_focal_no_resp <- function(
 }
 
 ## ---------------------------------------------------------------------------
+## Per-focal stacked bar + zoom WITH the responder spatial block (verbatim port
+## of plot_stacked_bar_focal, for condition cohorts).
+## ---------------------------------------------------------------------------
+plot_stacked_bar_focal <- function(
+        blks_all,
+        block_levels = c("Cell type", "Spatial cell state", "Responder spatial state",
+                         "Responder status", "Spillover", "Residuals"),
+        title = "",
+        zoom_blocks = c("Spatial cell state", "Responder spatial state", "Spillover")) {
+  keep_levels <- setdiff(block_levels, "Residuals")
+
+  resid_by_focal <- blks_all %>%
+    dplyr::filter(.data$block == "Residuals") %>%
+    dplyr::mutate(focal = stringr::str_replace(.data$focal, "_", " ")) %>%
+    dplyr::transmute(focal, resid_pct = .data$pct_total, explained = 1 - .data$pct_total)
+
+  blks_plot <- blks_all %>%
+    dplyr::filter(.data$block != "Residuals") %>%
+    dplyr::mutate(focal = stringr::str_replace(.data$focal, "_", " "),
+                  block = factor(.data$block, levels = keep_levels)) %>%
+    tidyr::complete(focal, block, fill = list(pct_total = 0)) %>%
+    dplyr::left_join(resid_by_focal, by = "focal")
+
+  cols <- c("Cell type" = "#003049", "Spatial cell state" = "#780000",
+            "Responder spatial state" = "#c1121f", "Responder status" = "#669bbc",
+            "Spillover" = "#E5A100")
+  cols <- cols[keep_levels]
+
+  focal_order <- blks_plot %>%
+    dplyr::filter(block == "Spatial cell state") %>%
+    dplyr::arrange(dplyr::desc(pct_total)) %>%
+    dplyr::pull(focal)
+  blks_plot$focal <- factor(blks_plot$focal, levels = focal_order)
+
+  p_full <- ggplot(blks_plot, aes(x = focal, y = pct_total, fill = block)) +
+    geom_col(width = 0.8, position = position_stack(reverse = TRUE)) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    scale_fill_manual(values = cols, breaks = keep_levels, limits = keep_levels, drop = FALSE) +
+    labs(x = "Focal cell type", y = "Proportion of total variance",
+         fill = "Block", title = title) +
+    theme_minimal(base_size = 12) +
+    theme(panel.grid.major.x = element_blank(),
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          plot.title = element_text(hjust = 0.5))
+
+  zoom_blocks <- intersect(zoom_blocks, keep_levels)
+  zoom_data <- blks_plot %>% dplyr::filter(block %in% zoom_blocks)
+
+  p_zoom <- ggplot(zoom_data, aes(x = focal, y = pct_total, fill = block)) +
+    geom_col(width = 0.7, position = position_dodge(width = 0.75)) +
+    geom_text(aes(label = sprintf("%.2f%%", pct_total * 100)),
+              position = position_dodge(width = 0.75), vjust = -0.4, size = 2.5) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 0.1),
+                       expand = expansion(mult = c(0, 0.15))) +
+    scale_fill_manual(values = cols, breaks = keep_levels, limits = keep_levels, drop = FALSE) +
+    labs(x = "Focal cell type", y = NULL, fill = "Block",
+         title = paste(zoom_blocks, collapse = " & ")) +
+    theme_minimal(base_size = 12) +
+    theme(panel.grid.major.x = element_blank(),
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          plot.title = element_text(hjust = 0.5, size = 13),
+          legend.position = "none")
+
+  p_full <- p_full + theme(legend.position = "bottom")
+  patchwork::wrap_plots(p_full, p_zoom, widths = c(1, 1))
+}
+
+## ---------------------------------------------------------------------------
 ## Per-pair MCSD driver bar + per-gene single-frame decomposition (verbatim).
 ## ---------------------------------------------------------------------------
 make_pair_composite <- function(focus_focal, focus_neighbour, mv, sf = NULL, n_top = 5,
@@ -235,17 +310,35 @@ plotDecomposition <- function(object, title = "Per-focal decomposition") {
   stopifnot(methods::is(object, "PACEFit"))
   sf <- object@varianceDecomposition$perGene
   fb <- .pace_focal_blocks(sf)
-  blks_all <- fb |>
-    dplyr::transmute(.data$focal,
-                     `Cell type`          = .data$`Cell type` / 100,
-                     `Spatial cell state` = .data$`Spatial cell state` / 100,
-                     `Spillover`          = .data$Spillover / 100,
-                     `Residuals`          = .data$Residual / 100) |>
-    tidyr::pivot_longer(-.data$focal, names_to = "block", values_to = "pct_total")
-  plot_stacked_bar_focal_no_resp(
-    blks_all,
-    block_levels = c("Cell type", "Spatial cell state", "Spillover", "Residuals"),
-    title = title)
+  has_resp <- "Responder spatial state" %in% names(fb)
+
+  if (has_resp) {
+    blks_all <- fb |>
+      dplyr::transmute(.data$focal,
+                       `Cell type`               = .data$`Cell type` / 100,
+                       `Spatial cell state`      = .data$`Spatial cell state` / 100,
+                       `Responder spatial state` = .data$`Responder spatial state` / 100,
+                       `Spillover`               = .data$Spillover / 100,
+                       `Residuals`               = .data$Residual / 100) |>
+      tidyr::pivot_longer(-.data$focal, names_to = "block", values_to = "pct_total")
+    plot_stacked_bar_focal(
+      blks_all,
+      block_levels = c("Cell type", "Spatial cell state", "Responder spatial state",
+                       "Spillover", "Residuals"),
+      title = title)
+  } else {
+    blks_all <- fb |>
+      dplyr::transmute(.data$focal,
+                       `Cell type`          = .data$`Cell type` / 100,
+                       `Spatial cell state` = .data$`Spatial cell state` / 100,
+                       `Spillover`          = .data$Spillover / 100,
+                       `Residuals`          = .data$Residual / 100) |>
+      tidyr::pivot_longer(-.data$focal, names_to = "block", values_to = "pct_total")
+    plot_stacked_bar_focal_no_resp(
+      blks_all,
+      block_levels = c("Cell type", "Spatial cell state", "Spillover", "Residuals"),
+      title = title)
+  }
 }
 
 #' Pairwise spatial-percent heatmap
@@ -256,25 +349,44 @@ plotDecomposition <- function(object, title = "Per-focal decomposition") {
 #' off-diagonal-renormalised Pratt attribution.
 #'
 #' @param object A [PACEFit].
-#' @param title Plot title.
+#' @param block Which spatial block to map: `"spatial"` (default, the baseline
+#'   spatial cell state) or `"responder"` (the responder-by-proximity block, for
+#'   condition cohorts).
+#' @param title Plot title; a sensible default is chosen per `block`.
 #' @return A `ggplot` object.
 #' @examples
-#' \dontrun{ plotPairHeatmap(fit) }
+#' \dontrun{ plotPairHeatmap(fit); plotPairHeatmap(fit, block = "responder") }
 #' @export
-plotPairHeatmap <- function(object,
-                            title = "Pairwise spatial % (variance, normalised Pratt)") {
+plotPairHeatmap <- function(object, block = c("spatial", "responder"), title = NULL) {
   stopifnot(methods::is(object, "PACEFit"))
+  block <- match.arg(block)
   mv <- .pace_mv_shim(object)
   sf <- object@varianceDecomposition$perGene
   fb <- .pace_focal_blocks(sf)
-  TYPES  <- sort(unique(as.character(sf$focal)))
-  foc_sp <- stats::setNames(fb$`Spatial cell state`, as.character(fb$focal))
+  TYPES <- sort(unique(as.character(sf$focal)))
 
-  pratt_long <- pace_pair_variance_pratt(mv, cond_prefix = NULL,
-                                         cohort_label = "cohort", block_label = "Spatial")$pair_long |>
+  if (block == "responder") {
+    if (!"Responder spatial state" %in% names(fb))
+      stop("this fit has no responder block; use block = 'spatial'.", call. = FALSE)
+    cond_prefix <- object@params$resp_term
+    foc         <- stats::setNames(fb$`Responder spatial state`, as.character(fb$focal))
+    block_label <- "RxS"
+    fill_name   <- "responder %\nof total"
+    if (is.null(title)) title <- "Pairwise responder spatial % (normalised Pratt)"
+  } else {
+    cond_prefix <- NULL
+    foc         <- stats::setNames(fb$`Spatial cell state`, as.character(fb$focal))
+    block_label <- "Spatial"
+    fill_name   <- "spatial %\nof total"
+    if (is.null(title)) title <- "Pairwise spatial % (variance, normalised Pratt)"
+  }
+
+  pratt_long <- pace_pair_variance_pratt(mv, cond_prefix = cond_prefix,
+                                         cohort_label = "cohort",
+                                         block_label = block_label)$pair_long |>
     dplyr::filter(as.character(.data$focal) != as.character(.data$neighbour)) |>
     dplyr::group_by(.data$focal) |>
-    dplyr::mutate(val = foc_sp[as.character(.data$focal)] *
+    dplyr::mutate(val = foc[as.character(.data$focal)] *
                         .data$V_pair_pratt / sum(.data$V_pair_pratt)) |>
     dplyr::ungroup() |>
     dplyr::transmute(focal = as.character(.data$focal),
@@ -293,7 +405,7 @@ plotPairHeatmap <- function(object,
                                                    sprintf("%.2f", .data$val))),
                        size = 2.4, colour = "white") +
     ggplot2::scale_fill_viridis_c(option = "inferno", na.value = "white",
-                                  name = "spatial %\nof total") +
+                                  name = fill_name) +
     ggplot2::coord_equal() +
     ggplot2::labs(x = "Focal", y = "Neighbour", title = title) +
     ggplot2::theme_classic(base_size = 11) +

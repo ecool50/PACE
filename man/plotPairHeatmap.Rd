@@ -4,15 +4,16 @@
 \alias{plotPairHeatmap}
 \title{Pairwise spatial-percent heatmap}
 \usage{
-plotPairHeatmap(
-  object,
-  title = "Pairwise spatial \% (variance, normalised Pratt)"
-)
+plotPairHeatmap(object, block = c("spatial", "responder"), title = NULL)
 }
 \arguments{
 \item{object}{A \link{PACEFit}.}
 
-\item{title}{Plot title.}
+\item{block}{Which spatial block to map: \code{"spatial"} (default, the baseline
+spatial cell state) or \code{"responder"} (the responder-by-proximity block, for
+condition cohorts).}
+
+\item{title}{Plot title; a sensible default is chosen per \code{block}.}
 }
 \value{
 A \code{ggplot} object.
@@ -24,5 +25,5 @@ neighbour, computed as the focal's spatial share split across neighbours by the
 off-diagonal-renormalised Pratt attribution.
 }
 \examples{
-\dontrun{ plotPairHeatmap(fit) }
+\dontrun{ plotPairHeatmap(fit); plotPairHeatmap(fit, block = "responder") }
 }

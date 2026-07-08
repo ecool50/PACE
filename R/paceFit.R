@@ -22,10 +22,15 @@
     df[[".image"]] <- factor("all")
     image_col <- ".image"
   }
-  ## derive the responder term prefix for condition cohorts.
-  if (!is.null(condition_col) && is.null(resp_term)) {
-    lev <- levels(factor(df[[condition_col]]))
-    resp_term <- paste0("Responder", lev[length(lev)])
+  ## derive the responder term prefix for condition cohorts, and set the 0/1
+  ## condition indicator the decomposition and driver scoring require.
+  if (!is.null(condition_col)) {
+    if (is.null(resp_term)) {
+      lev <- levels(factor(df[[condition_col]]))
+      resp_term <- paste0("Responder", lev[length(lev)])
+    }
+    resp_case <- sub("^Responder", "", resp_term)
+    df$.resp_dummy <- as.integer(as.character(df[[condition_col]]) == resp_case)
   }
   list(Y = Y, df = df, image_col = image_col, resp_term = resp_term)
 }
@@ -195,10 +200,15 @@ setMethod("paceDecompose", "PACEFit", function(object, spe, ...) {
 setMethod("paceDrivers", "PACEFit", function(object, pairs = NULL, ...) {
   if (nrow(object@neighbourSlopes) == 0L || length(object@varianceDecomposition) == 0L)
     stop("Run paceShrink() and paceDecompose() before paceDrivers().", call. = FALSE)
+  args <- list(object@fit, object@neighbourSlopes,
+               object@varianceDecomposition$blocks, object@cellTypes, pairs = pairs)
+  ## condition cohorts score the responder interaction; pass the term and 0/1 indicator.
+  if (!is.null(object@params$condition_col)) {
+    args$resp_term  <- object@params$resp_term
+    args$resp_dummy <- object@context$df$.resp_dummy
+  }
   drivers <- tryCatch(
-    pace_top_drivers(object@fit, object@neighbourSlopes,
-                     object@varianceDecomposition$blocks, object@cellTypes,
-                     pairs = pairs),
+    do.call(pace_top_drivers, args),
     error = function(e) {
       warning("topDrivers could not be computed: ", conditionMessage(e), call. = FALSE)
       list()
