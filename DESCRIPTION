@@ -49,7 +49,7 @@ Suggests:
     knitr,
     rmarkdown,
     BiocStyle
-URL: https://github.com/ecool50/PACE
+URL: https://github.com/ecool50/PACE, https://ecool50.github.io/PACE
 BugReports: https://github.com/ecool50/PACE/issues
 LinkingTo:
     Rcpp,
