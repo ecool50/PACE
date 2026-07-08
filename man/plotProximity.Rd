@@ -2,31 +2,47 @@
 % Please edit documentation in R/plots.R
 \name{plotProximity}
 \alias{plotProximity}
-\title{Expression versus neighbour density (per-bin boxplot)}
+\title{Expression versus number of neighbours (per-bin boxplot)}
 \usage{
-plotProximity(object, spe, genes, focal, neighbour, assay_name = "counts")
+plotProximity(
+  object,
+  spe,
+  genes,
+  focal,
+  neighbour,
+  radius = 30,
+  breaks = c(0, 2, 4, 6, 8, Inf),
+  box_colour = "#4F8B5E",
+  assay_name = "counts"
+)
 }
 \arguments{
-\item{object}{A \link{PACEFit} (supplies the kernel bandwidths and cell-type
-column used at fit time).}
+\item{object}{A \link{PACEFit} (supplies the cell-type column used at fit time).}
 
 \item{spe}{The \link[SpatialExperiment:SpatialExperiment]{SpatialExperiment::SpatialExperiment} that was fitted.}
 
-\item{genes}{Character vector of genes to plot (one panel each).}
+\item{genes}{Character vector of genes (shown as facets).}
 
 \item{focal, neighbour}{Focal and neighbour cell types.}
+
+\item{radius}{Neighbour search radius in micrometres (default 30).}
+
+\item{breaks}{Neighbour-count bin breaks (default \code{c(0, 2, 4, 6, 8, Inf)}).}
+
+\item{box_colour}{Box and mean-point colour.}
 
 \item{assay_name}{Counts assay name (default \code{"counts"}).}
 }
 \value{
-A \code{patchwork} / \code{ggplot} object.
+A \code{ggplot} object.
 }
 \description{
-Reproduces the manuscript proximity figure: for each focal cell, the
-kernel-weighted density of a neighbour cell type is binned, and each gene's
-log1p CP10k expression is shown as a boxplot per bin with the per-bin mean
-overlaid (a diamond and connecting line), the percentage of focal cells
-expressing the gene, and the fitted expression-vs-density slope.
+Reproduces the manuscript proximity figure (verbatim style port of
+\code{density_bin_boxplot} in the analysis helpers): for each focal cell the number
+of \code{neighbour}-type cells within \code{radius} micrometres is counted and binned,
+and each gene's raw counts are drawn as a boxplot per bin with the per-bin mean
+overlaid as a point. Because these genes are zero-inflated the box median sits
+at zero in most bins, so the mean point carries the trend.
 }
 \examples{
 \dontrun{ plotProximity(fit, spe, c("MRC1", "APOC1"), "Macrophage", "Tumour") }

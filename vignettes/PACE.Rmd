@@ -147,12 +147,11 @@ neighbourSlopes(fit) |>
 
 # Visualising the proximity effect
 
-`plotProximity()` bins each macrophage by its kernel-weighted tumour-neighbour
-density and shows each gene's log1p CP10k expression per bin. Because these genes
-are zero-inflated (the box median sits at zero in most bins), the per-bin mean is
-overlaid as a diamond and connecting line to make the trend explicit, alongside
-the percentage of macrophages expressing the gene and the fitted
-expression-versus-density slope. MRC1 falls and APOC1 rises with tumour proximity.
+`plotProximity()` bins each macrophage by its number of tumour neighbours
+(within 30 um) and shows each gene's raw counts per bin. Because these genes are
+zero-inflated the box median sits at zero in most bins, so the per-bin mean is
+overlaid as a point to make the trend explicit. Macrophage MRC1 falls and APOC1
+rises with tumour proximity.
 
 ```{r gradient, fig.width = 11, fig.height = 4.6}
 plotProximity(fit, spe, c("MRC1", "APOC1"), "Macrophage", "Tumour")
