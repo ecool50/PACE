@@ -127,6 +127,9 @@ on the full section.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ecool50/PACE" class="external-link">PACE</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/drighelli/SpatialExperiment" class="external-link">SpatialExperiment</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">spe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"bc_xenium_subset.rds"</span>, package <span class="op">=</span> <span class="st">"PACE"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">spe</span></span>
@@ -165,7 +168,7 @@ whole pipeline. On this crop it takes about half a minute.</p>
 <span><span class="co">#&gt;  - Computing 278 x 313 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.05 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 313 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.09 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.10 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 278 x 92 likelihood matrix.</span></span>
@@ -183,7 +186,7 @@ whole pipeline. On this crop it takes about half a minute.</p>
 <span><span class="co">#&gt;  - Computing 278 x 417 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.06 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 417 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.27 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.28 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 278 x 92 likelihood matrix.</span></span>
@@ -193,21 +196,21 @@ whole pipeline. On this crop it takes about half a minute.</p>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 278 x 391 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.07 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.06 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 391 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.11 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.10 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 278 x 430 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.06 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.07 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 430 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.15 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.14 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 278 x 628 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.11 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.10 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 628 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.28 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.27 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 278 x 404 likelihood matrix.</span></span>
@@ -219,7 +222,7 @@ whole pipeline. On this crop it takes about half a minute.</p>
 <span><span class="co">#&gt;  - Computing 278 x 590 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.09 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 590 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 1.11 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 1.12 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="va">fit</span></span>
@@ -233,81 +236,48 @@ whole pipeline. On this crop it takes about half a minute.</p>
 <div class="section level2">
 <h2 id="variance-decomposition">Variance decomposition<a class="anchor" aria-label="anchor" href="#variance-decomposition"></a>
 </h2>
-<p><code><a href="../reference/varianceDecomposition.html">varianceDecomposition()</a></code> returns, for each focal cell
-type and gene, the share of expression variance attributable to
-cell-type identity, spatial cell state (proximity effects),
-contamination, and residual. Averaging over genes gives a per-cell-type
-summary.</p>
+<p><code><a href="../reference/plotDecomposition.html">plotDecomposition()</a></code> shows, for each focal cell type, the
+share of expression variance attributable to cell-type identity, spatial
+cell state (proximity effects), and contamination (spillover), pooled
+over genes. The left panel is the full stacked bar; the right zooms in
+on the two small spatial components.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">vd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/varianceDecomposition.html">varianceDecomposition</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="va">blocks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Spatial %"</span>, <span class="st">"Spillover %"</span>, <span class="st">"Residual %"</span><span class="op">)</span></span>
-<span><span class="va">agg</span> <span class="op">&lt;-</span> <span class="va">vd</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">focal</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">blocks</span><span class="op">)</span>, \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="op">-</span><span class="va">focal</span>, names_to <span class="op">=</span> <span class="st">"component"</span>, values_to <span class="op">=</span> <span class="st">"pct"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">agg</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">focal</span>, <span class="va">pct</span>, fill <span class="op">=</span> <span class="va">component</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="st">"mean % of expression variance"</span>,</span>
-<span>       title <span class="op">=</span> <span class="st">"Non-identity variance components by focal cell type"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span></code></pre></div>
-<p><img src="PACE_files/figure-html/decomp-1.png" alt="" width="540"></p>
-<p>Beyond the dominant cell-type-identity component (omitted here for
-scale), macrophages, stromal and myoepithelial cells carry the largest
-spatial cell-state contributions.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotDecomposition.html">plotDecomposition</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<p><img src="PACE_files/figure-html/decomp-1.png" alt="" width="990"></p>
+<p>Beyond the dominant cell-type identity component, macrophages,
+stromal and myoepithelial cells carry the largest spatial cell-state
+contributions. The underlying per-gene table is available with
+<code>varianceDecomposition(fit)</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="pairwise-spatial-interactions">Pairwise spatial interactions<a class="anchor" aria-label="anchor" href="#pairwise-spatial-interactions"></a>
 </h2>
-<p>Which focal-neighbour pairs are most strongly coupled? Counting the
-significant genes (local false sign rate &lt; 0.05) per pair shows that
-<strong>tumour as a neighbour</strong> drives the strongest spatial
-signal across the microenvironment.</p>
+<p><code><a href="../reference/plotPairHeatmap.html">plotPairHeatmap()</a></code> gives the percentage of each focal
+type’s total variance contributed by spatial interaction with each
+neighbour, computed as the focal’s spatial share split across neighbours
+by a normalised Pratt attribution. <strong>Tumour as a
+neighbour</strong> drives the strongest spatial signal across the
+microenvironment.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ns</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/neighbourSlopes.html">neighbourSlopes</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="va">pair</span> <span class="op">&lt;-</span> <span class="va">ns</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">focal</span> <span class="op">!=</span> <span class="va">neighbour</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">focal</span>, <span class="va">neighbour</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>n_sig <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">lfsr</span> <span class="op">&lt;</span> <span class="fl">0.05</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pair</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">neighbour</span>, <span class="va">focal</span>, fill <span class="op">=</span> <span class="va">n_sig</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_fill_viridis_c</a></span><span class="op">(</span>option <span class="op">=</span> <span class="st">"inferno"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"neighbour cell type"</span>, y <span class="op">=</span> <span class="st">"focal cell type"</span>,</span>
-<span>       fill <span class="op">=</span> <span class="st">"significant\ngenes"</span>,</span>
-<span>       title <span class="op">=</span> <span class="st">"Spatial coupling: significant genes per pair"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="PACE_files/figure-html/pairs-1.png" alt="" width="540"></p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotPairHeatmap.html">plotPairHeatmap</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<p><img src="PACE_files/figure-html/pairs-1.png" alt="" width="585"></p>
 </div>
 <div class="section level2">
 <h2 id="macrophagetumour-drivers">Macrophage–tumour drivers<a class="anchor" aria-label="anchor" href="#macrophagetumour-drivers"></a>
 </h2>
-<p><code><a href="../reference/topDrivers.html">topDrivers()</a></code> ranks the genes mediating each relationship
-by a driver score that combines the shrunken slope, its cell-type
-specificity, and its expression level. For the macrophage-tumour pair,
-the top drivers are the tissue-resident marker <strong>MRC1</strong>
-(CD206), reduced near tumour, and the lipid-associated marker
+<p><code><a href="../reference/plotDrivers.html">plotDrivers()</a></code> ranks the genes mediating a relationship
+by a driver score (MCSD, combining the shrunken slope, its cell-type
+specificity, and its expression level), alongside their per-gene
+single-frame decomposition. For the macrophage-tumour pair, the top
+drivers are the tissue-resident marker <strong>MRC1</strong> (CD206),
+reduced near tumour, and the lipid-associated marker
 <strong>APOC1</strong>, elevated near tumour.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">drv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/topDrivers.html">topDrivers</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">[[</span><span class="st">"Macrophage_Tumour"</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">scores</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">drv</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rank"</span>, <span class="st">"gene"</span>, <span class="st">"b_clean"</span>, <span class="st">"spec"</span>, <span class="st">"lfsr"</span>, <span class="st">"MCSD"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">8</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 6</span></span></span>
-<span><span class="co">#&gt;    rank gene   b_clean  spec     lfsr     MCSD</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1 MRC1   -<span style="color: #BB0000;">0.150</span>  0.936 1.35<span style="color: #949494;">e</span><span style="color: #BB0000;">-14</span> 0.019<span style="text-decoration: underline;">8</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     2 APOC1   0.130  0.812 2.09<span style="color: #949494;">e</span><span style="color: #BB0000;">-16</span> 0.005<span style="text-decoration: underline;">73</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     3 AIF1   -<span style="color: #BB0000;">0.055</span><span style="color: #BB0000; text-decoration: underline;">4</span> 0.808 4.54<span style="color: #949494;">e</span><span style="color: #BB0000;">- 3</span> 0.001<span style="text-decoration: underline;">84</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     4 FCER1G  0.031<span style="text-decoration: underline;">4</span> 0.822 4.38<span style="color: #949494;">e</span><span style="color: #BB0000;">- 2</span> 0.001<span style="text-decoration: underline;">25</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     5 SMAP2  -<span style="color: #BB0000;">0.054</span><span style="color: #BB0000; text-decoration: underline;">2</span> 0.526 9.50<span style="color: #949494;">e</span><span style="color: #BB0000;">- 3</span> 0.000<span style="text-decoration: underline;">616</span></span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotDrivers.html">plotDrivers</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"Macrophage"</span>, <span class="st">"Tumour"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="PACE_files/figure-html/drivers-1.png" alt="" width="900"></p>
 <p>The shrunken slopes confirm the opposing directions:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ns</span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/neighbourSlopes.html">neighbourSlopes</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">focal</span> <span class="op">==</span> <span class="st">"Macrophage"</span>, <span class="va">neighbour</span> <span class="op">==</span> <span class="st">"Tumour"</span>,</span>
 <span>         <span class="va">gene</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"MRC1"</span>, <span class="st">"APOC1"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">gene</span>, <span class="va">estimate_shrunk</span>, <span class="va">lfsr</span><span class="op">)</span></span>
@@ -416,27 +386,28 @@ cell boundaries.</p>
 <span><span class="co">#&gt;  [4] S7_0.2.1                fastmap_1.2.0           digest_0.6.39          </span></span>
 <span><span class="co">#&gt;  [7] lifecycle_1.0.5         invgamma_1.2            magrittr_2.0.4         </span></span>
 <span><span class="co">#&gt; [10] dbscan_1.2.2            compiler_4.5.0          rlang_1.1.7            </span></span>
-<span><span class="co">#&gt; [13] sass_0.4.10             tools_4.5.0             utf8_1.2.6             </span></span>
-<span><span class="co">#&gt; [16] yaml_2.3.12             knitr_1.51              labeling_0.4.3         </span></span>
-<span><span class="co">#&gt; [19] S4Arrays_1.10.1         htmlwidgets_1.6.4       DelayedArray_0.34.1    </span></span>
-<span><span class="co">#&gt; [22] RColorBrewer_1.1-3      plyr_1.8.9              abind_1.4-8            </span></span>
-<span><span class="co">#&gt; [25] BiocParallel_1.42.1     withr_3.0.2             purrr_1.2.1            </span></span>
-<span><span class="co">#&gt; [28] desc_1.4.3              grid_4.5.0              scales_1.4.0           </span></span>
-<span><span class="co">#&gt; [31] cli_3.6.5               mvtnorm_1.3-3           rmarkdown_2.30         </span></span>
-<span><span class="co">#&gt; [34] ragg_1.4.0              otel_0.2.0              httr_1.4.7             </span></span>
-<span><span class="co">#&gt; [37] rjson_0.2.23            cachem_1.1.0            assertthat_0.2.1       </span></span>
+<span><span class="co">#&gt; [13] sass_0.4.10             tools_4.5.0             yaml_2.3.12            </span></span>
+<span><span class="co">#&gt; [16] knitr_1.51              labeling_0.4.3          S4Arrays_1.10.1        </span></span>
+<span><span class="co">#&gt; [19] htmlwidgets_1.6.4       DelayedArray_0.34.1     plyr_1.8.9             </span></span>
+<span><span class="co">#&gt; [22] RColorBrewer_1.1-3      abind_1.4-8             BiocParallel_1.42.1    </span></span>
+<span><span class="co">#&gt; [25] withr_3.0.2             purrr_1.2.1             desc_1.4.3             </span></span>
+<span><span class="co">#&gt; [28] grid_4.5.0              scales_1.4.0            cli_3.6.5              </span></span>
+<span><span class="co">#&gt; [31] mvtnorm_1.3-3           rmarkdown_2.30          ragg_1.4.0             </span></span>
+<span><span class="co">#&gt; [34] otel_0.2.0              httr_1.4.7              rjson_0.2.23           </span></span>
+<span><span class="co">#&gt; [37] cachem_1.1.0            stringr_1.6.0           assertthat_0.2.1       </span></span>
 <span><span class="co">#&gt; [40] parallel_4.5.0          BiocManager_1.30.26     XVector_0.50.0         </span></span>
 <span><span class="co">#&gt; [43] vctrs_0.7.1             jsonlite_2.0.0          bookdown_0.43          </span></span>
-<span><span class="co">#&gt; [46] mixsqp_0.3-54           irlba_2.3.5.1           systemfonts_1.3.1      </span></span>
-<span><span class="co">#&gt; [49] magick_2.8.7            jquerylib_0.1.4         glue_1.8.0             </span></span>
-<span><span class="co">#&gt; [52] pkgdown_2.1.3           codetools_0.2-20        gtable_0.3.6           </span></span>
-<span><span class="co">#&gt; [55] GenomeInfoDb_1.44.1     UCSC.utils_1.4.0        rmeta_3.0              </span></span>
-<span><span class="co">#&gt; [58] tibble_3.3.1            pillar_1.11.1           htmltools_0.5.9        </span></span>
-<span><span class="co">#&gt; [61] truncnorm_1.0-9         GenomeInfoDbData_1.2.14 R6_2.6.1               </span></span>
-<span><span class="co">#&gt; [64] mashr_0.2.79            textshaping_1.0.1       evaluate_1.0.5         </span></span>
-<span><span class="co">#&gt; [67] lattice_0.22-7          SQUAREM_2021.1          ashr_2.2-63            </span></span>
-<span><span class="co">#&gt; [70] bslib_0.10.0            Rcpp_1.1.1              SparseArray_1.10.8     </span></span>
-<span><span class="co">#&gt; [73] xfun_0.56               fs_1.6.6                pkgconfig_2.0.3</span></span></code></pre></div>
+<span><span class="co">#&gt; [46] patchwork_1.3.2         mixsqp_0.3-54           irlba_2.3.5.1          </span></span>
+<span><span class="co">#&gt; [49] systemfonts_1.3.1       magick_2.8.7            jquerylib_0.1.4        </span></span>
+<span><span class="co">#&gt; [52] glue_1.8.0              pkgdown_2.1.3           codetools_0.2-20       </span></span>
+<span><span class="co">#&gt; [55] stringi_1.8.7           gtable_0.3.6            GenomeInfoDb_1.44.1    </span></span>
+<span><span class="co">#&gt; [58] UCSC.utils_1.4.0        rmeta_3.0               tibble_3.3.1           </span></span>
+<span><span class="co">#&gt; [61] pillar_1.11.1           htmltools_0.5.9         GenomeInfoDbData_1.2.14</span></span>
+<span><span class="co">#&gt; [64] truncnorm_1.0-9         R6_2.6.1                mashr_0.2.79           </span></span>
+<span><span class="co">#&gt; [67] textshaping_1.0.1       evaluate_1.0.5          lattice_0.22-7         </span></span>
+<span><span class="co">#&gt; [70] SQUAREM_2021.1          ashr_2.2-63             bslib_0.10.0           </span></span>
+<span><span class="co">#&gt; [73] Rcpp_1.1.1              SparseArray_1.10.8      xfun_0.56              </span></span>
+<span><span class="co">#&gt; [76] fs_1.6.6                pkgconfig_2.0.3</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
