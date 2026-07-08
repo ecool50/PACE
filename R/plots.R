@@ -323,3 +323,92 @@ plotDrivers <- function(object, focal, neighbour, n_top = 5,
   make_pair_composite(focal, neighbour, mv, sf = sf, n_top = n_top,
                       panels = match.arg(panels))
 }
+
+## Canonical per-density-bin boxplot with the per-bin mean overlaid (verbatim
+## style port of make_boxplot in build_bc_zoom_boxplots.R). For a zero-inflated
+## gene the box median sits at 0, so the trend is carried by the mean (diamond +
+## line); percent expressing per bin and the lm slope/p/n are annotated.
+.pace_proximity_box <- function(d, gene_col, fill, ytitle, title) {
+  dens_breaks <- c(-Inf, 0, 2, 5, 9, 14, 20, Inf)
+  dens_labels <- c("0", "0-2", "2-5", "5-9", "9-14", "14-20", ">20")
+  d$dens_bin <- cut(d$tumour_density, breaks = dens_breaks,
+                    labels = dens_labels, right = TRUE)
+  f  <- stats::lm(d[[gene_col]] ~ d$tumour_density)
+  co <- summary(f)$coefficients
+  slope <- co[2, 1]; pval <- co[2, 4]; n <- nrow(d)
+  lev <- levels(d$dens_bin)
+  pct <- tapply(d[[gene_col]], d$dens_bin, function(v) 100 * mean(v > 0))
+  ypos <- min(d[[gene_col]]) - 0.06 * diff(range(d[[gene_col]]))
+  lab_df  <- data.frame(dens_bin = factor(lev, levels = lev),
+                        lab = sprintf("%.0f%%", pct[lev]), y = ypos)
+  mean_df <- data.frame(dens_bin = factor(lev, levels = lev),
+                        m = tapply(d[[gene_col]], d$dens_bin, mean)[lev])
+  ann <- sprintf("slope = %+.3f\np = %s\nn = %d",
+                 slope, format.pval(pval, digits = 2, eps = 1e-300), n)
+  ggplot2::ggplot(d, ggplot2::aes(.data$dens_bin, .data[[gene_col]])) +
+    ggplot2::geom_boxplot(fill = fill, colour = "grey25", alpha = 0.55,
+                          outlier.size = 0.5, outlier.alpha = 0.3, linewidth = 0.4) +
+    ggplot2::geom_line(data = mean_df, ggplot2::aes(.data$dens_bin, .data$m, group = 1),
+                       inherit.aes = FALSE, colour = "black", linewidth = 0.7) +
+    ggplot2::geom_point(data = mean_df, ggplot2::aes(.data$dens_bin, .data$m),
+                        inherit.aes = FALSE, colour = "black", fill = "white",
+                        shape = 23, size = 2.4, stroke = 0.8) +
+    ggplot2::geom_text(data = lab_df, ggplot2::aes(.data$dens_bin, .data$y, label = .data$lab),
+                       inherit.aes = FALSE, size = 2.5, colour = "grey30", vjust = 1) +
+    ggplot2::annotate("label", x = 0.6, y = max(d[[gene_col]]), hjust = 0, vjust = 1,
+                      label = ann, size = 2.9, fill = scales::alpha("white", 0.7)) +
+    ggplot2::labs(
+      x = "Tumour-neighbour density bin (low to high)  [% = focal cells expressing]",
+      y = ytitle, title = paste0(title, "  (diamond = bin mean)")) +
+    ggplot2::coord_cartesian(clip = "off") +
+    ggplot2::theme_bw(base_size = 11) +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 10),
+                   axis.text.x = ggplot2::element_text(size = 6.5),
+                   plot.margin = ggplot2::margin(6, 6, 14, 6))
+}
+
+#' Expression versus neighbour density (per-bin boxplot)
+#'
+#' Reproduces the manuscript proximity figure: for each focal cell, the
+#' kernel-weighted density of a neighbour cell type is binned, and each gene's
+#' log1p CP10k expression is shown as a boxplot per bin with the per-bin mean
+#' overlaid (a diamond and connecting line), the percentage of focal cells
+#' expressing the gene, and the fitted expression-vs-density slope.
+#'
+#' @param object A [PACEFit] (supplies the kernel bandwidths and cell-type
+#'   column used at fit time).
+#' @param spe The [SpatialExperiment::SpatialExperiment] that was fitted.
+#' @param genes Character vector of genes to plot (one panel each).
+#' @param focal,neighbour Focal and neighbour cell types.
+#' @param assay_name Counts assay name (default `"counts"`).
+#' @return A `patchwork` / `ggplot` object.
+#' @examples
+#' \dontrun{ plotProximity(fit, spe, c("MRC1", "APOC1"), "Macrophage", "Tumour") }
+#' @export
+plotProximity <- function(object, spe, genes, focal, neighbour,
+                          assay_name = "counts") {
+  stopifnot(methods::is(object, "PACEFit"))
+  ct    <- as.character(SummarizedExperiment::colData(spe)[[object@params$celltype_col]])
+  types <- sort(unique(ct))
+  coords <- SpatialExperiment::spatialCoords(spe)
+  h_bio <- object@params$h_bio; h_tech <- object@params$h_tech
+  kern  <- pace_neighbour_kernel(coords, ct, types, h_bio = h_bio,
+                                 h_tech = h_tech, eps = 3 * h_bio)
+  dens  <- kern$K_bio[, which(types == neighbour)]
+
+  counts <- SummarizedExperiment::assay(spe, assay_name)
+  cp10k  <- log1p(Matrix::t(Matrix::t(counts) / pmax(Matrix::colSums(counts), 1) * 1e4))
+  is_focal <- ct == focal
+  fills <- c("#d62728", "#E76F51", "#1f77b4", "#2ca02c")
+
+  plots <- lapply(seq_along(genes), function(i) {
+    g <- genes[i]
+    d <- data.frame(tumour_density = dens[is_focal],
+                    val = as.numeric(cp10k[g, is_focal]))
+    names(d)[2] <- g
+    .pace_proximity_box(d, g, fills[(i - 1) %% length(fills) + 1],
+                        sprintf("%s %s (log CP10k)", focal, g),
+                        sprintf("%s in %s vs %s density", g, focal, neighbour))
+  })
+  patchwork::wrap_plots(plots, nrow = 1)
+}
