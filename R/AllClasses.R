@@ -21,6 +21,9 @@
 #' @slot cellTypes The cell types modelled, in fitting order.
 #' @slot params The fitting parameters actually used (bandwidths, contamination
 #'   and dispersion settings, condition column, and so on).
+#' @slot context The working frame and fixed-effect design retained from the fit
+#'   so that the downstream stages ([paceShrink()], [paceDecompose()],
+#'   [paceDrivers()]) can run without refitting.
 #'
 #' @name PACEFit
 #' @rdname PACEFit-class
@@ -33,6 +36,13 @@ setClass(
     varianceDecomposition = "list",
     topDrivers            = "list",
     cellTypes             = "character",
-    params                = "list"
+    params                = "list",
+    context               = "list"
+  ),
+  prototype = list(
+    neighbourSlopes       = data.frame(),
+    varianceDecomposition = list(),
+    topDrivers            = list(),
+    context               = list()
   )
 )

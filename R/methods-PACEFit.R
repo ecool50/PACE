@@ -62,14 +62,24 @@ setMethod("show", "PACEFit", function(object) {
   cat("class: PACEFit\n")
   cat("cell types (", length(object@cellTypes), "): ",
       paste(object@cellTypes, collapse = ", "), "\n", sep = "")
-  cat("neighbour slopes: ", nrow(object@neighbourSlopes),
-      " (gene, focal, neighbour) rows\n", sep = "")
-  n_sig <- sum(object@neighbourSlopes$lfsr < 0.05, na.rm = TRUE)
-  cat("  significant (lfsr < 0.05): ", n_sig, "\n", sep = "")
-  cat("kernels: h_bio = ", p$h_bio, " um, h_tech = ", p$h_tech, " um\n", sep = "")
-  cat("contamination: ", p$contamination, "; dispersion: ", p$dispersion, "\n", sep = "")
-  if (!is.null(p$condition_col)) {
+  cat("kernels: h_bio = ", p$h_bio, " um, h_tech = ", p$h_tech,
+      " um | contamination: ", p$contamination,
+      "; dispersion: ", p$dispersion, "\n", sep = "")
+  if (!is.null(p$condition_col))
     cat("condition: ", p$condition_col, " (", p$resp_term, ")\n", sep = "")
+
+  ## pipeline stage status
+  done_shrink <- nrow(object@neighbourSlopes) > 0L
+  done_decomp <- length(object@varianceDecomposition) > 0L
+  done_driv   <- length(object@topDrivers) > 0L
+  cat("pipeline: model",
+      if (done_shrink) " -> shrink" else "",
+      if (done_decomp) " -> decompose" else "",
+      if (done_driv)   " -> drivers" else "", "\n", sep = "")
+  if (done_shrink) {
+    n_sig <- sum(object@neighbourSlopes$lfsr < 0.05, na.rm = TRUE)
+    cat("  neighbour slopes: ", nrow(object@neighbourSlopes),
+        " rows (", n_sig, " at lfsr < 0.05)\n", sep = "")
   }
   invisible(NULL)
 })

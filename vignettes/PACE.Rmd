@@ -96,6 +96,28 @@ fit <- paceFit(spe,
 fit
 ```
 
+## The pipeline in stages
+
+`paceFit()` is a convenience wrapper. The same result is produced by running the
+four stages explicitly, which lets you inspect the fitted model and re-run the
+downstream layers (shrinkage, decomposition, drivers) without refitting:
+
+```{r staged, eval = FALSE}
+fit <- paceModel(spe, celltype_col = "cellType")   |>  # 1. fit the mixed model
+       paceShrink()                                |>  # 2. shrink neighbour slopes
+       paceDecompose(spe)                          |>  # 3. variance decomposition
+       paceDrivers()                                   # 4. per-pair driver scores
+```
+
+The fit-construction primitives expose the neighbourhood and contamination field
+directly, for inspection independently of a fit:
+
+```{r primitives, eval = FALSE}
+kern <- buildNeighbourhood(spe, "cellType")   # Gaussian K_bio + technical K_tech
+W    <- ambientField(spe, "cellType")         # sparse E^tech contamination field
+anchorGenes(fit, spe)                         # per-cell-type contamination anchors
+```
+
 # Variance decomposition
 
 `plotDecomposition()` shows, for each focal cell type, the share of expression

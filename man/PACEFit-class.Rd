@@ -38,5 +38,9 @@ mediate each focal-neighbour spatial relationship.}
 
 \item{\code{params}}{The fitting parameters actually used (bandwidths, contamination
 and dispersion settings, condition column, and so on).}
+
+\item{\code{context}}{The working frame and fixed-effect design retained from the fit
+so that the downstream stages (\code{\link[=paceShrink]{paceShrink()}}, \code{\link[=paceDecompose]{paceDecompose()}},
+\code{\link[=paceDrivers]{paceDrivers()}}) can run without refitting.}
 }}
 
