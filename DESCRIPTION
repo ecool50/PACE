@@ -39,13 +39,16 @@ Imports:
     lme4,
     limma,
     mashr,
-    ashr
+    ashr,
+    ggplot2,
+    patchwork,
+    scales,
+    stringr
 Suggests:
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
-    BiocStyle,
-    ggplot2
+    BiocStyle
 URL: https://github.com/ecool50/PACE
 BugReports: https://github.com/ecool50/PACE/issues
 LinkingTo:

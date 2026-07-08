@@ -20,6 +20,7 @@
 #' @importFrom Rcpp evalCpp
 #' @import methods
 #' @import dplyr
+#' @import ggplot2
 #' @import tibble
 #' @importFrom tidyr pivot_wider pivot_longer
 #' @importFrom mashr mash mash_set_data cov_canonical cov_ed cov_pca get_significant_results

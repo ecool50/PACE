@@ -72,6 +72,9 @@ reprogramming that PACE identifies on the full section.
 ```{r load, message = FALSE}
 library(PACE)
 library(SpatialExperiment)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
 
 spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
 spe
@@ -95,75 +98,48 @@ fit
 
 # Variance decomposition
 
-`varianceDecomposition()` returns, for each focal cell type and gene, the share
-of expression variance attributable to cell-type identity, spatial cell state
-(proximity effects), contamination, and residual. Averaging over genes gives a
-per-cell-type summary.
+`plotDecomposition()` shows, for each focal cell type, the share of expression
+variance attributable to cell-type identity, spatial cell state (proximity
+effects), and contamination (spillover), pooled over genes. The left panel is the
+full stacked bar; the right zooms in on the two small spatial components.
 
-```{r decomp, fig.height = 3.4}
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-
-vd <- varianceDecomposition(fit)
-blocks <- c("Spatial %", "Spillover %", "Residual %")
-agg <- vd |>
-  group_by(focal) |>
-  summarise(across(all_of(blocks), \(x) mean(x, na.rm = TRUE)), .groups = "drop") |>
-  pivot_longer(-focal, names_to = "component", values_to = "pct")
-
-ggplot(agg, aes(focal, pct, fill = component)) +
-  geom_col() +
-  coord_flip() +
-  labs(x = NULL, y = "mean % of expression variance",
-       title = "Non-identity variance components by focal cell type") +
-  theme_minimal(base_size = 11)
+```{r decomp, fig.width = 11, fig.height = 4.5}
+plotDecomposition(fit)
 ```
 
-Beyond the dominant cell-type-identity component (omitted here for scale),
-macrophages, stromal and myoepithelial cells carry the largest spatial cell-state
-contributions.
+Beyond the dominant cell-type identity component, macrophages, stromal and
+myoepithelial cells carry the largest spatial cell-state contributions. The
+underlying per-gene table is available with `varianceDecomposition(fit)`.
 
 # Pairwise spatial interactions
 
-Which focal-neighbour pairs are most strongly coupled? Counting the significant
-genes (local false sign rate < 0.05) per pair shows that **tumour as a
-neighbour** drives the strongest spatial signal across the microenvironment.
+`plotPairHeatmap()` gives the percentage of each focal type's total variance
+contributed by spatial interaction with each neighbour, computed as the focal's
+spatial share split across neighbours by a normalised Pratt attribution.
+**Tumour as a neighbour** drives the strongest spatial signal across the
+microenvironment.
 
-```{r pairs, fig.height = 4}
-ns <- neighbourSlopes(fit)
-pair <- ns |>
-  filter(focal != neighbour) |>
-  group_by(focal, neighbour) |>
-  summarise(n_sig = sum(lfsr < 0.05, na.rm = TRUE), .groups = "drop")
-
-ggplot(pair, aes(neighbour, focal, fill = n_sig)) +
-  geom_tile() +
-  scale_fill_viridis_c(option = "inferno") +
-  labs(x = "neighbour cell type", y = "focal cell type",
-       fill = "significant\ngenes",
-       title = "Spatial coupling: significant genes per pair") +
-  theme_minimal(base_size = 10) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```{r pairs, fig.width = 6.5, fig.height = 5}
+plotPairHeatmap(fit)
 ```
 
 # Macrophage–tumour drivers
 
-`topDrivers()` ranks the genes mediating each relationship by a driver score that
-combines the shrunken slope, its cell-type specificity, and its expression level.
-For the macrophage-tumour pair, the top drivers are the tissue-resident marker
-**MRC1** (CD206), reduced near tumour, and the lipid-associated marker **APOC1**,
-elevated near tumour.
+`plotDrivers()` ranks the genes mediating a relationship by a driver score (MCSD,
+combining the shrunken slope, its cell-type specificity, and its expression
+level), alongside their per-gene single-frame decomposition. For the
+macrophage-tumour pair, the top drivers are the tissue-resident marker **MRC1**
+(CD206), reduced near tumour, and the lipid-associated marker **APOC1**, elevated
+near tumour.
 
-```{r drivers}
-drv <- topDrivers(fit)[["Macrophage_Tumour"]]$scores
-head(drv[, c("rank", "gene", "b_clean", "spec", "lfsr", "MCSD")], 8)
+```{r drivers, fig.width = 10, fig.height = 4.5}
+plotDrivers(fit, "Macrophage", "Tumour")
 ```
 
 The shrunken slopes confirm the opposing directions:
 
 ```{r flagships}
-ns |>
+neighbourSlopes(fit) |>
   filter(focal == "Macrophage", neighbour == "Tumour",
          gene %in% c("MRC1", "APOC1")) |>
   select(gene, estimate_shrunk, lfsr)
