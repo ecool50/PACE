@@ -168,11 +168,11 @@ whole pipeline. On this crop it takes about half a minute.</p>
 <span><span class="co">#&gt;  - Computing 278 x 313 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.05 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 313 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.09 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.10 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 278 x 92 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.01 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.02 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 92 mixture components.</span></span>
 <span><span class="co">#&gt;  - Model fitting took 0.02 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
@@ -186,7 +186,7 @@ whole pipeline. On this crop it takes about half a minute.</p>
 <span><span class="co">#&gt;  - Computing 278 x 417 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.06 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 417 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.29 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.28 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 278 x 92 likelihood matrix.</span></span>
@@ -202,7 +202,7 @@ whole pipeline. On this crop it takes about half a minute.</p>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 278 x 430 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.07 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.06 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 430 mixture components.</span></span>
 <span><span class="co">#&gt;  - Model fitting took 0.15 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
@@ -210,7 +210,7 @@ whole pipeline. On this crop it takes about half a minute.</p>
 <span><span class="co">#&gt;  - Computing 278 x 628 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.10 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 628 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.28 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.30 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 278 x 404 likelihood matrix.</span></span>
@@ -222,7 +222,7 @@ whole pipeline. On this crop it takes about half a minute.</p>
 <span><span class="co">#&gt;  - Computing 278 x 590 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.09 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 590 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 1.14 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 1.16 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.01 seconds.</span></span>
 <span><span class="va">fit</span></span>
@@ -288,13 +288,11 @@ reduced near tumour, and the lipid-associated marker
 <div class="section level2">
 <h2 id="visualising-the-proximity-effect">Visualising the proximity effect<a class="anchor" aria-label="anchor" href="#visualising-the-proximity-effect"></a>
 </h2>
-<p><code><a href="../reference/plotProximity.html">plotProximity()</a></code> bins each macrophage by its
-kernel-weighted tumour-neighbour density and shows each gene’s log1p
-CP10k expression per bin. Because these genes are zero-inflated (the box
-median sits at zero in most bins), the per-bin mean is overlaid as a
-diamond and connecting line to make the trend explicit, alongside the
-percentage of macrophages expressing the gene and the fitted
-expression-versus-density slope. MRC1 falls and APOC1 rises with tumour
+<p><code><a href="../reference/plotProximity.html">plotProximity()</a></code> bins each macrophage by its number of
+tumour neighbours (within 30 um) and shows each gene’s raw counts per
+bin. Because these genes are zero-inflated the box median sits at zero
+in most bins, so the per-bin mean is overlaid as a point to make the
+trend explicit. Macrophage MRC1 falls and APOC1 rises with tumour
 proximity.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotProximity.html">plotProximity</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">spe</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"MRC1"</span>, <span class="st">"APOC1"</span><span class="op">)</span>, <span class="st">"Macrophage"</span>, <span class="st">"Tumour"</span><span class="op">)</span></span></code></pre></div>
