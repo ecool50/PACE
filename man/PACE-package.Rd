@@ -23,6 +23,7 @@ results are read out with \code{\link[=neighbourSlopes]{neighbourSlopes()}}, \co
 Useful links:
 \itemize{
   \item \url{https://github.com/ecool50/PACE}
+  \item \url{https://ecool50.github.io/PACE}
   \item Report bugs at \url{https://github.com/ecool50/PACE/issues}
 }
 
