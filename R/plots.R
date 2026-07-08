@@ -341,6 +341,55 @@ plotDecomposition <- function(object, title = "Per-focal decomposition") {
   }
 }
 
+#' Pairwise spatial variance table
+#'
+#' Returns the tidy per-(focal, neighbour) spatial variance table that
+#' [plotPairHeatmap()] draws: for each focal cell type, the percentage of its
+#' total expression variance contributed by spatial interaction with each
+#' neighbour, obtained by splitting the focal's spatial share across neighbours
+#' by a normalised (off-diagonal-renormalised) Pratt attribution. Off-diagonal
+#' pairs only.
+#'
+#' @param object A [PACEFit].
+#' @param block Either `"spatial"` (default) or `"responder"` (condition cohorts).
+#' @param ... Unused.
+#' @return A data frame with columns `focal`, `neighbour`, and `val` (spatial %
+#'   of the focal type's total variance).
+#' @examples
+#' \dontrun{ pairVariance(fit) }
+#' @rdname pairVariance
+#' @export
+setMethod("pairVariance", "PACEFit",
+  function(object, block = c("spatial", "responder"), ...) {
+    block <- match.arg(block)
+    mv <- .pace_mv_shim(object)
+    sf <- object@varianceDecomposition$perGene
+    fb <- .pace_focal_blocks(sf)
+
+    if (block == "responder") {
+      if (!"Responder spatial state" %in% names(fb))
+        stop("this fit has no responder block; use block = 'spatial'.", call. = FALSE)
+      cond_prefix <- object@params$resp_term
+      foc         <- stats::setNames(fb$`Responder spatial state`, as.character(fb$focal))
+      block_label <- "RxS"
+    } else {
+      cond_prefix <- NULL
+      foc         <- stats::setNames(fb$`Spatial cell state`, as.character(fb$focal))
+      block_label <- "Spatial"
+    }
+
+    pace_pair_variance_pratt(mv, cond_prefix = cond_prefix,
+                             cohort_label = "cohort",
+                             block_label = block_label)$pair_long |>
+      dplyr::filter(as.character(.data$focal) != as.character(.data$neighbour)) |>
+      dplyr::group_by(.data$focal) |>
+      dplyr::mutate(val = foc[as.character(.data$focal)] *
+                          .data$V_pair_pratt / sum(.data$V_pair_pratt)) |>
+      dplyr::ungroup() |>
+      dplyr::transmute(focal = as.character(.data$focal),
+                       neighbour = as.character(.data$neighbour), .data$val)
+  })
+
 #' Pairwise spatial-percent heatmap
 #'
 #' Reproduces the manuscript pairwise heatmap: each cell is the percentage of the
@@ -360,37 +409,18 @@ plotDecomposition <- function(object, title = "Per-focal decomposition") {
 plotPairHeatmap <- function(object, block = c("spatial", "responder"), title = NULL) {
   stopifnot(methods::is(object, "PACEFit"))
   block <- match.arg(block)
-  mv <- .pace_mv_shim(object)
-  sf <- object@varianceDecomposition$perGene
-  fb <- .pace_focal_blocks(sf)
+  sf    <- object@varianceDecomposition$perGene
   TYPES <- sort(unique(as.character(sf$focal)))
 
   if (block == "responder") {
-    if (!"Responder spatial state" %in% names(fb))
-      stop("this fit has no responder block; use block = 'spatial'.", call. = FALSE)
-    cond_prefix <- object@params$resp_term
-    foc         <- stats::setNames(fb$`Responder spatial state`, as.character(fb$focal))
-    block_label <- "RxS"
-    fill_name   <- "responder %\nof total"
+    fill_name <- "responder %\nof total"
     if (is.null(title)) title <- "Pairwise responder spatial % (normalised Pratt)"
   } else {
-    cond_prefix <- NULL
-    foc         <- stats::setNames(fb$`Spatial cell state`, as.character(fb$focal))
-    block_label <- "Spatial"
-    fill_name   <- "spatial %\nof total"
+    fill_name <- "spatial %\nof total"
     if (is.null(title)) title <- "Pairwise spatial % (variance, normalised Pratt)"
   }
 
-  pratt_long <- pace_pair_variance_pratt(mv, cond_prefix = cond_prefix,
-                                         cohort_label = "cohort",
-                                         block_label = block_label)$pair_long |>
-    dplyr::filter(as.character(.data$focal) != as.character(.data$neighbour)) |>
-    dplyr::group_by(.data$focal) |>
-    dplyr::mutate(val = foc[as.character(.data$focal)] *
-                        .data$V_pair_pratt / sum(.data$V_pair_pratt)) |>
-    dplyr::ungroup() |>
-    dplyr::transmute(focal = as.character(.data$focal),
-                     neighbour = as.character(.data$neighbour), .data$val)
+  pratt_long <- pairVariance(object, block = block)
 
   heat <- expand.grid(focal = TYPES, neighbour = TYPES, stringsAsFactors = FALSE) |>
     dplyr::filter(.data$focal != .data$neighbour) |>

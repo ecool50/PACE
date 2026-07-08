@@ -37,3 +37,7 @@ setGeneric("varianceDecomposition", function(object, ...) standardGeneric("varia
 #' @rdname topDrivers
 #' @export
 setGeneric("topDrivers", function(object, ...) standardGeneric("topDrivers"))
+
+#' @rdname pairVariance
+#' @export
+setGeneric("pairVariance", function(object, ...) standardGeneric("pairVariance"))
