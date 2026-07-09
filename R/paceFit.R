@@ -51,7 +51,7 @@
 ## Stage 1: fit the model
 ## ===========================================================================
 
-#' Fit the PACE model (stage 1 of the pipeline)
+#' Fit the PACE model
 #'
 #' `paceModel()` builds the biological and technical neighbourhood kernels from
 #' the spatial coordinates and cell-type labels and fits the hierarchical
@@ -131,7 +131,7 @@ setMethod(
 ## Stage 2: shrink the neighbour slopes
 ## ===========================================================================
 
-#' Shrink the neighbour slopes (stage 2)
+#' Shrink the neighbour slopes
 #'
 #' Stabilises the fitted per-(gene, focal, neighbour) proximity slopes with
 #' multivariate adaptive shrinkage, populating [neighbourSlopes()].
@@ -152,7 +152,7 @@ setMethod("paceShrink", "PACEFit", function(object, ...) {
 ## Stage 3: variance decomposition
 ## ===========================================================================
 
-#' Variance decomposition (stage 3)
+#' Variance decomposition
 #'
 #' Partitions per-gene expression variance into cell-type identity, spatial cell
 #' state, contamination, and residual (plus a responder block for condition
@@ -184,7 +184,7 @@ setMethod("paceDecompose", "PACEFit", function(object, spe, ...) {
 ## Stage 4: per-pair driver tables
 ## ===========================================================================
 
-#' Per-pair driver scores (stage 4)
+#' Per-pair driver scores
 #'
 #' Ranks the genes mediating each focal-neighbour relationship by driver score,
 #' populating [topDrivers()]. Requires [paceShrink()] and [paceDecompose()] to

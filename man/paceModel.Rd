@@ -3,7 +3,7 @@
 \name{paceModel}
 \alias{paceModel}
 \alias{paceModel,SpatialExperiment-method}
-\title{Fit the PACE model (stage 1 of the pipeline)}
+\title{Fit the PACE model}
 \usage{
 paceModel(object, ...)
 

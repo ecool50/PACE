@@ -3,7 +3,7 @@
 \name{paceShrink}
 \alias{paceShrink}
 \alias{paceShrink,PACEFit-method}
-\title{Shrink the neighbour slopes (stage 2)}
+\title{Shrink the neighbour slopes}
 \usage{
 paceShrink(object, ...)
 

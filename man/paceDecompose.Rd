@@ -3,7 +3,7 @@
 \name{paceDecompose}
 \alias{paceDecompose}
 \alias{paceDecompose,PACEFit-method}
-\title{Variance decomposition (stage 3)}
+\title{Variance decomposition}
 \usage{
 paceDecompose(object, ...)
 

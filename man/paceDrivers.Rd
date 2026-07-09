@@ -3,7 +3,7 @@
 \name{paceDrivers}
 \alias{paceDrivers}
 \alias{paceDrivers,PACEFit-method}
-\title{Per-pair driver scores (stage 4)}
+\title{Per-pair driver scores}
 \usage{
 paceDrivers(object, ...)
 
