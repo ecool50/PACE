@@ -54,6 +54,7 @@ BugReports: https://github.com/ecool50/PACE/issues
 LinkingTo:
     Rcpp,
     RcppEigen
+SystemRequirements: GNU GSL
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

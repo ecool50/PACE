@@ -26,6 +26,10 @@ jobs:
         with:
           use-public-rspm: true
 
+      # mashr links against GSL; without it the package fails to lazy-load.
+      - name: Install GSL
+        run: sudo apt-get update && sudo apt-get install -y libgsl-dev
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::pkgdown, local::.
