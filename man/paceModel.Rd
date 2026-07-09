@@ -19,6 +19,7 @@ paceModel(object, ...)
   dispersion = c("nb1", "nb2"),
   kernel_per_image = FALSE,
   image_re = c("none", "intercept", "slopes", "condition_slopes"),
+  types = NULL,
   resp_term = NULL,
   verbose = TRUE,
   ...
@@ -53,6 +54,11 @@ the responder spatial block for multi-sample cohorts.}
 
 \item{image_re}{Second image-level random-effect block: \code{"none"},
 \code{"intercept"}, \code{"slopes"}, or \code{"condition_slopes"}.}
+
+\item{types}{Cell types in the order they should index the random-effect
+blocks. \code{NULL} (default) uses every observed type in alphabetical order;
+pass an explicit vector to reproduce a locked fit, whose block order the
+caller chose.}
 
 \item{resp_term}{Responder interaction term prefix for condition cohorts; if
 \code{NULL} it is derived from \code{condition_col}.}

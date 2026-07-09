@@ -37,9 +37,11 @@
 
 ## Observed single-frame (log1p CP10k) decomposition from the fitted block
 ## proportions; the manuscript's headline per-gene frame. Internal.
-.pace_single_frame <- function(Y, df, celltype_col, dec) {
-  block <- if (!is.null(dec$gene_focal_5block)) dec$gene_focal_5block
-           else dec$gene_focal_4block
+.pace_single_frame <- function(Y, df, celltype_col, dec, has_condition) {
+  ## Condition cohorts keep the responder spatial block separate (5-block);
+  ## single-condition cohorts have an identically zero responder block, so they
+  ## use the 4-block table in which it is merged back into the spatial block.
+  block <- if (has_condition) dec$gene_focal_5block else dec$gene_focal_4block
   if (is.null(block)) return(NULL)
   nCount   <- as.numeric(Matrix::rowSums(Y))
   celltype <- df[[celltype_col]]
@@ -75,6 +77,10 @@
 #' @param kernel_per_image If `TRUE`, neighbourhoods are built within each image.
 #' @param image_re Second image-level random-effect block: `"none"`,
 #'   `"intercept"`, `"slopes"`, or `"condition_slopes"`.
+#' @param types Cell types in the order they should index the random-effect
+#'   blocks. `NULL` (default) uses every observed type in alphabetical order;
+#'   pass an explicit vector to reproduce a locked fit, whose block order the
+#'   caller chose.
 #' @param resp_term Responder interaction term prefix for condition cohorts; if
 #'   `NULL` it is derived from `condition_col`.
 #' @param verbose Whether to print progress.
@@ -99,7 +105,7 @@ setMethod(
            contamination = c("percell_hc", "none"),
            dispersion = c("nb1", "nb2"), kernel_per_image = FALSE,
            image_re = c("none", "intercept", "slopes", "condition_slopes"),
-           resp_term = NULL, verbose = TRUE, ...) {
+           types = NULL, resp_term = NULL, verbose = TRUE, ...) {
     contamination <- match.arg(contamination)
     dispersion    <- match.arg(dispersion)
     image_re      <- match.arg(image_re)
@@ -107,7 +113,8 @@ setMethod(
     prep <- .pace_prepare(object, celltype_col, image_col, condition_col,
                           assay_name, resp_term)
     res <- pace_fit_streaming(
-      prep$Y, prep$df, celltype_col = celltype_col, image_col = prep$image_col,
+      prep$Y, prep$df, types = types,
+      celltype_col = celltype_col, image_col = prep$image_col,
       coord_cols = c("x", "y"), h_bio = h_bio, h_tech = h_tech,
       contamination = contamination, dispersion = dispersion,
       condition_col = condition_col, kernel_per_image = kernel_per_image,
@@ -175,7 +182,8 @@ setMethod("paceDecompose", "PACEFit", function(object, spe, ...) {
          "; pass the same object used for paceModel().", call. = FALSE)
   dec <- pace_decompose(object@fit, df, Y, object@cellTypes,
                         object@context$X_fixed, resp_term = object@params$resp_term)
-  sf  <- .pace_single_frame(Y, df, object@params$celltype_col, dec)
+  sf  <- .pace_single_frame(Y, df, object@params$celltype_col, dec,
+                            has_condition = !is.null(object@params$condition_col))
   object@varianceDecomposition <- list(perGene = sf, blocks = dec)
   object
 })
