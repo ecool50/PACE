@@ -18,6 +18,16 @@ knitr::opts_chunk$set(
   fig.width = 6, fig.height = 4, dpi = 90)
 ```
 
+```{css scrollable-output, echo = FALSE}
+/* Long console output (the shrinkage progress log, sessionInfo) scrolls in
+   place rather than pushing the prose off the page. Short blocks are
+   unaffected: max-height only engages once the block is taller. */
+pre {
+  max-height: 340px;
+  overflow-y: auto;
+}
+```
+
 # Installation
 
 ```{r install, eval = FALSE}
@@ -62,10 +72,10 @@ A PACE analysis has three stages, all driven by the single call `paceFit()`:
 # The breast cancer dataset
 
 The package ships a small worked example: a spatial crop of a human breast cancer
-Xenium section (10x Genomics; segmented with BIDCell), centred on a
-tumour-macrophage interface. It contains `r "7,898"` cells across eight cell
-types (B cell, dendritic cell, endothelial, macrophage, myoepithelial, stromal,
-T cell, and tumour) and a 278-gene panel, packaged as a
+Xenium section (10x Genomics; nucleus segmentation, cell types annotated with
+scClassify), centred on a tumour-macrophage interface. It contains `r "7,898"`
+cells across eight cell types (B cell, dendritic cell, endothelial, macrophage,
+myoepithelial, stromal, T cell, and tumour) and a 278-gene panel, packaged as a
 `r Biocpkg("SpatialExperiment")`. This region reproduces the macrophage
 reprogramming that PACE identifies on the full section.
 
@@ -96,17 +106,17 @@ fit <- paceFit(spe,
 fit
 ```
 
-## The pipeline in stages
+## The pipeline step by step
 
-`paceFit()` is a convenience wrapper. The same result is produced by running the
-four stages explicitly, which lets you inspect the fitted model and re-run the
+`paceFit()` is a convenience wrapper. The same result is produced by calling each
+step explicitly, which lets you inspect the fitted model and re-run the
 downstream layers (shrinkage, decomposition, drivers) without refitting:
 
 ```{r staged, eval = FALSE}
-fit <- paceModel(spe, celltype_col = "cellType")   |>  # 1. fit the mixed model
-       paceShrink()                                |>  # 2. shrink neighbour slopes
-       paceDecompose(spe)                          |>  # 3. variance decomposition
-       paceDrivers()                                   # 4. per-pair driver scores
+fit <- paceModel(spe, celltype_col = "cellType")   |>  # fit the mixed model
+       paceShrink()                                |>  # shrink neighbour slopes
+       paceDecompose(spe)                          |>  # variance decomposition
+       paceDrivers()                                   # per-pair driver scores
 ```
 
 The fit-construction primitives expose the neighbourhood and contamination field
