@@ -313,7 +313,7 @@ pace_fit_streaming <- function(Y, df, types = NULL,
                                celltype_col, image_col, coord_cols = c("x", "y"),
                                h_bio = 30, h_tech = 5, eps = NULL,
                                contamination = c("percell_hc", "none"),
-                               dispersion = c("nb2", "nb1"),
+                               dispersion = c("nb1", "nb2"),              ## NB1 is canonical; matches paceModel()
                                condition_col = NULL,                      ## disease/condition column (optional)
                                kernel_per_image = FALSE,                  ## TRUE when images = separate samples
                                image_re = c("none", "intercept",          ## second RE block over images
