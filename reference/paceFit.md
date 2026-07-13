@@ -49,7 +49,7 @@ spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
 # \donttest{
 fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
+#>  - Likelihood calculations took 0.07 seconds.
 #>  - Fitting model with 313 mixture components.
 #>  - Model fitting took 0.10 seconds.
 #>  - Computing posterior matrices.
@@ -63,9 +63,9 @@ fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Dendritic_Cell: 278 genes shrunk; sig (lfsr<0.05) = 0
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.10 seconds.
+#>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.15 seconds.
+#>  - Model fitting took 0.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Endothelial: 278 genes shrunk; sig (lfsr<0.05) = 2
@@ -99,7 +99,7 @@ fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computing 278 x 628 likelihood matrix.
 #>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.19 seconds.
+#>  - Model fitting took 0.18 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] T_Cell: 278 genes shrunk; sig (lfsr<0.05) = 21
@@ -114,7 +114,7 @@ fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Fitting model with 590 mixture components.
 #>  - Model fitting took 0.67 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>   [mashr] Tumour: 278 genes shrunk; sig (lfsr<0.05) = 29
 head(neighbourSlopes(fit))
 #>     gene  focal neighbour   term      estimate   std.error estimate_shrunk

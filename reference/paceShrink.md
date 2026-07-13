@@ -35,9 +35,9 @@ The `PACEFit` with the shrunken neighbour slopes added.
 fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
 fit <- paceShrink(fit)
 #>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
+#>  - Likelihood calculations took 0.07 seconds.
 #>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.10 seconds.
+#>  - Model fitting took 0.09 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] B_Cell: 278 genes shrunk; sig (lfsr<0.05) = 0
@@ -58,7 +58,7 @@ fit <- paceShrink(fit)
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.20 seconds.
+#>  - Model fitting took 0.21 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Macrophage: 278 genes shrunk; sig (lfsr<0.05) = 5
@@ -85,7 +85,7 @@ fit <- paceShrink(fit)
 #>  - Computing 278 x 628 likelihood matrix.
 #>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.17 seconds.
+#>  - Model fitting took 0.18 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] T_Cell: 278 genes shrunk; sig (lfsr<0.05) = 21

@@ -6,6 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Proximity-Associated Changes in Expression for Spatial Transcriptomics • PACE</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -13,6 +18,7 @@
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Proximity-Associated Changes in Expression for Spatial Transcriptomics">
 <meta name="description" content="PACE (Proximity-Associated Changes in Expression) is a hierarchical empirical Bayes framework that quantifies how a cell's gene expression changes with proximity to specific neighbouring cell types in imaging-based spatial transcriptomics such as Xenium and CosMx. It fits negative binomial mixed models with partial pooling across cell types, corrects for transcript contamination between adjacent cells with a per-cell ambient term, and decomposes expression variance into cell-type identity, spatial cell state, contamination, and residual components. Input and output follow SpatialExperiment conventions.">
 <meta property="og:description" content="PACE (Proximity-Associated Changes in Expression) is a hierarchical empirical Bayes framework that quantifies how a cell's gene expression changes with proximity to specific neighbouring cell types in imaging-based spatial transcriptomics such as Xenium and CosMx. It fits negative binomial mixed models with partial pooling across cell types, corrects for transcript contamination between adjacent cells with a per-cell ambient term, and decomposes expression variance into cell-type identity, spatial cell state, contamination, and residual components. Input and output follow SpatialExperiment conventions.">
+<meta property="og:image" content="https://ecool50.github.io/PACE/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -44,8 +50,10 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="pace">PACE<a class="anchor" aria-label="anchor" href="#pace"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 id="pace">PACE<a class="anchor" aria-label="anchor" href="#pace"></a>
+</h1>
+</div>
 <p>A hierarchical empirical Bayes framework for <code>proximity-associated changes in expression</code> — how a cell’s gene expression shifts near specific neighbouring cell types — in <code>imaging-based spatial transcriptomics</code> (Xenium, CosMx).</p>
 <p><img src="reference/figures/pace_overview.png" alt="Overview of the PACE framework" align="middle" height="622" width="1000"></p>
 <div class="section level2">
@@ -89,9 +97,10 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://cloud.r-project.org/package=PACE" class="external-link">View on CRAN</a></li>
-<li><a href="https://github.com/ecool50/PACE/" class="external-link">Browse source code</a></li>
+<li><ul>
+<li><a href="https://github.com/ecool50/PACE" class="external-link">Source code</a></li>
 <li><a href="https://github.com/ecool50/PACE/issues" class="external-link">Report a bug</a></li>
+</ul></li>
 </ul>
 </div>
 
