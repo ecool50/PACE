@@ -262,10 +262,10 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
           res <- per_gene_chk[[jj]]
           B[, gi]      <- res$beta
           U[, gi]      <- res$u
-          re_var[, gi] <- pmax(res$Ainv_diag[(p+1):(p+q)], 0)
+          re_var[, gi] <- pmax(res$Ainv_diag[p + seq_len(q)], 0)
           if (last_iter) {
-            se_B[, gi] <- sqrt(pmax(res$Ainv_diag[1:p], 0))
-            se_U[, gi] <- sqrt(pmax(res$Ainv_diag[(p+1):(p+q)], 0))
+            se_B[, gi] <- sqrt(pmax(res$Ainv_diag[seq_len(p)], 0))
+            se_U[, gi] <- sqrt(pmax(res$Ainv_diag[p + seq_len(q)], 0))
           }
         }
         rm(per_gene_chk, z_chk, w_chk, lam_chk)

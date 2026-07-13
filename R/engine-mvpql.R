@@ -567,12 +567,12 @@ build_random_design_multi <- function(df, re_specs) {
   p <- ncol(X); q <- ncol(Z)
   A <- Matrix::bdiag(Matrix::Matrix(XtWX), ZtWZ)
   ## Insert XtWZ blocks
-  A[1:p, (p+1):(p+q)] <- as(XtWZ, "dgCMatrix")
-  A[(p+1):(p+q), 1:p] <- as(t(XtWZ), "dgCMatrix")
+  A[seq_len(p), p + seq_len(q)] <- as(XtWZ, "dgCMatrix")
+  A[p + seq_len(q), seq_len(p)] <- as(t(XtWZ), "dgCMatrix")
   b <- c(as.numeric(XtWz), as.numeric(ZtWz))
 
   sol <- as.numeric(Matrix::solve(A, b))
-  list(beta = sol[1:p], u = sol[(p+1):(p+q)], A = A, b = b)
+  list(beta = sol[seq_len(p)], u = sol[p + seq_len(q)], A = A, b = b)
 }
 
 
@@ -638,8 +638,8 @@ build_random_design_multi <- function(df, re_specs) {
   }
   sol  <- backsolve(R, backsolve(R, b, transpose = TRUE))
   Ainv <- chol2inv(R)
-  list(beta      = sol[1:p],
-       u         = sol[(p+1):(p+q)],
+  list(beta      = sol[seq_len(p)],
+       u         = sol[p + seq_len(q)],
        Ainv_diag = diag(Ainv))
 }
 
@@ -735,8 +735,8 @@ build_random_design_multi <- function(df, re_specs) {
   }
   sol  <- backsolve(R, backsolve(R, b_vec, transpose = TRUE))
   Ainv <- chol2inv(R)
-  list(beta      = sol[1:p],
-       u         = sol[(p+1):(p+q)],
+  list(beta      = sol[seq_len(p)],
+       u         = sol[p + seq_len(q)],
        Ainv_diag = diag(Ainv))
 }
 
@@ -1023,7 +1023,7 @@ build_random_design_multi <- function(df, re_specs) {
     }
     sol  <- backsolve(R, backsolve(R, b_vec, transpose = TRUE))
     Ainv <- chol2inv(R)
-    list(beta = sol[1:p], u = sol[(p+1):(p+q)],
+    list(beta = sol[seq_len(p)], u = sol[p + seq_len(q)],
          Ainv_diag = diag(Ainv))
   }, BPPARAM = BPPARAM)
 }
@@ -1183,11 +1183,11 @@ fit_pace_mvpql <- function(Y, X_fixed, df, vars,
                                     w[, gi], z[, gi], lam_g, K_t, K_g)
       list(beta    = sol$beta,
            u       = sol$u,
-           re_var  = pmax(sol$Ainv_diag[(p+1):(p+q)], 0),
+           re_var  = pmax(sol$Ainv_diag[p + seq_len(q)], 0),
            ## Always compute SEs so early-exit at convergence still
            ## yields valid se_B/se_U (mashr filter rejects NA SEs).
-           se_beta = sqrt(pmax(sol$Ainv_diag[1:p], 0)),
-           se_u    = sqrt(pmax(sol$Ainv_diag[(p+1):(p+q)], 0)))
+           se_beta = sqrt(pmax(sol$Ainv_diag[seq_len(p)], 0)),
+           se_u    = sqrt(pmax(sol$Ainv_diag[p + seq_len(q)], 0)))
     }, BPPARAM = BPPARAM)
 
     for (gi in seq_len(g_n)) {
@@ -1461,10 +1461,10 @@ fit_pace_mvpql_multi <- function(Y, X_fixed, df, re_specs,
         res <- per_gene_chk[[jj]]
         B[, gi]      <- res$beta
         U[, gi]      <- res$u
-        re_var[, gi] <- pmax(res$Ainv_diag[(p+1):(p+q)], 0)
+        re_var[, gi] <- pmax(res$Ainv_diag[p + seq_len(q)], 0)
         if (last_iter) {
-          se_B[, gi] <- sqrt(pmax(res$Ainv_diag[1:p], 0))
-          se_U[, gi] <- sqrt(pmax(res$Ainv_diag[(p+1):(p+q)], 0))
+          se_B[, gi] <- sqrt(pmax(res$Ainv_diag[seq_len(p)], 0))
+          se_U[, gi] <- sqrt(pmax(res$Ainv_diag[p + seq_len(q)], 0))
         }
       }
       rm(per_gene_chk, z_chk, w_chk, lam_chk)
@@ -3085,8 +3085,9 @@ mvpql_pair_score <- function(shrunken_long = NULL, fit = NULL, df, vars,
           }
           lopo_mean <- mean(lopo_scores, na.rm = TRUE)
           lopo_sd   <- stats::sd(lopo_scores, na.rm = TRUE)
-          lopo_min  <- suppressWarnings(min(lopo_scores, na.rm = TRUE))
-          lopo_max  <- suppressWarnings(max(lopo_scores, na.rm = TRUE))
+          have_lopo <- any(is.finite(lopo_scores))
+          lopo_min  <- if (have_lopo) min(lopo_scores, na.rm = TRUE) else NA_real_
+          lopo_max  <- if (have_lopo) max(lopo_scores, na.rm = TRUE) else NA_real_
           worst_pi  <- which.min(lopo_scores)
           worst_pat <- if (length(worst_pi)) as.character(patients[pats_in_c[worst_pi]]) else NA_character_
           worst_delta <- (num_mean * var_factor_full[ti]) - lopo_min

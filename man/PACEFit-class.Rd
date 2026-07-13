@@ -47,5 +47,5 @@ so that the downstream stages (\code{\link[=paceShrink]{paceShrink()}}, \code{\l
 \examples{
 fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
 fit
-cellTypes <- fit@cellTypes
+neighbourSlopes(fit)
 }

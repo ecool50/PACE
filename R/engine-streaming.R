@@ -396,7 +396,7 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
         U[, gi]      <- res$u
         re_var[, gi] <- pmax(res$Ainv_diag[(p + 1):(p + q)], 0)
         if (last_iter) {
-          se_B[, gi] <- sqrt(pmax(res$Ainv_diag[1:p], 0))
+          se_B[, gi] <- sqrt(pmax(res$Ainv_diag[seq_len(p)], 0))
           se_U[, gi] <- sqrt(pmax(res$Ainv_diag[(p + 1):(p + q)], 0))
         }
       }
