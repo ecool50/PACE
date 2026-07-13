@@ -25,3 +25,8 @@ Ranks the genes mediating each focal-neighbour relationship by driver score,
 populating \code{\link[=topDrivers]{topDrivers()}}. Requires \code{\link[=paceShrink]{paceShrink()}} and \code{\link[=paceDecompose]{paceDecompose()}} to
 have run first.
 }
+\examples{
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+fit <- paceDrivers(fit)
+names(topDrivers(fit))
+}

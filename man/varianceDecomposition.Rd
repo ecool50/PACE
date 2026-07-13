@@ -27,5 +27,6 @@ contamination, residual; and a responder spatial block for condition cohorts)
 is returned; set \code{which = "blocks"} for the underlying link-scale block tables.
 }
 \examples{
-\dontrun{ varianceDecomposition(fit) }
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+head(varianceDecomposition(fit))
 }

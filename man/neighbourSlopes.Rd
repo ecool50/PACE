@@ -23,5 +23,6 @@ their local false sign rate (lfsr). For condition cohorts the responder
 interaction terms are included.
 }
 \examples{
-\dontrun{ neighbourSlopes(fit) }
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+head(neighbourSlopes(fit))
 }

@@ -21,3 +21,8 @@ The \code{PACEFit} with the shrunken neighbour slopes added.
 Stabilises the fitted per-(gene, focal, neighbour) proximity slopes with
 multivariate adaptive shrinkage, populating \code{\link[=neighbourSlopes]{neighbourSlopes()}}.
 }
+\examples{
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+fit <- paceShrink(fit)
+head(neighbourSlopes(fit))
+}

@@ -25,5 +25,6 @@ neighbour, computed as the focal's spatial share split across neighbours by the
 off-diagonal-renormalised Pratt attribution.
 }
 \examples{
-\dontrun{ plotPairHeatmap(fit); plotPairHeatmap(fit, block = "responder") }
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+plotPairHeatmap(fit)
 }

@@ -304,7 +304,8 @@ make_pair_composite <- function(focus_focal, focus_neighbour, mv, sf = NULL, n_t
 #' @param title Plot title.
 #' @return A `patchwork` / `ggplot` object.
 #' @examples
-#' \dontrun{ plotDecomposition(fit) }
+#' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' plotDecomposition(fit)
 #' @export
 plotDecomposition <- function(object, title = "Per-focal decomposition") {
   stopifnot(methods::is(object, "PACEFit"))
@@ -356,7 +357,8 @@ plotDecomposition <- function(object, title = "Per-focal decomposition") {
 #' @return A data frame with columns `focal`, `neighbour`, and `val` (spatial %
 #'   of the focal type's total variance).
 #' @examples
-#' \dontrun{ pairVariance(fit) }
+#' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' head(pairVariance(fit))
 #' @rdname pairVariance
 #' @export
 setMethod("pairVariance", "PACEFit",
@@ -404,7 +406,8 @@ setMethod("pairVariance", "PACEFit",
 #' @param title Plot title; a sensible default is chosen per `block`.
 #' @return A `ggplot` object.
 #' @examples
-#' \dontrun{ plotPairHeatmap(fit); plotPairHeatmap(fit, block = "responder") }
+#' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' plotPairHeatmap(fit)
 #' @export
 plotPairHeatmap <- function(object, block = c("spatial", "responder"), title = NULL) {
   stopifnot(methods::is(object, "PACEFit"))
@@ -455,7 +458,8 @@ plotPairHeatmap <- function(object, block = c("spatial", "responder"), title = N
 #' @param panels One of `"both"`, `"mcsd"`, or `"gene"`.
 #' @return A `patchwork` / `ggplot` object.
 #' @examples
-#' \dontrun{ plotDrivers(fit, "Macrophage", "Tumour") }
+#' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' plotDrivers(fit, "Macrophage", "Tumour")
 #' @export
 plotDrivers <- function(object, focal, neighbour, n_top = 5,
                         panels = c("both", "mcsd", "gene")) {
@@ -485,7 +489,11 @@ plotDrivers <- function(object, focal, neighbour, n_top = 5,
 #' @param assay_name Counts assay name (default `"counts"`).
 #' @return A `ggplot` object.
 #' @examples
-#' \dontrun{ plotProximity(fit, spe, c("MRC1", "APOC1"), "Macrophage", "Tumour") }
+#' spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+#' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' g <- head(subset(neighbourSlopes(fit),
+#'                   focal == "Macrophage" & neighbour == "Tumour")$gene, 2)
+#' plotProximity(fit, spe, g, "Macrophage", "Tumour")
 #' @importFrom dbscan frNN
 #' @export
 plotProximity <- function(object, spe, genes, focal, neighbour,

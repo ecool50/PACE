@@ -36,3 +36,8 @@ biological kernel \code{K_bio} (used for the proximity coefficients) and the
 short-range exponential technical kernel \code{K_tech}. Useful for inspecting the
 neighbourhood before or independently of a fit.
 }
+\examples{
+spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+nb <- buildNeighbourhood(spe, celltype_col = "cellType")
+dim(nb$K_bio)
+}

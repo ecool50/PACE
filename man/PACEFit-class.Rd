@@ -44,3 +44,8 @@ so that the downstream stages (\code{\link[=paceShrink]{paceShrink()}}, \code{\l
 \code{\link[=paceDrivers]{paceDrivers()}}) can run without refitting.}
 }}
 
+\examples{
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+fit
+cellTypes <- fit@cellTypes
+}

@@ -20,5 +20,6 @@ of the cell-type identity, spatial cell state, and contamination (spillover)
 components, with a zoomed grouped bar of the two small spatial components.
 }
 \examples{
-\dontrun{ plotDecomposition(fit) }
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+plotDecomposition(fit)
 }

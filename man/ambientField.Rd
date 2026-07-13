@@ -37,3 +37,8 @@ Returns the sparse cross-cell-type ambient weight matrix that defines the
 per-cell contamination term (the short-range technical field a cell receives
 from its heterotypic neighbours).
 }
+\examples{
+spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+af <- ambientField(spe, celltype_col = "cellType")
+names(af)
+}

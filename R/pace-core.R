@@ -268,10 +268,11 @@ pace_ambient_field <- function(coords, Y, celltype, image, types, h_tech,
   W <- Matrix::sparseMatrix(i = ii, j = jj, x = ww, dims = c(n, n))
   W <- methods::as(W, "CsparseMatrix")
 
-  ## cheap correctness gate: W %*% Y == dense E_tech on a few random genes
+  ## cheap correctness gate: W %*% Y == dense E_tech on a few spot-check genes.
+  ## Genes are chosen deterministically (evenly spaced) so the check does not
+  ## touch the global RNG state.
   if (validate) {
-    set.seed(1)
-    spot_g <- sort(sample(ncol(Y), min(5L, ncol(Y))))
+    spot_g <- unique(round(seq(1, ncol(Y), length.out = min(5L, ncol(Y)))))
     E_spot <- matrix(0, n, length(spot_g))
     for (si in seq_along(by_image)) {
       rows <- by_image[[si]]

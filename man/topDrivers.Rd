@@ -22,5 +22,6 @@ Returns the driver-score tables ranking the genes that mediate each
 focal-neighbour spatial relationship.
 }
 \examples{
-\dontrun{ topDrivers(fit) }
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+names(topDrivers(fit))
 }

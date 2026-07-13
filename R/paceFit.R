@@ -89,14 +89,15 @@
 #'   `data_informed_tau`, `tau_shrinkage`, ...).
 #' @return A [PACEFit] with the fitted model (reporting layers empty).
 #' @examples
-#' \dontrun{
-#' fit <- paceModel(spe, celltype_col = "cellType") |>
-#'          paceShrink() |> paceDecompose(spe) |> paceDrivers()
+#' spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+#' \donttest{
+#' fit <- paceModel(spe, celltype_col = "cellType", verbose = FALSE)
+#' fit
 #' }
 #' @rdname paceModel
 #' @importFrom SpatialExperiment spatialCoords
 #' @importFrom SummarizedExperiment assay assayNames colData
-#' @importFrom Matrix rowSums
+#' @importFrom Matrix rowSums colSums Matrix sparseMatrix bdiag
 #' @export
 setMethod(
   "paceModel", "SpatialExperiment",
@@ -146,6 +147,10 @@ setMethod(
 #' @param object A [PACEFit] from [paceModel()].
 #' @param ... Unused.
 #' @return The `PACEFit` with the shrunken neighbour slopes added.
+#' @examples
+#' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' fit <- paceShrink(fit)
+#' head(neighbourSlopes(fit))
 #' @rdname paceShrink
 #' @export
 setMethod("paceShrink", "PACEFit", function(object, ...) {
@@ -170,6 +175,11 @@ setMethod("paceShrink", "PACEFit", function(object, ...) {
 #' @param spe The [SpatialExperiment::SpatialExperiment] that was fitted.
 #' @param ... Unused.
 #' @return The `PACEFit` with the variance decomposition added.
+#' @examples
+#' spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+#' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' fit <- paceDecompose(fit, spe)
+#' head(varianceDecomposition(fit))
 #' @rdname paceDecompose
 #' @export
 setMethod("paceDecompose", "PACEFit", function(object, spe, ...) {
@@ -203,6 +213,10 @@ setMethod("paceDecompose", "PACEFit", function(object, spe, ...) {
 #'   all pairs.
 #' @param ... Unused.
 #' @return The `PACEFit` with the driver tables added.
+#' @examples
+#' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' fit <- paceDrivers(fit)
+#' names(topDrivers(fit))
 #' @rdname paceDrivers
 #' @export
 setMethod("paceDrivers", "PACEFit", function(object, pairs = NULL, ...) {
@@ -242,9 +256,10 @@ setMethod("paceDrivers", "PACEFit", function(object, pairs = NULL, ...) {
 #'   `contamination`, `dispersion`, ...).
 #' @return A fully populated [PACEFit].
 #' @examples
-#' \dontrun{
-#' fit <- paceFit(spe, celltype_col = "cellType")
-#' neighbourSlopes(fit)
+#' spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+#' \donttest{
+#' fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
+#' head(neighbourSlopes(fit))
 #' }
 #' @rdname paceFit
 #' @export
@@ -272,6 +287,10 @@ setMethod("paceFit", "SpatialExperiment", function(object, ..., pairs = NULL) {
 #' @param eps Truncation radius; defaults to `3 * h_bio`.
 #' @param ... Passed to the kernel builder.
 #' @return A list with `K_bio` and `K_tech` (cells x cell types).
+#' @examples
+#' spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+#' nb <- buildNeighbourhood(spe, celltype_col = "cellType")
+#' dim(nb$K_bio)
 #' @rdname buildNeighbourhood
 #' @export
 setMethod("buildNeighbourhood", "SpatialExperiment",
@@ -297,6 +316,10 @@ setMethod("buildNeighbourhood", "SpatialExperiment",
 #' @param assay_name Counts assay name (default `"counts"`).
 #' @param ... Passed to the ambient-field builder.
 #' @return The ambient-field object (sparse weight matrix and image index).
+#' @examples
+#' spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+#' af <- ambientField(spe, celltype_col = "cellType")
+#' names(af)
 #' @rdname ambientField
 #' @export
 setMethod("ambientField", "SpatialExperiment",

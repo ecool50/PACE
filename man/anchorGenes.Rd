@@ -29,5 +29,7 @@ expression in their owning cell type. This is the source of the manuscript's
 supplementary anchor-gene tables.
 }
 \examples{
-\dontrun{ anchorGenes(fit, spe) }
+spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+anchorGenes(fit, spe)
 }

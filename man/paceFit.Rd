@@ -27,8 +27,9 @@ step-by-step control (inspecting the fitted model, re-running the downstream
 without refitting), call those stages directly.
 }
 \examples{
-\dontrun{
-fit <- paceFit(spe, celltype_col = "cellType")
-neighbourSlopes(fit)
+spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+\donttest{
+fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
+head(neighbourSlopes(fit))
 }
 }

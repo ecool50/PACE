@@ -30,5 +30,6 @@ driver score (MCSD) for a focal-neighbour pair, alongside their per-gene
 single-frame variance decomposition.
 }
 \examples{
-\dontrun{ plotDrivers(fit, "Macrophage", "Tumour") }
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+plotDrivers(fit, "Macrophage", "Tumour")
 }

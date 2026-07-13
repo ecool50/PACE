@@ -77,8 +77,9 @@ the fitted model; the reporting layers are added by \code{\link[=paceShrink]{pac
 \code{\link[=paceDecompose]{paceDecompose()}}, and \code{\link[=paceDrivers]{paceDrivers()}} (or all at once by \code{\link[=paceFit]{paceFit()}}).
 }
 \examples{
-\dontrun{
-fit <- paceModel(spe, celltype_col = "cellType") |>
-         paceShrink() |> paceDecompose(spe) |> paceDrivers()
+spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+\donttest{
+fit <- paceModel(spe, celltype_col = "cellType", verbose = FALSE)
+fit
 }
 }

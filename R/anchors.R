@@ -15,7 +15,9 @@
 #' @return A data frame with one row per cell type: `cellType`, `n_anchors`
 #'   (total anchors), and `top_anchors` (the `top_n` strongest, comma-separated).
 #' @examples
-#' \dontrun{ anchorGenes(fit, spe) }
+#' spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+#' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' anchorGenes(fit, spe)
 #' @export
 anchorGenes <- function(object, spe, top_n = 10L, assay_name = "counts") {
   stopifnot(methods::is(object, "PACEFit"))

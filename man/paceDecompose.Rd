@@ -25,3 +25,9 @@ state, contamination, and residual (plus a responder block for condition
 cohorts), populating \code{\link[=varianceDecomposition]{varianceDecomposition()}}. Needs the fitted object plus
 the same \code{SpatialExperiment} used for \code{\link[=paceModel]{paceModel()}} (to read the counts).
 }
+\examples{
+spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+fit <- paceDecompose(fit, spe)
+head(varianceDecomposition(fit))
+}

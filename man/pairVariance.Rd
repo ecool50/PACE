@@ -29,5 +29,6 @@ by a normalised (off-diagonal-renormalised) Pratt attribution. Off-diagonal
 pairs only.
 }
 \examples{
-\dontrun{ pairVariance(fit) }
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+head(pairVariance(fit))
 }

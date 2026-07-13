@@ -8,7 +8,8 @@
 #' @param ... Unused.
 #' @return A data frame of shrunken slopes.
 #' @examples
-#' \dontrun{ neighbourSlopes(fit) }
+#' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' head(neighbourSlopes(fit))
 #' @rdname neighbourSlopes
 #' @export
 setMethod("neighbourSlopes", "PACEFit", function(object, ...) {
@@ -28,7 +29,8 @@ setMethod("neighbourSlopes", "PACEFit", function(object, ...) {
 #' @param ... Unused.
 #' @return A data frame (for `"perGene"`) or a list (for `"blocks"`).
 #' @examples
-#' \dontrun{ varianceDecomposition(fit) }
+#' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' head(varianceDecomposition(fit))
 #' @rdname varianceDecomposition
 #' @export
 setMethod("varianceDecomposition", "PACEFit",
@@ -47,7 +49,8 @@ setMethod("varianceDecomposition", "PACEFit",
 #' @param ... Unused.
 #' @return A list of per-pair driver tables.
 #' @examples
-#' \dontrun{ topDrivers(fit) }
+#' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' names(topDrivers(fit))
 #' @rdname topDrivers
 #' @export
 setMethod("topDrivers", "PACEFit", function(object, ...) {

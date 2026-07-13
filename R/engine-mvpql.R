@@ -25,7 +25,6 @@
 ##     information.
 ## ============================================================
 
-suppressPackageStartupMessages({ library(Matrix) })
 
 # Build the random-effect design matrix Z_random for `(1 + vars || celltype)`
 #
