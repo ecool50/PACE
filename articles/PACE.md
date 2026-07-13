@@ -122,15 +122,15 @@ fit <- paceFit(spe,
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
+#>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.16 seconds.
+#>  - Model fitting took 0.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.09 seconds.
+#>  - Likelihood calculations took 0.10 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.23 seconds.
+#>  - Model fitting took 0.22 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
@@ -140,35 +140,35 @@ fit <- paceFit(spe,
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
+#>  - Likelihood calculations took 0.10 seconds.
 #>  - Fitting model with 391 mixture components.
 #>  - Model fitting took 0.11 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 430 likelihood matrix.
-#>  - Likelihood calculations took 0.09 seconds.
+#>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 0.16 seconds.
+#>  - Model fitting took 0.13 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.14 seconds.
+#>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 628 mixture components.
 #>  - Model fitting took 0.18 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
+#>  - Likelihood calculations took 0.10 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.37 seconds.
+#>  - Model fitting took 0.33 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.13 seconds.
+#>  - Likelihood calculations took 0.15 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.74 seconds.
+#>  - Model fitting took 0.66 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 fit
 #> class: PACEFit
 #> cell types (8): B_Cell, Dendritic_Cell, Endothelial, Macrophage, Myoepithelial, Stromal, T_Cell, Tumour
@@ -265,8 +265,8 @@ neighbourSlopes(fit) |>
          gene %in% c("MRC1", "APOC1")) |>
   select(gene, estimate_shrunk, lfsr)
 #>    gene estimate_shrunk         lfsr
-#> 1 APOC1       0.1299349 2.092012e-16
-#> 2  MRC1      -0.1499912 1.365574e-14
+#> 1 APOC1       0.1299349 2.092082e-16
+#> 2  MRC1      -0.1499909 1.354472e-14
 ```
 
 ## Visualising the proximity effect
