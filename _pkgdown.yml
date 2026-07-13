@@ -6,3 +6,12 @@ navbar:
   structure:
     left:  [intro, reference, articles]
     right: [github]
+home:
+  sidebar:
+    structure: [links, license, community, citation, authors, dev]
+    components:
+      links:
+        title: Links
+        text: |
+          - [Source code](https://github.com/ecool50/PACE)
+          - [Report a bug](https://github.com/ecool50/PACE/issues)
