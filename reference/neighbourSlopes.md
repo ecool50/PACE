@@ -31,5 +31,20 @@ A data frame of shrunken slopes.
 ## Examples
 
 ``` r
-if (FALSE)  neighbourSlopes(fit)  # \dontrun{}
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+head(neighbourSlopes(fit))
+#>     gene  focal neighbour   term      estimate   std.error estimate_shrunk
+#> 1 ABCC11 B_Cell    B_Cell B_Cell -1.968614e-05 0.001376136               0
+#> 2  ACTA2 B_Cell    B_Cell B_Cell -1.011682e-04 0.004245694               0
+#> 3  ACTG2 B_Cell    B_Cell B_Cell  1.420043e-03 0.005170530               0
+#> 4  ADAM9 B_Cell    B_Cell B_Cell  3.256417e-05 0.003072893               0
+#> 5 ADGRE5 B_Cell    B_Cell B_Cell  8.103512e-04 0.005304599               0
+#> 6  ADH1B B_Cell    B_Cell B_Cell -3.150005e-05 0.002131909               0
+#>   sd_shrunk lfsr
+#> 1         0    1
+#> 2         0    1
+#> 3         0    1
+#> 4         0    1
+#> 5         0    1
+#> 6         0    1
 ```

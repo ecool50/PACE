@@ -40,5 +40,15 @@ the focal type's total variance).
 ## Examples
 
 ``` r
-if (FALSE)  pairVariance(fit)  # \dontrun{}
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+head(pairVariance(fit))
+#> # A tibble: 6 × 3
+#>   focal  neighbour          val
+#>   <chr>  <chr>            <dbl>
+#> 1 B_Cell Dendritic_Cell 0      
+#> 2 B_Cell Endothelial    0      
+#> 3 B_Cell Macrophage     0.00619
+#> 4 B_Cell Myoepithelial  0      
+#> 5 B_Cell Stromal        0      
+#> 6 B_Cell T_Cell         2.72   
 ```

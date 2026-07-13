@@ -37,3 +37,13 @@ paceDrivers(object, pairs = NULL, ...)
 ## Value
 
 The `PACEFit` with the driver tables added.
+
+## Examples
+
+``` r
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+fit <- paceDrivers(fit)
+#> Warning: topDrivers could not be computed: 'x' must be an array of at least two dimensions
+names(topDrivers(fit))
+#> NULL
+```

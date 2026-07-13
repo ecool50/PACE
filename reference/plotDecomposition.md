@@ -29,5 +29,6 @@ A `patchwork` / `ggplot` object.
 ## Examples
 
 ``` r
-if (FALSE)  plotDecomposition(fit)  # \dontrun{}
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+plotDecomposition(fit)
 ```

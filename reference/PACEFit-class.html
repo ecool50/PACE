@@ -100,6 +100,18 @@ so that the downstream stages (<code><a href="paceShrink.html">paceShrink()</a><
 
 </dl></div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"pace_fit_example.rds"</span>, package <span class="op">=</span> <span class="st">"PACE"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fit</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> class: PACEFit</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell types (8): B_Cell, Dendritic_Cell, Endothelial, Macrophage, Myoepithelial, Stromal, T_Cell, Tumour</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> kernels: h_bio = 30 um, h_tech = 5 um | contamination: percell_hc; dispersion: nb1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> pipeline: model -&gt; shrink -&gt; decompose -&gt; drivers</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   neighbour slopes: 17792 rows (63 at lfsr &lt; 0.05)</span>
+<span class="r-in"><span><span class="va">cellTypes</span> <span class="op">&lt;-</span> <span class="va">fit</span><span class="op">@</span><span class="va">cellTypes</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

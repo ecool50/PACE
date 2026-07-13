@@ -61,3 +61,16 @@ show(object)
   [`paceDecompose()`](https://ecool50.github.io/PACE/reference/paceDecompose.md),
   [`paceDrivers()`](https://ecool50.github.io/PACE/reference/paceDrivers.md))
   can run without refitting.
+
+## Examples
+
+``` r
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+fit
+#> class: PACEFit
+#> cell types (8): B_Cell, Dendritic_Cell, Endothelial, Macrophage, Myoepithelial, Stromal, T_Cell, Tumour
+#> kernels: h_bio = 30 um, h_tech = 5 um | contamination: percell_hc; dispersion: nb1
+#> pipeline: model -> shrink -> decompose -> drivers
+#>   neighbour slopes: 17792 rows (63 at lfsr < 0.05)
+cellTypes <- fit@cellTypes
+```

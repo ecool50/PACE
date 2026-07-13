@@ -35,6 +35,6 @@ A `ggplot` object.
 ## Examples
 
 ``` r
-if (FALSE)  plotPairHeatmap(fit); plotPairHeatmap(fit, block = "responder")  # \dontrun{}
-#> Error: object 'fit' not found
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+plotPairHeatmap(fit)
 ```

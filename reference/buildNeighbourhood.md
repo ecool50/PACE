@@ -47,3 +47,12 @@ buildNeighbourhood(
 ## Value
 
 A list with `K_bio` and `K_tech` (cells x cell types).
+
+## Examples
+
+``` r
+spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+nb <- buildNeighbourhood(spe, celltype_col = "cellType")
+dim(nb$K_bio)
+#> [1] 7898    8
+```

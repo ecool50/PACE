@@ -117,8 +117,13 @@ with the fitted model (reporting layers empty).
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-fit <- paceModel(spe, celltype_col = "cellType") |>
-         paceShrink() |> paceDecompose(spe) |> paceDrivers()
-} # }
+spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+# \donttest{
+fit <- paceModel(spe, celltype_col = "cellType", verbose = FALSE)
+fit
+#> class: PACEFit
+#> cell types (8): B_Cell, Dendritic_Cell, Endothelial, Macrophage, Myoepithelial, Stromal, T_Cell, Tumour
+#> kernels: h_bio = 30 um, h_tech = 5 um | contamination: percell_hc; dispersion: nb1
+#> pipeline: model
+# }
 ```

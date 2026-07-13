@@ -68,5 +68,9 @@ A `ggplot` object.
 ## Examples
 
 ``` r
-if (FALSE)  plotProximity(fit, spe, c("MRC1", "APOC1"), "Macrophage", "Tumour")  # \dontrun{}
+spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+g <- head(subset(neighbourSlopes(fit),
+                  focal == "Macrophage" & neighbour == "Tumour")$gene, 2)
+plotProximity(fit, spe, g, "Macrophage", "Tumour")
 ```

@@ -42,5 +42,6 @@ A `patchwork` / `ggplot` object.
 ## Examples
 
 ``` r
-if (FALSE)  plotDrivers(fit, "Macrophage", "Tumour")  # \dontrun{}
+fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+plotDrivers(fit, "Macrophage", "Tumour")
 ```

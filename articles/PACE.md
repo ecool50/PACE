@@ -112,7 +112,7 @@ fit <- paceFit(spe,
 #>  - Computing 278 x 313 likelihood matrix.
 #>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.11 seconds.
+#>  - Model fitting took 0.10 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
@@ -122,7 +122,7 @@ fit <- paceFit(spe,
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.09 seconds.
+#>  - Likelihood calculations took 0.10 seconds.
 #>  - Fitting model with 404 mixture components.
 #>  - Model fitting took 0.15 seconds.
 #>  - Computing posterior matrices.
@@ -154,7 +154,7 @@ fit <- paceFit(spe,
 #>  - Computing 278 x 628 likelihood matrix.
 #>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.17 seconds.
+#>  - Model fitting took 0.19 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
@@ -162,13 +162,13 @@ fit <- paceFit(spe,
 #>  - Fitting model with 404 mixture components.
 #>  - Model fitting took 0.34 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
 #>  - Likelihood calculations took 0.15 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.67 seconds.
+#>  - Model fitting took 0.68 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
+#>  - Computation allocated took 0.00 seconds.
 fit
 #> class: PACEFit
 #> cell types (8): B_Cell, Dendritic_Cell, Endothelial, Macrophage, Myoepithelial, Stromal, T_Cell, Tumour
@@ -357,6 +357,6 @@ sessionInfo()
 #> [61] R6_2.6.1            mashr_0.2.79        textshaping_1.0.5  
 #> [64] evaluate_1.0.5      lattice_0.22-9      SQUAREM_2026.1     
 #> [67] ashr_2.2-63         bslib_0.11.0        Rcpp_1.1.2         
-#> [70] SparseArray_1.12.2  xfun_0.59           fs_2.1.0           
+#> [70] SparseArray_1.12.2  xfun_0.60           fs_2.1.0           
 #> [73] pkgconfig_2.0.3
 ```
