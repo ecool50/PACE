@@ -23,7 +23,7 @@
 #' @import ggplot2
 #' @import tibble
 #' @importFrom tidyr pivot_wider pivot_longer
-#' @importFrom mashr mash mash_set_data cov_canonical cov_ed cov_pca get_significant_results
+#' @importFrom mashr mash mash_set_data cov_canonical cov_ed cov_pca get_significant_results estimate_null_correlation_simple
 #' @importFrom ashr get_lfsr get_pm get_psd
 #' @importFrom stats var sd median quantile pnorm qnorm optimize coef predict
 #'   as.formula model.matrix setNames rnorm

@@ -29,7 +29,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Elijah Willie \email{ewillie0004@gmail.com}
+\strong{Maintainer}: Elijah Willie \email{ewil3501@uni.sydney.edu.au} (\href{https://orcid.org/0000-0002-5773-3649}{ORCID})
 
 Authors:
 \itemize{

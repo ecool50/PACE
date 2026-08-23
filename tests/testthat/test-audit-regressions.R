@@ -96,3 +96,38 @@ test_that("a converged fit carries no non-finite coefficients and reports the co
   expect_true(all(is.finite(eng$se_B)))
   expect_true(all(is.finite(eng$se_U)))
 })
+
+test_that("the null correlation survives conditions that were zeroed by the sparse-pair drop", {
+  set.seed(3)
+  n <- 300L
+  # three live conditions with correlated errors, plus two conditions whose
+  # slopes were zeroed by the kernel drop: their z columns are constant, and
+  # cov2cor() on the full matrix would return NaN for every entry.
+  live <- matrix(rnorm(n * 3), n, 3)
+  live[, 2] <- 0.6 * live[, 1] + 0.8 * live[, 2]
+  Bhat <- cbind(live, 0, 0)
+  Shat <- matrix(1, n, 5)
+  colnames(Bhat) <- colnames(Shat) <- c("A", "B", "C", "D", "E")
+
+  V <- PACE:::.null_correlation(Bhat, Shat, "test")
+
+  expect_false(is.null(V))
+  expect_true(all(is.finite(V)))
+  expect_equal(dim(V), c(5L, 5L))
+  expect_equal(diag(V), setNames(rep(1, 5), colnames(Bhat)))
+  # the zeroed conditions carry no estimable correlation and stay independent
+  expect_equal(unname(V["D", ]), c(0, 0, 0, 1, 0))
+  expect_equal(unname(V["E", ]), c(0, 0, 0, 0, 1))
+  # the live block recovers the planted correlation and stays usable by mash
+  expect_gt(V["A", "B"], 0.3)
+  expect_gt(min(eigen(V, symmetric = TRUE, only.values = TRUE)$values), 0)
+})
+
+test_that("the null correlation falls back to independence when nothing varies", {
+  Bhat <- matrix(0, 50L, 3L)
+  Shat <- matrix(1, 50L, 3L)
+  colnames(Bhat) <- colnames(Shat) <- c("A", "B", "C")
+  expect_message(V <- PACE:::.null_correlation(Bhat, Shat, "test"),
+                 "fewer than two varying conditions")
+  expect_null(V)
+})

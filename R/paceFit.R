@@ -155,7 +155,10 @@ setMethod(
 #' multivariate adaptive shrinkage, populating [neighbourSlopes()].
 #'
 #' @param object A [PACEFit] from [paceModel()].
-#' @param ... Unused.
+#' @param ... Further arguments passed to the shrinkage step, notably
+#'   `null_correlation` (default `TRUE`: estimate the correlation between focal
+#'   cell types under the null and pass it to mash as `V`; `FALSE` treats them
+#'   as independent) and `data_driven`.
 #' @return The `PACEFit` with the shrunken neighbour slopes added.
 #' @examples
 #' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
@@ -165,7 +168,7 @@ setMethod(
 #' @export
 setMethod("paceShrink", "PACEFit", function(object, ...) {
   slopes <- pace_shrink(object@fit, object@cellTypes,
-                        resp_term = object@params$resp_term)
+                        resp_term = object@params$resp_term, ...)
   object@neighbourSlopes <- as.data.frame(slopes)
   object
 })

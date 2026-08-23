@@ -52,6 +52,25 @@ precision guard disabled the refit is identical to 0.99.0 (`max|diff| = 0`).
 * The per-iteration largest variance component is recorded in the fit history and
   printed alongside the block medians, since a runaway confined to one term does
   not move a median taken over the whole block.
+* mash is now given the correlation between conditions under the null. The
+  focal cell types are conditions estimated in the same per-gene solve, so
+  their errors are correlated, and the previous default of `V = I` treated them
+  as independent and mis-calibrated the local false sign rates. The estimate is
+  taken over the conditions that vary: sparse focal-neighbour pairs are zeroed
+  by the kernel drop without their column being removed, so those conditions
+  have a constant z column, and `cov2cor()` on the full matrix returns `NaN`
+  for every entry. Degenerate conditions are left uncorrelated, which is the
+  correct limit, and the estimate falls back to independence when fewer than
+  two conditions vary. Set `null_correlation = FALSE` in `paceShrink()` to
+  restore the old behaviour.
+
+  On the shipped breast cancer subset the estimated correlations reach 0.20 in
+  absolute value, the shrunken slopes correlate at 0.9954 with the independent
+  fit, and one call changes net at `lfsr < 0.05` (60 to 61: CD163 in macrophages
+  near tumour and PECAM1 in B cells near T cells gained, ERBB2 in tumour near
+  T cells lost, all three within 0.02 of the threshold). The 1,294 nominal sign
+  changes are numerical noise: none is significant in either pass and their
+  median absolute effect is 4e-21.
 * Leave-one-patient-out variance decomposition now subsets the contamination
   offset matrix alongside `mu`. Leaving it at full length offset every cell
   after the dropped patient's first row, so each leave-one-out row was wrong
