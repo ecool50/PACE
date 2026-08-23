@@ -42,6 +42,14 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
                                      sample_weight    = NULL,
                                      n_threads        = NULL,
                                      interior_precision = 1L,
+## Upper bound on the variance components. Every tau write is a pmax
+                                     ## against a floor; without a ceiling a column identified only by
+                                     ## the ridge climbs by mean(u^2) per iteration. 100 sits ~6-30x above
+                                     ## the largest component seen on healthy cohorts (BC 12.8-17.3,
+                                     ## Mel 3.2) and just below var(z) ~ 109, the variance of the working
+                                     ## response the components decompose. A binding cap is reported: it
+                                     ## means the term is not identified by the data.
+                                     tau_max          = 100,
                                      data_informed_W  = NULL,
                                      ## ---- Streaming ambient carrier (REPLACES dense ambient_mat) ----
                                      ## ambient_W: sparse n x n dgCMatrix of E^tech weights (see header).
@@ -200,7 +208,10 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
 
   hist <- list(tau_blocks = list(), alpha = list(),
                rel_delta = numeric(),        ## L-inf max (diagnostic only)
-               rel_delta_mean = numeric())   ## mean over cell-genes (drives early stop)
+               rel_delta_mean = numeric(),   ## mean over cell-genes (drives early stop)
+               n_nan_genes = integer(),      ## genes left non-finite by the solver
+               n_nonfinite = numeric(),     ## cell-genes hidden by the finite mask
+               tau_max_seen = numeric())    ## largest variance component per iteration
   converged <- FALSE
 
   .em_tau_blocks <- function(U_, V_) {
@@ -275,16 +286,20 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
     ## jittering cells and never settles, so the max-based stop would never fire
     ## even when the bulk has converged. We never stop before min_iter.
     ## early_stop_tol = 0 disables (rel_delta_mean is always >= 0).
+    ## A fit that has lost genes must not stop early and report success, so the
+    ## previous iteration's non-finite gene count gates the early stop too.
     stop_now <- (it > min_iter && early_stop_tol > 0 &&
                  length(hist$rel_delta_mean) >= 1L &&
                  is.finite(hist$rel_delta_mean[it - 1L]) &&
-                 hist$rel_delta_mean[it - 1L] < early_stop_tol)
+                 hist$rel_delta_mean[it - 1L] < early_stop_tol &&
+                 isTRUE(hist$n_nan_genes[it - 1L] == 0L))
     last_iter <- (it == n_iter) || stop_now
     lam_diag_mat <- 1 / tau_g_array
 
     ## rho + convergence accumulators (populated by Pass 1 if fuse_rho, else Pass 2)
     num <- numeric(n); den <- numeric(n)
-    rel_delta <- 0; rd_n <- 0; rd_sum <- 0
+    rel_delta <- 0; rd_n <- 0; rd_sum <- 0; rd_nonfinite <- 0
+    nan_genes_iter <- integer(0)
     rd_g01 <- 0; rd_g05 <- 0; rd_g1 <- 0; rd_g10 <- 0
     RD_DIAG <- nzchar(Sys.getenv("R_RD_DIAG"))
 
@@ -351,6 +366,10 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
       rm(eta_chk, mu_bio_chk, mu_chk)
       if (!is.null(sample_weight)) w_chk <- w_chk * sample_weight
       lam_chk <- lam_diag_mat[, gene_idx_chk, drop = FALSE]
+      ## Keep the ridge out of single precision: below eps_float * sum(w) it is
+      ## quantised away, at a threshold that falls as 1/n.
+      if (iter_precision != 0L && .ridge_needs_double(lam_chk, w_chk))
+        iter_precision <- 0L
 
       per_gene_chk <- .solve_genes_chunk_multiblock(
         X_fixed, re$X_terms_list, re$cell_grp_list, re$cells_by_grp_list,
@@ -373,8 +392,9 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
       ## verified NaN-free under stress (lam up to 1e8, alpha up to 50). This keeps
       ## ALL genes valid -- no gene loses its BLUP -- and is a no-op when the float
       ## solve already returned finite values (the canonical case).
-      bad_jj <- which(vapply(per_gene_chk, function(r)
+      is_bad <- function(lst) which(vapply(lst, function(r)
         !all(is.finite(r$beta)) || !all(is.finite(r$u)), logical(1)))
+      bad_jj <- is_bad(per_gene_chk)
       if (length(bad_jj) && iter_precision != 0L) {
         if (verbose)
           cat(sprintf("    [nan-guard] it=%d chunk@%d: %d gene(s) NaN in float solve -> re-solving in double\n",
@@ -388,6 +408,17 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
           interior_precision = 0L,
           BPPARAM = BPPARAM)
         for (bi in seq_along(bad_jj)) per_gene_chk[[bad_jj[bi]]] <- redo[[bi]]
+        bad_jj <- is_bad(per_gene_chk)          ## did the repair actually take?
+      }
+      ## Anything still non-finite is unrecoverable and goes into the saved fit,
+      ## so count it and say so on EVERY iteration -- including the last, where
+      ## the interior is already double and the repair above cannot help. This
+      ## silence is what let a fit report converged = TRUE with all-NaN genes.
+      if (length(bad_jj)) {
+        nan_genes_iter <- c(nan_genes_iter, gene_idx_chk[bad_jj])
+        if (verbose)
+          cat(sprintf("    [nan-guard] it=%d chunk@%d: %d gene(s) STILL non-finite after double solve\n",
+                      it, cs, length(bad_jj)))
       }
       for (jj in seq_along(gene_idx_chk)) {
         gi  <- gene_idx_chk[jj]
@@ -446,6 +477,9 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
       fin <- is.finite(rd_chunk)
       rd_n   <- rd_n   + sum(fin)
       rd_sum <- rd_sum + sum(rd_chunk[fin])
+      ## Everything the mask drops is a gene-cell that has gone non-finite;
+      ## counting it is what stops a lossy fit from reporting convergence.
+      rd_nonfinite <- rd_nonfinite + sum(!fin)
       if (RD_DIAG) {       ## tail-fraction counts: diagnostic only
         rd_g01 <- rd_g01 + sum(rd_chunk[fin] > 0.01)
         rd_g05 <- rd_g05 + sum(rd_chunk[fin] > 0.05)
@@ -632,6 +666,11 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
       tau_g_array <- tau_g_array * data_informed_W
       tau_g_array <- pmax(tau_g_array, 1e-8)
     }
+    ## Every tau write is a pmax against a floor; without a ceiling a column
+    ## identified only by the ridge climbs by mean(u^2) per iteration, and the
+    ## inflated posterior variance feeds the next update.
+    tau_g_array <- .clamp_tau(tau_g_array, tau_max, it)
+    hist$tau_max_seen[it] <- max(tau_g_array, na.rm = TRUE)
 
     ## ----- rel_delta convergence diagnostic -----
     ## rel_delta was computed (fused) inside the rho-accumulation loop above,
@@ -644,14 +683,27 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
     hist$alpha[[it]]      <- alpha
     hist$rel_delta[it]    <- rel_delta                               ## L-inf max (diagnostic)
     hist$rel_delta_mean[it] <- if (rd_n > 0) rd_sum / rd_n else rel_delta  ## mean (early-stop metric)
+    nan_genes_iter <- unique(nan_genes_iter)
+    hist$n_nan_genes[it]           <- length(nan_genes_iter)
+    hist$n_nonfinite[it]           <- rd_nonfinite
+    if (length(nan_genes_iter)) {
+      warning(sprintf(
+        "iter %d: %d gene(s) carry non-finite coefficients (%s%s); the fit will not be reported as converged.",
+        it, length(nan_genes_iter),
+        paste(utils::head(colnames(Y)[nan_genes_iter], 5), collapse = ", "),
+        if (length(nan_genes_iter) > 5) ", ..." else ""), call. = FALSE)
+    }
     if (RD_DIAG && rd_n > 0)
       cat(sprintf("  [rd-diag] it=%d  mean=%.4g  max=%.3g  frac>0.01=%.2e  >0.05=%.2e  >0.1=%.2e  >1=%.2e  (N=%.2e)\n",
                   it, rd_sum / rd_n, rel_delta, rd_g01/rd_n, rd_g05/rd_n, rd_g1/rd_n, rd_g10/rd_n, rd_n))
     if (verbose) {
+      ## Report the max as well as the median: a runaway confined to the
+      ## intercept row does not move a median taken over the whole block.
       tau_med <- vapply(tau_blocks, function(m) stats::median(m), numeric(1))
-      cat(sprintf("  [mvpql.streaming] iter %d  rel_delta[mean]=%.3g (max=%.3g)  alpha[med]=%.2f  tau=[%s]  (%.1fs)\n",
+      cat(sprintf("  [mvpql.streaming] iter %d  rel_delta[mean]=%.3g (max=%.3g)  alpha[med]=%.2f  tau=[%s] (max %.3g)  (%.1fs)\n",
                   it, hist$rel_delta_mean[it], rel_delta, median(alpha),
                   paste(sprintf("%.3f", tau_med), collapse = ","),
+                  hist$tau_max_seen[it],
                   as.numeric(difftime(Sys.time(), t_it, units = "secs"))))
     }
     invisible(gc(verbose = FALSE))

@@ -25,11 +25,21 @@
   ## derive the responder term prefix for condition cohorts, and set the 0/1
   ## condition indicator the decomposition and driver scoring require.
   if (!is.null(condition_col)) {
-    if (is.null(resp_term)) {
-      lev <- levels(factor(df[[condition_col]]))
-      resp_term <- paste0("Responder", lev[length(lev)])
+    ## model.matrix names the term paste0(condition_col, level), so both the
+    ## default term and the level it refers to must come from condition_col.
+    ## Hardcoding "Responder" here left .resp_dummy all zeros for any other
+    ## column name, silently zeroing the whole responder block.
+    lev        <- levels(factor(df[[condition_col]]))
+    cond_terms <- paste0(condition_col, lev)
+    if (is.null(resp_term)) resp_term <- cond_terms[length(cond_terms)]
+    hit <- match(resp_term, cond_terms)
+    if (is.na(hit)) {
+      stop(sprintf(
+        "resp_term '%s' does not name a level of condition_col '%s'. Valid terms: %s.",
+        resp_term, condition_col, paste(cond_terms, collapse = ", ")),
+        call. = FALSE)
     }
-    resp_case <- sub("^Responder", "", resp_term)
+    resp_case <- lev[hit]
     df$.resp_dummy <- as.integer(as.character(df[[condition_col]]) == resp_case)
   }
   list(Y = Y, df = df, image_col = image_col, resp_term = resp_term)

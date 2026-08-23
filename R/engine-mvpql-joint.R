@@ -20,6 +20,9 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
                                        sample_weight    = NULL,
                                        n_threads        = NULL,
                                        interior_precision = 1L,
+                                       ## Upper bound on the variance components; a binding cap means the
+                                       ## term is identified only by the ridge. See fit_pace_mvpql_streaming.
+                                       tau_max          = 100,
                                        data_informed_W  = NULL,        ## OPTIONAL q × G multiplicative weight matrix for tau_g_array.  When supplied (via R_DATA_INFORMED_TAU=1 in the builder), shrinks the prior variance for (focal, neighbour, gene) random-slope columns whose data support is weak (low detection rate × low K-variance).  See .compute_data_informed_weights().
                                        ## Ambient field carriers for the per-cell contamination model (bleed_percell).
                                        ## ambient_mat (n × G) = RAW E^tech local cross-type ambient a_ig; ambient_image_idx
@@ -149,7 +152,8 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
   }
   prev_eta   <- log(mu) - offset_vec
   prev_alpha <- alpha
-  hist <- list(tau_blocks = list(), alpha = list(), rel_delta = numeric())
+  hist <- list(tau_blocks = list(), alpha = list(), rel_delta = numeric(),
+               n_nonfinite = integer(), tau_max_seen = numeric())
   converged <- FALSE
 
   B <- matrix(0, p, g_n); U <- matrix(0, q, g_n)
@@ -250,6 +254,10 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
         }
         if (!is.null(sample_weight)) w_chk <- w_chk * sample_weight
         lam_chk   <- lam_diag_mat[, gene_idx_chk, drop = FALSE]
+        ## Keep the ridge out of single precision: below eps_float * sum(w) it
+        ## is quantised away, at a threshold that falls as 1/n.
+        if (iter_precision != 0L && .ridge_needs_double(lam_chk, w_chk))
+          iter_precision <- 0L
         per_gene_chk <- .solve_genes_chunk_multiblock(
           X_fixed, re$X_terms_list, re$cell_grp_list, re$cells_by_grp_list,
           w_chk, z_chk, lam_chk, re$blocks,
@@ -378,10 +386,23 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
       ## Re-impose a numeric floor so 1/tau in the ridge stays finite
       tau_g_array <- pmax(tau_g_array, 1e-8)
     }
+    ## ...and a ceiling, so a ridge-identified column cannot climb without end.
+    tau_g_array <- .clamp_tau(tau_g_array, tau_max, it)
+    hist$tau_max_seen[it] <- max(tau_g_array, na.rm = TRUE)
 
-    rel_delta <- max(abs(eta_new - prev_eta) /
-                       pmax(abs(prev_eta), 1e-3), na.rm = TRUE)
+    rd_mat    <- abs(eta_new - prev_eta) / pmax(abs(prev_eta), 1e-3)
+    ## na.rm below hides every gene whose linear predictor has gone non-finite,
+    ## so count them and say so rather than reporting a clean metric.
+    n_nonfinite <- sum(!is.finite(rd_mat))
+    rel_delta   <- max(rd_mat, na.rm = TRUE)
+    rm(rd_mat)
+    if (n_nonfinite > 0L) {
+      warning(sprintf(
+        "iter %d: %d gene-cell linear predictors are non-finite and are excluded from the convergence metric.",
+        it, n_nonfinite), call. = FALSE)
+    }
     prev_eta <- eta_new
+    hist$n_nonfinite[it]  <- n_nonfinite
     hist$tau_blocks[[it]] <- tau_blocks
     hist$alpha[[it]]      <- alpha
     hist$rel_delta[it]    <- rel_delta

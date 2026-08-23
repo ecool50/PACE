@@ -328,6 +328,9 @@ pace_fit_streaming <- function(Y, df, types = NULL,
                                tau_shrinkage = "adaptive",
                                alpha_warmup = 6, early_stop_tol = 2e-2, min_iter = 12L,
                                fuse = FALSE, return_mu = TRUE,
+                               ## Upper bound on the variance components, passed to the fitter.
+                               ## A binding cap means the term is identified only by the ridge.
+                               tau_max = 100,
                                verbose = TRUE) {
   contamination <- match.arg(contamination)
   dispersion    <- match.arg(dispersion)
@@ -455,6 +458,7 @@ pace_fit_streaming <- function(Y, df, types = NULL,
       interior_precision = 1L, chunk_size = as.integer(chunk_size),
       alpha_warmup = alpha_warmup, early_stop_tol = early_stop_tol,
       min_iter = as.integer(min_iter), fuse_rho = fuse,
+      tau_max = tau_max,
       return_mu = return_mu, verbose = verbose)
   } else {
     ## contamination == "none": no ambient field; dense oracle (bleed_percell = FALSE).
@@ -465,7 +469,7 @@ pace_fit_streaming <- function(Y, df, types = NULL,
       disp_model = dispersion, tau_shrinkage = tau_shrinkage,
       BPPARAM = BiocParallel::SerialParam(), n_threads = as.integer(threads),
       interior_precision = 1L, chunk_size = as.integer(chunk_size),
-      verbose = verbose)
+      tau_max = tau_max, verbose = verbose)
   }
 
   list(fit = fit, df = df, X_fixed = X_fixed, Y = Y,
