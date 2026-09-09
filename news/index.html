@@ -72,6 +72,12 @@
 <p>The vignette therefore computes the melanoma finding rather than citing it: macrophage <em>SPP1</em> responds less steeply to tumour proximity in progressive disease, <code>-0.0663</code> with an <code>lfsr</code> of 0, the second strongest responder call in the fit. <code>inst/scripts/make-mel-cosmx-subset.R</code> records the derivation.</p>
 <p>The reduced panel leaves estimates alone but shifts mash’s calibration, which the vignette says: 76 responder calls here against 46 on the full panel, and SPP1 at <code>-0.0663</code> against <code>-0.0668</code>. Below about 150 genes a focal type runs out of genes to decompose and <code><a href="../reference/paceDecompose.html">paceDecompose()</a></code> fails, so the panel cannot be cut much further.</p>
 </li>
+<li>
+<p>Three plotting additions for condition cohorts, ported from the code behind the manuscript’s melanoma figures.</p>
+<p><code><a href="../reference/plotProximity.html">plotProximity()</a></code> gains a <code>condition</code> argument, dodging one box per arm within each proximity bin instead of pooling the arms. <code>TRUE</code> uses the fit’s own <code>condition_col</code>.</p>
+<p><code><a href="../reference/plotResponseCurve.html">plotResponseCurve()</a></code> draws the population view: binned means and standard errors per arm, with the PACE slopes overlaid as dashed lines read from the fit rather than smoothed from the points. Its x axis is the model’s own covariate, the Gaussian kernel density, so the slope is drawn on the scale it was estimated on.</p>
+<p><code><a href="../reference/plotResponseMap.html">plotResponseMap()</a></code> gives the spatial view for one exemplar section per arm: a neighbour-density kernel map with the focal cells coloured by expression, above expression against density with a fitted line. Colour and axis scales are shared across arms so the panels are comparable.</p>
+</li>
 </ul></div>
 </div>
     <div class="section level2">

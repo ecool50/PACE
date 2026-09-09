@@ -19,6 +19,8 @@ plotProximity(
   neighbour,
   radius = 30,
   breaks = c(0, 2, 4, 6, 8, Inf),
+  condition = NULL,
+  condition_colours = c("#3B6FB6", "#C0392B"),
   box_colour = "#4F8B5E",
   assay_name = "counts"
 )
@@ -53,9 +55,19 @@ plotProximity(
 
   Neighbour-count bin breaks (default `c(0, 2, 4, 6, 8, Inf)`).
 
+- condition:
+
+  Optional `colData` column splitting the boxes by group, so the two
+  arms of a condition cohort can be compared within each bin. `TRUE`
+  uses the fit's own `condition_col`; `NULL` (default) pools all cells.
+
+- condition_colours:
+
+  Colours for the condition levels.
+
 - box_colour:
 
-  Box and mean-point colour.
+  Box and mean-point colour, used when `condition` is `NULL`.
 
 - assay_name:
 

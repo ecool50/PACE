@@ -34,6 +34,10 @@
   : Pairwise spatial-percent heatmap
 - [`plotProximity()`](https://ecool50.github.io/PACE/reference/plotProximity.md)
   : Expression versus number of neighbours (per-bin boxplot)
+- [`plotResponseCurve()`](https://ecool50.github.io/PACE/reference/plotResponseCurve.md)
+  : Response curve: binned means with the PACE slope overlaid
+- [`plotResponseMap()`](https://ecool50.github.io/PACE/reference/plotResponseMap.md)
+  : Tissue maps and scatters for one exemplar image per arm
 - [`topDrivers()`](https://ecool50.github.io/PACE/reference/topDrivers.md)
   : Per-pair driver tables
 - [`varianceDecomposition()`](https://ecool50.github.io/PACE/reference/varianceDecomposition.md)

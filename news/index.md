@@ -199,6 +199,28 @@ identical to 0.99.0 (`max|diff| = 0`).
   [`paceDecompose()`](https://ecool50.github.io/PACE/reference/paceDecompose.md)
   fails, so the panel cannot be cut much further.
 
+- Three plotting additions for condition cohorts, ported from the code
+  behind the manuscript’s melanoma figures.
+
+  [`plotProximity()`](https://ecool50.github.io/PACE/reference/plotProximity.md)
+  gains a `condition` argument, dodging one box per arm within each
+  proximity bin instead of pooling the arms. `TRUE` uses the fit’s own
+  `condition_col`.
+
+  [`plotResponseCurve()`](https://ecool50.github.io/PACE/reference/plotResponseCurve.md)
+  draws the population view: binned means and standard errors per arm,
+  with the PACE slopes overlaid as dashed lines read from the fit rather
+  than smoothed from the points. Its x axis is the model’s own
+  covariate, the Gaussian kernel density, so the slope is drawn on the
+  scale it was estimated on.
+
+  [`plotResponseMap()`](https://ecool50.github.io/PACE/reference/plotResponseMap.md)
+  gives the spatial view for one exemplar section per arm: a
+  neighbour-density kernel map with the focal cells coloured by
+  expression, above expression against density with a fitted line.
+  Colour and axis scales are shared across arms so the panels are
+  comparable.
+
 ## PACE 0.99.0
 
 - Initial package:
