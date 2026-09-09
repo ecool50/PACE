@@ -158,16 +158,43 @@ all thirty here is the right one:
 table(vapply(topDrivers(fit), function(x) x$status, character(1)))
 ```
 
-For scale: fitting the **full** cohort, 56,274 cells across the same 26 patients,
-returns 46 calls at `lfsr < 0.05`, among them the macrophage *SPP1* response to
-tumour proximity, shrunken to −0.0668 with an `lfsr` of 0 — the result the paper
-reports. Cropping each section to 15% of its cells removes that entirely; the
-signal only begins to reappear at around 60% of the cohort, and even there it is
-less than half its full size.
+## What the full cohort gives
 
-So the ranking above is worth reading as a direction, and the significance
-column is worth reading as a warning. If you want the published result, fit the
-full deposit rather than this subset.
+Rather than assert the difference, the package ships the macrophage slopes from
+the **full** cohort, all 56,274 cells across these same 26 patients, so the two
+can be put side by side. It is a fitted result, not something this vignette
+computes; the `provenance` attribute records how:
+
+```{r fullcohort}
+full <- readRDS(system.file("extdata", "mel_full_cohort_macrophage_slopes.rds",
+                            package = "PACE"))
+nrow(full)
+subset(full, gene == "SPP1" & neighbour == "Tumour" & term == "ResponderPD:Tumour")
+```
+
+That is the result the paper reports: in macrophages, the response of *SPP1* to
+tumour proximity differs between arms, more negative in progressive disease. Now
+the same row from the subset fitted above:
+
+```{r subsetrow}
+subset(ns, gene == "SPP1" & focal == "Macrophage" &
+           neighbour == "Tumour" & term == "ResponderPD:Tumour")
+```
+
+The estimate has been shrunk to exactly zero. This is worth being precise about,
+because it is not a threshold that could be relaxed: 32,445 of the 33,372
+responder terms are shrunk to zero here, mash having concluded that the block
+carries no signal at this sample size. No `lfsr` cut recovers *SPP1*, because
+there is no estimate left to recover. The unshrunk estimate does keep the right
+sign, but it is smaller than its own standard error.
+
+Cropping each section to 15% removes the effect entirely; it only begins to
+reappear at around 60% of the cohort, and even there it is less than half its
+full size. Crops targeted at the macrophages do recover it, but only by keeping
+most of the tissue, because the macrophages are spread through all of it.
+
+So the pair ranking above is worth reading as a direction, and the significance
+column as a warning. For the published result, fit the full deposit.
 
 The practical lesson generalises beyond this dataset: a condition analysis is
 powered by **patients**, not by cells. Adding cells from the patients you

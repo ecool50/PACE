@@ -144,12 +144,21 @@ precision guard disabled the refit is identical to 0.99.0 (`max|diff| = 0`).
   model reads local neighbourhoods. `inst/scripts/make-mel-cosmx-subset.R`
   records the derivation.
 
-  The vignette states plainly that no gene in the subset reaches `lfsr < 0.05`,
-  and why: the full cohort returns 46 calls including the macrophage SPP1
-  response to tumour proximity, cropping to 15% removes it, and it only begins
-  to return at around 60% of the cohort. A subset small enough to ship cannot
-  carry a cohort-scale effect, and the vignette is written around that rather
-  than around a result it cannot support.
+  No gene in the subset reaches `lfsr < 0.05`, so rather than assert what the
+  cohort shows, the package also ships the macrophage neighbour slopes fitted on
+  the full 56,274-cell cohort
+  (`mel_full_cohort_macrophage_slopes.rds`, 5,562 rows, 0.14 MB, with a
+  `provenance` attribute recording the fit settings). The vignette puts the two
+  rows side by side: SPP1 next to tumour is `-0.0668` with an `lfsr` of 0 in the
+  cohort, and exactly 0 with an `lfsr` of 1 in the subset.
+
+  The vignette is explicit that this is not a threshold that could be relaxed.
+  32,445 of the 33,372 responder terms are shrunk to exactly zero in the subset,
+  so no `lfsr` cut recovers SPP1: there is no estimate left to recover. The
+  unshrunk estimate keeps the right sign but is smaller than its own standard
+  error. Cropping to 15% removes the effect, it only returns at around 60% of the
+  cohort, and macrophage-targeted crops recover it only by keeping most of the
+  tissue, because the macrophages are spread through all of it.
 
 # PACE 0.99.0
 
