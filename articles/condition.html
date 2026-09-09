@@ -174,19 +174,19 @@ absorbed rather than being attributed to the condition.</li>
 <span><span class="co">#&gt;  - Computing 180 x 375 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.05 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 375 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.26 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.25 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 579 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.08 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 579 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.59 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.60 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 364 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.05 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 364 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.23 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.22 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 243 likelihood matrix.</span></span>
@@ -198,31 +198,31 @@ absorbed rather than being attributed to the condition.</li>
 <span><span class="co">#&gt;  - Computing 180 x 375 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.05 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 375 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.30 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.29 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 364 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.05 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 364 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.09 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.10 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 562 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.07 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.08 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 562 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.14 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.15 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 265 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.03 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.04 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 265 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.23 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.22 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 409 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.05 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.06 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 409 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.61 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.60 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="va">fit</span></span>
@@ -336,33 +336,36 @@ progressive disease. It is negative, so macrophage <em>SPP1</em> rises
 less steeply with tumour proximity in patients whose disease progressed.
 This is the melanoma result reported in the accompanying paper,
 recovered here from the shipped data.</p>
-<p><code><a href="../reference/plotProximity.html">plotProximity()</a></code> shows the counts behind it. The default
-bin breaks are set for sparser tissue; this section is dense enough that
-a macrophage has a median of 22 tumour cells within 30 um, so the bins
-are widened to spread the cells out rather than piling 83% of them into
-the last one:</p>
+<p>The counts behind it, split by arm:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotProximity.html">plotProximity</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">spe</span>, <span class="st">"SPP1"</span>, <span class="st">"Macrophage"</span>, <span class="st">"Tumour"</span>,</span>
-<span>              breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span>, <span class="fl">20</span>, <span class="fl">30</span>, <span class="fl">40</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ct</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">spe</span><span class="op">$</span><span class="va">cellType</span><span class="op">)</span></span>
+<span><span class="va">xy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SpatialExperiment/man/SpatialExperiment-methods.html" class="external-link">spatialCoords</a></span><span class="op">(</span><span class="va">spe</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">mac</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">ct</span> <span class="op">==</span> <span class="st">"Macrophage"</span><span class="op">)</span></span>
+<span><span class="va">tum</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">ct</span> <span class="op">==</span> <span class="st">"Tumour"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  arm  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">spe</span><span class="op">$</span><span class="va">Responder</span><span class="op">)</span><span class="op">[</span><span class="va">mac</span><span class="op">]</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"nonPD"</span>, <span class="st">"PD"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  ntum <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="fu">dbscan</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/dbscan/man/frNN.html" class="external-link">frNN</a></span><span class="op">(</span><span class="va">xy</span><span class="op">[</span><span class="va">tum</span>, <span class="op">]</span>, eps <span class="op">=</span> <span class="fl">30</span>, query <span class="op">=</span> <span class="va">xy</span><span class="op">[</span><span class="va">mac</span>, <span class="op">]</span><span class="op">)</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>,</span>
+<span>  spp1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu">assay</span><span class="op">(</span><span class="va">spe</span>, <span class="st">"counts"</span><span class="op">)</span><span class="op">[</span><span class="st">"SPP1"</span>, <span class="va">mac</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">d</span><span class="op">$</span><span class="va">bin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">ntum</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">10</span>, <span class="fl">20</span>, <span class="fl">30</span>, <span class="fl">40</span>, <span class="cn">Inf</span><span class="op">)</span>,</span>
+<span>             labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"0-10"</span>, <span class="st">"11-20"</span>, <span class="st">"21-30"</span>, <span class="st">"31-40"</span>, <span class="st">"41+"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">d</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">arm</span>, <span class="va">bin</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">spp1</span><span class="op">)</span>, se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">spp1</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">bin</span>, <span class="va">mean</span>, colour <span class="op">=</span> <span class="va">arm</span>, group <span class="op">=</span> <span class="va">arm</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_ribbon</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">mean</span> <span class="op">-</span> <span class="va">se</span>, ymax <span class="op">=</span> <span class="va">mean</span> <span class="op">+</span> <span class="va">se</span>, fill <span class="op">=</span> <span class="va">arm</span><span class="op">)</span>,</span>
+<span>              alpha <span class="op">=</span> <span class="fl">0.18</span>, colour <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Tumour cells within 30 um"</span>, y <span class="op">=</span> <span class="st">"Mean macrophage SPP1 count"</span>,</span>
+<span>       colour <span class="op">=</span> <span class="st">"Response"</span>, fill <span class="op">=</span> <span class="st">"Response"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span></code></pre></div>
 <p><img src="condition_files/figure-html/proximity-1.png" class="r-plt" alt="" width="585"></p>
-<p>That is the response shared by both arms, rising steeply with tumour
-proximity. The condition term above says the rise is shallower in
-progressive disease.</p>
-</div>
-<div class="section level2">
-<h2 id="a-note-on-the-reduced-panel">A note on the reduced panel<a class="anchor" aria-label="anchor" href="#a-note-on-the-reduced-panel"></a>
-</h2>
-<p>Fitting 180 of the 927 genes leaves the estimates alone but not the
-shrinkage. mash calibrates against the genes it is given, so a narrower
-panel shifts the local false sign rates: this fit reports 76 responder
-calls where the full panel reports 46. The <em>SPP1</em> estimate is
-essentially unchanged, −0.0663 against −0.0668 on the full panel, but
-treat the significance column here as belonging to this panel rather
-than to the published analysis, and fit the full deposit if you need to
-reproduce the paper exactly.</p>
-<p>The panel cannot be cut much further. Below roughly 150 genes some
-focal cell type runs out of genes to decompose and
-<code><a href="../reference/paceDecompose.html">paceDecompose()</a></code> fails outright.</p>
+<p>In non-progressive disease macrophage <em>SPP1</em> climbs with
+tumour proximity; in progressive disease it does not. That divergence is
+what the negative <code>ResponderPD:Tumour</code> coefficient
+measures.</p>
 </div>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>

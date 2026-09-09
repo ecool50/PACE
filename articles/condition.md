@@ -102,19 +102,19 @@ fit <- paceFit(spe,
 #>  - Computing 180 x 375 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.26 seconds.
+#>  - Model fitting took 0.25 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 579 likelihood matrix.
 #>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.59 seconds.
+#>  - Model fitting took 0.60 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 364 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.23 seconds.
+#>  - Model fitting took 0.22 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 243 likelihood matrix.
@@ -126,31 +126,31 @@ fit <- paceFit(spe,
 #>  - Computing 180 x 375 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.30 seconds.
+#>  - Model fitting took 0.29 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 364 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.09 seconds.
+#>  - Model fitting took 0.10 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 562 likelihood matrix.
-#>  - Likelihood calculations took 0.07 seconds.
+#>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 562 mixture components.
-#>  - Model fitting took 0.14 seconds.
+#>  - Model fitting took 0.15 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 265 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
+#>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.23 seconds.
+#>  - Model fitting took 0.22 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 409 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
+#>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 409 mixture components.
-#>  - Model fitting took 0.61 seconds.
+#>  - Model fitting took 0.60 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 fit
@@ -290,39 +290,40 @@ steeply with tumour proximity in patients whose disease progressed. This
 is the melanoma result reported in the accompanying paper, recovered
 here from the shipped data.
 
-[`plotProximity()`](https://ecool50.github.io/PACE/reference/plotProximity.md)
-shows the counts behind it. The default bin breaks are set for sparser
-tissue; this section is dense enough that a macrophage has a median of
-22 tumour cells within 30 um, so the bins are widened to spread the
-cells out rather than piling 83% of them into the last one:
+The counts behind it, split by arm:
 
 ``` r
 
-plotProximity(fit, spe, "SPP1", "Macrophage", "Tumour",
-              breaks = c(0, 10, 20, 30, 40, Inf))
+ct <- as.character(spe$cellType)
+xy <- as.matrix(spatialCoords(spe))
+mac <- which(ct == "Macrophage")
+tum <- which(ct == "Tumour")
+
+d <- data.frame(
+  arm  = factor(as.character(spe$Responder)[mac], levels = c("nonPD", "PD")),
+  ntum = lengths(dbscan::frNN(xy[tum, ], eps = 30, query = xy[mac, ])$id),
+  spp1 = as.numeric(assay(spe, "counts")["SPP1", mac]))
+d$bin <- cut(d$ntum, c(-1, 10, 20, 30, 40, Inf),
+             labels = c("0-10", "11-20", "21-30", "31-40", "41+"))
+
+d |>
+  group_by(arm, bin) |>
+  summarise(mean = mean(spp1), se = sd(spp1) / sqrt(n()), .groups = "drop") |>
+  ggplot(aes(bin, mean, colour = arm, group = arm)) +
+  geom_ribbon(aes(ymin = mean - se, ymax = mean + se, fill = arm),
+              alpha = 0.18, colour = NA) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
+  labs(x = "Tumour cells within 30 um", y = "Mean macrophage SPP1 count",
+       colour = "Response", fill = "Response") +
+  theme_minimal(base_size = 11)
 ```
 
 ![](condition_files/figure-html/proximity-1.png)
 
-That is the response shared by both arms, rising steeply with tumour
-proximity. The condition term above says the rise is shallower in
-progressive disease.
-
-## A note on the reduced panel
-
-Fitting 180 of the 927 genes leaves the estimates alone but not the
-shrinkage. mash calibrates against the genes it is given, so a narrower
-panel shifts the local false sign rates: this fit reports 76 responder
-calls where the full panel reports 46. The *SPP1* estimate is
-essentially unchanged, −0.0663 against −0.0668 on the full panel, but
-treat the significance column here as belonging to this panel rather
-than to the published analysis, and fit the full deposit if you need to
-reproduce the paper exactly.
-
-The panel cannot be cut much further. Below roughly 150 genes some focal
-cell type runs out of genes to decompose and
-[`paceDecompose()`](https://ecool50.github.io/PACE/reference/paceDecompose.md)
-fails outright.
+In non-progressive disease macrophage *SPP1* climbs with tumour
+proximity; in progressive disease it does not. That divergence is what
+the negative `ResponderPD:Tumour` coefficient measures.
 
 ## Session info
 
