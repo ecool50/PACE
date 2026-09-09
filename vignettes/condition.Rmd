@@ -169,11 +169,18 @@ so macrophage *SPP1* rises less steeply with tumour proximity in patients whose
 disease progressed. This is the melanoma result reported in the accompanying
 paper, recovered here from the shipped data.
 
-`plotProximity()` shows the counts behind it:
+`plotProximity()` shows the counts behind it. The default bin breaks are set for
+sparser tissue; this section is dense enough that a macrophage has a median of 22
+tumour cells within 30 um, so the bins are widened to spread the cells out
+rather than piling 83% of them into the last one:
 
-```{r proximity, fig.width = 6, fig.height = 4.2}
-plotProximity(fit, spe, "SPP1", "Macrophage", "Tumour")
+```{r proximity, fig.width = 6.5, fig.height = 4.2}
+plotProximity(fit, spe, "SPP1", "Macrophage", "Tumour",
+              breaks = c(0, 10, 20, 30, 40, Inf))
 ```
+
+That is the response shared by both arms, rising steeply with tumour proximity.
+The condition term above says the rise is shallower in progressive disease.
 
 # A note on the reduced panel
 
