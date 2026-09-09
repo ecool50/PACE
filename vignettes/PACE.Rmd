@@ -187,6 +187,19 @@ single strongest pair is B cells next to T cells.
 plotPairHeatmap(fit)
 ```
 
+`pairVariance()` returns those same numbers as a long table. The heatmap is
+drawn from it, so the two cannot disagree, and the table is the easier thing to
+rank or pass on:
+
+```{r pairvariance}
+pairVariance(fit) |>
+  arrange(desc(val)) |>
+  head(5)
+```
+
+For a cohort with a condition, `block = "responder"` gives the same attribution
+for the responder-by-proximity block rather than the baseline spatial one.
+
 # Macrophage–tumour drivers
 
 `plotDrivers()` ranks the genes mediating a relationship by a driver score (MCSD,
