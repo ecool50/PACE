@@ -34,12 +34,12 @@ A data frame of shrunken slopes.
 fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
 head(neighbourSlopes(fit))
 #>     gene  focal neighbour   term      estimate   std.error estimate_shrunk
-#> 1 ABCC11 B_Cell    B_Cell B_Cell -1.968614e-05 0.001376136               0
-#> 2  ACTA2 B_Cell    B_Cell B_Cell -1.011682e-04 0.004245694               0
-#> 3  ACTG2 B_Cell    B_Cell B_Cell  1.420043e-03 0.005170530               0
-#> 4  ADAM9 B_Cell    B_Cell B_Cell  3.256417e-05 0.003072893               0
-#> 5 ADGRE5 B_Cell    B_Cell B_Cell  8.103512e-04 0.005304599               0
-#> 6  ADH1B B_Cell    B_Cell B_Cell -3.150005e-05 0.002131909               0
+#> 1 ABCC11 B_Cell    B_Cell B_Cell -1.968907e-05 0.001376136               0
+#> 2  ACTA2 B_Cell    B_Cell B_Cell -9.976965e-05 0.004245639               0
+#> 3  ACTG2 B_Cell    B_Cell B_Cell  1.418293e-03 0.005170493               0
+#> 4  ADAM9 B_Cell    B_Cell B_Cell  3.277669e-05 0.003072945               0
+#> 5 ADGRE5 B_Cell    B_Cell B_Cell  8.125370e-04 0.005304314               0
+#> 6  ADH1B B_Cell    B_Cell B_Cell -3.142864e-05 0.002131910               0
 #>   sd_shrunk lfsr
 #> 1         0    1
 #> 2         0    1

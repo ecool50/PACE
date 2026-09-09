@@ -112,27 +112,27 @@ fit <- paceFit(spe,
 #>  - Computing 278 x 313 likelihood matrix.
 #>  - Likelihood calculations took 0.07 seconds.
 #>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.10 seconds.
+#>  - Model fitting took 0.08 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.02 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.03 seconds.
+#>  - Model fitting took 0.02 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.15 seconds.
+#>  - Model fitting took 0.12 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 417 likelihood matrix.
 #>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.23 seconds.
+#>  - Model fitting took 0.19 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.00 seconds.
 #>  - Fitting model with 92 mixture components.
@@ -140,33 +140,33 @@ fit <- paceFit(spe,
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.09 seconds.
+#>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Model fitting took 0.10 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 430 likelihood matrix.
 #>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 0.14 seconds.
+#>  - Model fitting took 0.11 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.15 seconds.
+#>  - Likelihood calculations took 0.14 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.18 seconds.
+#>  - Model fitting took 0.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.35 seconds.
+#>  - Model fitting took 0.30 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.14 seconds.
+#>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.70 seconds.
+#>  - Model fitting took 0.44 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 fit
@@ -174,7 +174,7 @@ fit
 #> cell types (8): B_Cell, Dendritic_Cell, Endothelial, Macrophage, Myoepithelial, Stromal, T_Cell, Tumour
 #> kernels: h_bio = 30 um, h_tech = 5 um | contamination: percell_hc; dispersion: nb1
 #> pipeline: model -> shrink -> decompose -> drivers
-#>   neighbour slopes: 17792 rows (60 at lfsr < 0.05)
+#>   neighbour slopes: 17792 rows (61 at lfsr < 0.05)
 ```
 
 ### The pipeline step by step
@@ -218,9 +218,10 @@ plotDecomposition(fit)
 
 ![](PACE_files/figure-html/decomp-1.png)
 
-Beyond the dominant cell-type identity component, macrophages, stromal
-and myoepithelial cells carry the largest spatial cell-state
-contributions. The underlying per-gene table is available with
+Beyond the dominant cell-type identity component, B cells, stromal cells
+and macrophages carry the largest spatial cell-state contributions,
+while dendritic and myoepithelial cells carry none on this crop. The
+underlying per-gene table is available with
 `varianceDecomposition(fit)`.
 
 ## Pairwise spatial interactions
@@ -229,8 +230,10 @@ contributions. The underlying per-gene table is available with
 gives the percentage of each focal type’s total variance contributed by
 spatial interaction with each neighbour, computed as the focal’s spatial
 share split across neighbours by a normalised Pratt attribution.
-**Tumour as a neighbour** drives the strongest spatial signal across the
-microenvironment.
+**Tumour as a neighbour** acts the most widely across the
+microenvironment, reaching four focal types where no other neighbour
+reaches more than two. The single strongest pair is B cells next to T
+cells.
 
 ``` r
 
@@ -265,8 +268,8 @@ neighbourSlopes(fit) |>
          gene %in% c("MRC1", "APOC1")) |>
   select(gene, estimate_shrunk, lfsr)
 #>    gene estimate_shrunk         lfsr
-#> 1 APOC1       0.1299349 2.092082e-16
-#> 2  MRC1      -0.1499909 1.354472e-14
+#> 1 APOC1       0.1301689 1.077054e-17
+#> 2  MRC1      -0.1494760 1.554312e-15
 ```
 
 ## Visualising the proximity effect
@@ -328,35 +331,35 @@ sessionInfo()
 #>  [5] SingleCellExperiment_1.34.0 SummarizedExperiment_1.42.0
 #>  [7] Biobase_2.72.0              GenomicRanges_1.64.0       
 #>  [9] Seqinfo_1.2.0               IRanges_2.46.0             
-#> [11] S4Vectors_0.50.1            BiocGenerics_0.58.1        
+#> [11] S4Vectors_0.50.2            BiocGenerics_0.58.1        
 #> [13] generics_0.1.4              MatrixGenerics_1.24.0      
-#> [15] matrixStats_1.5.0           PACE_0.99.0                
+#> [15] matrixStats_1.5.0           PACE_0.99.1                
 #> [17] BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] tidyselect_1.2.1    viridisLite_0.4.3   farver_2.1.2       
 #>  [4] S7_0.2.2            fastmap_1.2.0       digest_0.6.39      
 #>  [7] lifecycle_1.0.5     invgamma_1.2        magrittr_2.0.5     
-#> [10] dbscan_1.2.5        compiler_4.6.1      rlang_1.3.0        
+#> [10] dbscan_1.2.6        compiler_4.6.1      rlang_1.3.0        
 #> [13] sass_0.4.10         tools_4.6.1         yaml_2.3.12        
-#> [16] knitr_1.51          S4Arrays_1.12.0     labeling_0.4.3     
+#> [16] knitr_1.52          S4Arrays_1.12.0     labeling_0.4.3     
 #> [19] DelayedArray_0.38.2 plyr_1.8.9          RColorBrewer_1.1-3 
 #> [22] abind_1.4-8         BiocParallel_1.46.0 withr_3.0.3        
 #> [25] purrr_1.2.2         desc_1.4.3          grid_4.6.1         
-#> [28] scales_1.4.0        cli_3.6.6           mvtnorm_1.4-1      
-#> [31] rmarkdown_2.31      ragg_1.5.2          otel_0.2.0         
+#> [28] scales_1.4.0        cli_3.6.6           mvtnorm_1.4-2      
+#> [31] rmarkdown_2.32      ragg_1.5.2          otel_0.2.0         
 #> [34] rjson_0.2.23        cachem_1.1.0        stringr_1.6.0      
 #> [37] assertthat_0.2.1    parallel_4.6.1      BiocManager_1.30.27
 #> [40] XVector_0.52.0      vctrs_0.7.3         Matrix_1.7-5       
-#> [43] jsonlite_2.0.0      bookdown_0.47       patchwork_1.3.2    
+#> [43] jsonlite_2.0.0      bookdown_0.48       patchwork_1.3.2    
 #> [46] mixsqp_0.3-54       irlba_2.3.7         systemfonts_1.3.2  
 #> [49] magick_2.9.1        jquerylib_0.1.4     glue_1.8.1         
-#> [52] pkgdown_2.2.1       codetools_0.2-20    stringi_1.8.7      
+#> [52] pkgdown_2.2.1       codetools_0.2-20    stringi_1.8.9      
 #> [55] gtable_0.3.6        rmeta_3.0           tibble_3.3.1       
 #> [58] pillar_1.11.1       htmltools_0.5.9     truncnorm_1.0-9    
 #> [61] R6_2.6.1            mashr_0.2.79        textshaping_1.0.5  
 #> [64] evaluate_1.0.5      lattice_0.22-9      SQUAREM_2026.1     
-#> [67] ashr_2.2-63         bslib_0.11.0        Rcpp_1.1.2         
+#> [67] ashr_2.2-63         bslib_0.12.0        Rcpp_1.1.2         
 #> [70] SparseArray_1.12.2  xfun_0.60           fs_2.1.0           
 #> [73] pkgconfig_2.0.3
 ```

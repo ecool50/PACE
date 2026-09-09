@@ -47,8 +47,8 @@ head(pairVariance(fit))
 #>   <chr>  <chr>            <dbl>
 #> 1 B_Cell Dendritic_Cell 0      
 #> 2 B_Cell Endothelial    0      
-#> 3 B_Cell Macrophage     0.00619
+#> 3 B_Cell Macrophage     0.00618
 #> 4 B_Cell Myoepithelial  0      
 #> 5 B_Cell Stromal        0      
-#> 6 B_Cell T_Cell         2.72   
+#> 6 B_Cell T_Cell         2.73   
 ```

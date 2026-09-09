@@ -18,12 +18,12 @@ Source:
 
 Willie E, Rao S, Ormerod J, Patrick E (2026). *PACE:
 Proximity-Associated Changes in Expression for Spatial Transcriptomics*.
-R package version 0.99.0, <https://github.com/ecool50/PACE>.
+R package version 0.99.1, <https://github.com/ecool50/PACE>.
 
     @Manual{,
       title = {PACE: Proximity-Associated Changes in Expression for Spatial Transcriptomics},
       author = {Elijah Willie and Shreya Rajesh Rao and John Ormerod and Ellis Patrick},
       year = {2026},
-      note = {R package version 0.99.0},
+      note = {R package version 0.99.1},
       url = {https://github.com/ecool50/PACE},
     }

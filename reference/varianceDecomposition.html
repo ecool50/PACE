@@ -13,7 +13,7 @@ is returned; set which = "blocks" for the underlying link-scale block tables.'><
 
     <a class="navbar-brand me-2" href="../index.html">PACE</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,12 +78,12 @@ is returned; set <code>which = "blocks"</code> for the underlying link-scale blo
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"pace_fit_example.rds"</span>, package <span class="op">=</span> <span class="st">"PACE"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">varianceDecomposition</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          focal    gene Cell type %    Spatial % Spillover % Residual %</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> SEC11C  B_Cell  SEC11C  18.7147181 14.478887015   0.6377136   66.16868</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> DAPK3   B_Cell   DAPK3  14.5989691  0.002743106   1.0488449   84.34944</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> TCIM    B_Cell    TCIM  85.9791365  0.002232204   0.5970135   13.42162</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NKG7    B_Cell    NKG7   0.3900736  0.002221307   8.2727394   91.33497</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> RAPGEF3 B_Cell RAPGEF3  14.2060602  0.008052835   3.2311015   82.55479</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> PPARG   B_Cell   PPARG   9.2327061  0.013469917   4.4813488   86.27248</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SEC11C  B_Cell  SEC11C  18.7147181 14.494678992   0.6373641   66.15324</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> DAPK3   B_Cell   DAPK3  14.5989691  0.002760858   1.0526045   84.34567</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> TCIM    B_Cell    TCIM  85.9791365  0.002251981   0.5945541   13.42406</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NKG7    B_Cell    NKG7   0.3900736  0.002239134   8.2668799   91.34081</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> RAPGEF3 B_Cell RAPGEF3  14.2060602  0.008126525   3.2152159   82.57060</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PPARG   B_Cell   PPARG   9.2327061  0.013567628   4.4774151   86.27631</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           SS_lineage  SS_within      denom n_focal</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> SEC11C   638.5745510 2773.57704 3412.15159     330</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> DAPK3     14.4759924   84.68164   99.15763     330</span>

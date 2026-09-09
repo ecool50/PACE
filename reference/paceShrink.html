@@ -9,7 +9,7 @@ multivariate adaptive shrinkage, populating neighbourSlopes()."><meta property="
 
     <a class="navbar-brand me-2" href="../index.html">PACE</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,7 +54,10 @@ multivariate adaptive shrinkage, populating <code><a href="neighbourSlopes.html"
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Unused.</p></dd>
+<dd><p>Further arguments passed to the shrinkage step, notably
+<code>null_correlation</code> (default <code>TRUE</code>: estimate the correlation between focal
+cell types under the null and pass it to mash as <code>V</code>; <code>FALSE</code> treats them
+as independent) and <code>data_driven</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -69,10 +72,11 @@ multivariate adaptive shrinkage, populating <code><a href="neighbourSlopes.html"
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 313 likelihood matrix.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.07 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 313 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.11 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.08 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] B_Cell: 278 genes shrunk; sig (lfsr&lt;0.05) = 0</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] term 'Dendritic_Cell': fewer than two varying conditions, using independence</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 92 likelihood matrix.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.02 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 92 mixture components.</span>
@@ -83,65 +87,66 @@ multivariate adaptive shrinkage, populating <code><a href="neighbourSlopes.html"
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 404 likelihood matrix.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.09 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 404 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.14 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.12 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] Endothelial: 278 genes shrunk; sig (lfsr&lt;0.05) = 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 404 likelihood matrix.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 417 likelihood matrix.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.09 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 404 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.21 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 417 mixture components.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.17 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] Macrophage: 278 genes shrunk; sig (lfsr&lt;0.05) = 5</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] term 'Myoepithelial': fewer than two varying conditions, using independence</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 92 likelihood matrix.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.00 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 92 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.03 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.02 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] Myoepithelial: 278 genes shrunk; sig (lfsr&lt;0.05) = 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 391 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.09 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.08 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 391 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.12 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.10 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] Stromal: 278 genes shrunk; sig (lfsr&lt;0.05) = 3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 430 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.10 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.09 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 430 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.14 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.13 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 628 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.15 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.13 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 628 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.18 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.16 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] T_Cell: 278 genes shrunk; sig (lfsr&lt;0.05) = 21</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 404 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.09 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.08 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 404 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.40 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.28 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.01 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 590 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.14 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.12 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 590 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.66 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.48 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] Tumour: 278 genes shrunk; sig (lfsr&lt;0.05) = 29</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.01 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] Tumour: 278 genes shrunk; sig (lfsr&lt;0.05) = 30</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="neighbourSlopes.html">neighbourSlopes</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     gene  focal neighbour   term      estimate   std.error estimate_shrunk</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 ABCC11 B_Cell    B_Cell B_Cell -1.968614e-05 0.001376136               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  ACTA2 B_Cell    B_Cell B_Cell -1.011682e-04 0.004245694               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  ACTG2 B_Cell    B_Cell B_Cell  1.420043e-03 0.005170530               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  ADAM9 B_Cell    B_Cell B_Cell  3.256417e-05 0.003072893               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 ADGRE5 B_Cell    B_Cell B_Cell  8.103512e-04 0.005304599               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  ADH1B B_Cell    B_Cell B_Cell -3.150005e-05 0.002131909               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 ABCC11 B_Cell    B_Cell B_Cell -1.968907e-05 0.001376136               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  ACTA2 B_Cell    B_Cell B_Cell -9.976965e-05 0.004245639               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  ACTG2 B_Cell    B_Cell B_Cell  1.418293e-03 0.005170493               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  ADAM9 B_Cell    B_Cell B_Cell  3.277669e-05 0.003072945               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 ADGRE5 B_Cell    B_Cell B_Cell  8.125370e-04 0.005304314               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  ADH1B B_Cell    B_Cell B_Cell -3.142864e-05 0.002131910               0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   sd_shrunk lfsr</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1         0    1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2         0    1</span>

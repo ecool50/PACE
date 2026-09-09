@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PACE</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,10 +30,41 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.1" id="pace-0991">PACE 0.99.1<a class="anchor" aria-label="anchor" href="#pace-0991"></a></h2>
+<p>Correctness fixes from an internal audit of the fitting engine. All of these produced wrong numbers with no error raised. The analyses in the accompanying manuscript were produced with the pre-fix engine and were checked to be unaffected.</p>
+<p>Reported output is unchanged. On the shipped breast cancer subset the shrunken slopes move by at most <code>1.6e-06</code> and the local false sign rates by <code>3.2e-05</code> across all 17,792 (gene, focal, neighbour) rows, with the same 60 calls at <code>lfsr &lt; 0.05</code>, no flipped calls, and no sign changes. The raw solver output moves at the <code>1e-04</code> level, and moves <em>towards</em> the full-double reference (fixed effects <code>8.4e-04 -&gt; 5.3e-05</code> from it), because the ridge no longer drops into single precision. Every other fix is exactly reproducing: with the precision guard disabled the refit is identical to 0.99.0 (<code>max|diff| = 0</code>).</p>
+<div class="section level3">
+<h3 id="correctness-fixes-0-99-1">Correctness fixes<a class="anchor" aria-label="anchor" href="#correctness-fixes-0-99-1"></a></h3>
+<ul><li><p>An <code>NA</code> in any random-effect variable no longer corrupts the design matrix. <code><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix()</a></code> drops such rows, which left the sparse assembly recycling covariates so that cells received other cells’ values; this now stops with a message naming the column and the number of rows dropped.</p></li>
+<li><p>The condition interaction term is derived from <code>condition_col</code> instead of a hardcoded <code>"Responder"</code> prefix. Cohorts whose condition column had any other name silently produced an all-zero condition indicator, and therefore an identically zero responder spatial block, while the output looked complete. A <code>resp_term</code> that names no level of <code>condition_col</code> is now refused.</p></li>
+<li><p>Standard errors are computed on every iteration, so a fit that exits early at convergence no longer returns all-<code>NA</code> <code>se_B</code>/<code>se_U</code> (which the shrinkage layer then discarded). Convergence on a float interior takes one further pass in double so the retained standard errors are not float-quantised.</p></li>
+<li><p>Non-finite genes are counted and reported instead of being masked out of the convergence metric, and a fit that has lost genes is no longer reported as converged. In the streaming engine the NaN repair is re-checked after it runs, and genes that remain non-finite are reported on every iteration, including the last, where the interior is already double and the repair cannot help.</p></li>
+<li><p>The ridge is kept out of single precision. It is accumulated inside the float kernel, where the smallest representable increment on a diagonal of order <code>sum(w)</code> is <code>eps_float * sum(w)</code>; below that the regularisation is quantised away, at a threshold that falls as <code>1/n</code>, so the same model and design lose their ridge purely by growing the cohort. The interior is now forced to double whenever the ridge is small relative to the diagonal scale.</p></li>
+<li><p>The variance components are bounded from above by a new <code>tau_max</code> argument (default <code>100</code>). Every previous tau write was a <code>pmax</code> against a floor with no ceiling, so a column identified only by the ridge climbed by <code>mean(u^2)</code> per iteration while its inflated posterior variance fed the next update. The default sits roughly 6-30x above the largest component observed on healthy cohorts and just below <code>var(z)</code>, the variance of the working response that the components decompose; it does not bind on any fit in the test suite. A binding cap is reported, since it means the term is not identified by the data.</p></li>
+<li><p>The empirical-Bayes floor in the adaptive tau update is scaled by the median across genes rather than the mean, so a single runaway gene can no longer lift the floor for every gene in its row. The shrinkage target itself is unchanged.</p></li>
+<li><p>The per-iteration largest variance component is recorded in the fit history and printed alongside the block medians, since a runaway confined to one term does not move a median taken over the whole block.</p></li>
+<li>
+<p>mash is now given the correlation between conditions under the null. The focal cell types are conditions estimated in the same per-gene solve, so their errors are correlated, and the previous default of <code>V = I</code> treated them as independent and mis-calibrated the local false sign rates. The estimate is taken over the conditions that vary: sparse focal-neighbour pairs are zeroed by the kernel drop without their column being removed, so those conditions have a constant z column, and <code><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cov2cor()</a></code> on the full matrix returns <code>NaN</code> for every entry. Degenerate conditions are left uncorrelated, which is the correct limit, and the estimate falls back to independence when fewer than two conditions vary. Set <code>null_correlation = FALSE</code> in <code><a href="../reference/paceShrink.html">paceShrink()</a></code> to restore the old behaviour.</p>
+<p>On the shipped breast cancer subset the estimated correlations reach 0.20 in absolute value, the shrunken slopes correlate at 0.9954 with the independent fit, and one call changes net at <code>lfsr &lt; 0.05</code> (60 to 61: CD163 in macrophages near tumour and PECAM1 in B cells near T cells gained, ERBB2 in tumour near T cells lost, all three within 0.02 of the threshold). The 1,294 nominal sign changes are numerical noise: none is significant in either pass and their median absolute effect is 4e-21.</p>
+</li>
+<li><p>Leave-one-patient-out variance decomposition now subsets the contamination offset matrix alongside <code>mu</code>. Leaving it at full length offset every cell after the dropped patient’s first row, so each leave-one-out row was wrong while the full-data row was correct.</p></li>
+<li><p>The condition-by-proximity pair contributions are matched to the neighbours whose interaction terms are actually present, rather than to the first <code>n</code> entries of the neighbour list, and pair rows are labelled from the same matching vector. The previous indexing misaligned neighbour columns whenever an interaction term was missing.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-0-99-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-99-1"></a></h3>
+<ul><li>
+<p><code><a href="../reference/cellContamination.html">cellContamination()</a></code> reports, per cell, the contamination loading <code>rho_i</code> and the fraction of the cell’s expected counts attributed to its local ambient field, <code>sum_g mu_spill_ig / sum_g mu_ig</code>. This is the quantity the solver already printed in its fitting trace and then discarded; both engines now retain it as <code>contam_frac</code>, which costs two length-<code>n</code> accumulators rather than the <code>n x G</code> matrices, so it is available from an ordinary streaming fit without <code>return_mu</code>. A high fraction marks a cell whose profile is largely explained by its neighbours, the expected signature of a segmentation or transcript-assignment error.</p>
+<p>Read the fraction rather than the loading. The ambient field is cross-cell-type, so a cell with no differently-typed neighbour inside the technical kernel has no ambient signal at all; its <code>rho_i</code> is unidentified and shrinks to the empirical Bayes prior mean, giving every such cell the same apparently middling loading. On the shipped breast cancer subset that is 4,589 of 7,898 cells, including 84% of the tumour cells.</p>
+</li>
+<li><p><code><a href="../reference/paceDecompose.html">paceDecompose()</a></code> refuses a fit that does not retain <code>mu</code> instead of failing several steps later with a missing-column error from inside a grouped summarise. Fits keep <code>mu</code> by default; the packaged example fit has it stripped, so its documentation now reads the stored decomposition rather than recomputing one.</p></li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.99.0" id="pace-0990">PACE 0.99.0<a class="anchor" aria-label="anchor" href="#pace-0990"></a></h2>
 <ul><li>Initial package: <code><a href="../reference/paceFit.html">paceFit()</a></code> for SpatialExperiment input, the <code>PACEFit</code> S4 class, and the <code><a href="../reference/neighbourSlopes.html">neighbourSlopes()</a></code>, <code><a href="../reference/varianceDecomposition.html">varianceDecomposition()</a></code>, and <code><a href="../reference/topDrivers.html">topDrivers()</a></code> accessors, wrapping the locked PACE statistical engine.</li>
 </ul></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

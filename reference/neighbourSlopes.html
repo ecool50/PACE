@@ -11,7 +11,7 @@ interaction terms are included."><meta property="og:image" content="https://ecoo
 
     <a class="navbar-brand me-2" href="../index.html">PACE</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,12 +70,12 @@ interaction terms are included.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"pace_fit_example.rds"</span>, package <span class="op">=</span> <span class="st">"PACE"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">neighbourSlopes</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     gene  focal neighbour   term      estimate   std.error estimate_shrunk</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 ABCC11 B_Cell    B_Cell B_Cell -1.968614e-05 0.001376136               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  ACTA2 B_Cell    B_Cell B_Cell -1.011682e-04 0.004245694               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  ACTG2 B_Cell    B_Cell B_Cell  1.420043e-03 0.005170530               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  ADAM9 B_Cell    B_Cell B_Cell  3.256417e-05 0.003072893               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 ADGRE5 B_Cell    B_Cell B_Cell  8.103512e-04 0.005304599               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  ADH1B B_Cell    B_Cell B_Cell -3.150005e-05 0.002131909               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 ABCC11 B_Cell    B_Cell B_Cell -1.968907e-05 0.001376136               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  ACTA2 B_Cell    B_Cell B_Cell -9.976965e-05 0.004245639               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  ACTG2 B_Cell    B_Cell B_Cell  1.418293e-03 0.005170493               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  ADAM9 B_Cell    B_Cell B_Cell  3.277669e-05 0.003072945               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 ADGRE5 B_Cell    B_Cell B_Cell  8.125370e-04 0.005304314               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  ADH1B B_Cell    B_Cell B_Cell -3.142864e-05 0.002131910               0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   sd_shrunk lfsr</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1         0    1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2         0    1</span>

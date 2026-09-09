@@ -10,6 +10,8 @@
   : Contamination anchor genes per cell type
 - [`buildNeighbourhood()`](https://ecool50.github.io/PACE/reference/buildNeighbourhood.md)
   : Build the neighbourhood kernels
+- [`cellContamination()`](https://ecool50.github.io/PACE/reference/cellContamination.md)
+  : Per-cell contamination
 - [`neighbourSlopes()`](https://ecool50.github.io/PACE/reference/neighbourSlopes.md)
   : Shrunken neighbour proximity slopes
 - [`paceDecompose()`](https://ecool50.github.io/PACE/reference/paceDecompose.md)

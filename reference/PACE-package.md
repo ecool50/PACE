@@ -34,7 +34,8 @@ Useful links:
 
 ## Author
 
-**Maintainer**: Elijah Willie <ewillie0004@gmail.com>
+**Maintainer**: Elijah Willie <ewil3501@uni.sydney.edu.au>
+([ORCID](https://orcid.org/0000-0002-5773-3649))
 
 Authors:
 
