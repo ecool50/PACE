@@ -19,6 +19,43 @@
 suppressPackageStartupMessages({
 })
 
+# Null correlation between conditions, or NULL when it is not usable.
+#
+# estimate_null_correlation_simple() takes the empirical correlation of the z
+# scores over effects with |z| < 2 in every condition. Sparse focal-neighbour
+# pairs are zeroed by the kernel drop without their column being removed, so
+# those conditions have a constant z column; cov2cor then divides by a zero
+# variance and returns NaN for the WHOLE matrix. A constant column carries no
+# estimable correlation, so the estimate is taken over the conditions that vary
+# and the degenerate ones are left uncorrelated, which is the correct limit.
+.null_correlation <- function(Bhat, Shat, target_term) {
+  Z    <- Bhat / Shat
+  sd_z <- apply(Z, 2, function(v) stats::sd(v[is.finite(v)]))
+  live <- which(is.finite(sd_z) & sd_z > 0)
+  if (length(live) < 2L) {
+    message("  [mashr] term '", target_term,
+            "': fewer than two varying conditions, using independence")
+    return(NULL)
+  }
+  V_live <- tryCatch(
+    estimate_null_correlation_simple(
+      mash_set_data(Bhat[, live, drop = FALSE], Shat[, live, drop = FALSE])),
+    error = function(e) NULL)
+  usable <- !is.null(V_live) && all(is.finite(V_live)) &&
+    isTRUE(all.equal(V_live, t(V_live), tolerance = 1e-8)) &&
+    min(eigen(V_live, symmetric = TRUE, only.values = TRUE)$values) > 1e-8
+  if (!usable) {
+    message("  [mashr] term '", target_term,
+            "': null correlation not estimable, using independence")
+    return(NULL)
+  }
+  V <- diag(ncol(Bhat))
+  dimnames(V) <- list(colnames(Bhat), colnames(Bhat))
+  V[live, live] <- V_live
+  V
+}
+
+
 # Run mashr per-neighbour and return shrunken BLUPs in long form
 #
 # @param results PACE fit results from extractRandomEffects(*)
@@ -33,11 +70,17 @@ suppressPackageStartupMessages({
 # @param min_significant Minimum number of "significant" genes required
 #                        before adding data-driven covariances; otherwise
 #                        canonical-only.
+# @param null_correlation Estimate the correlation between conditions under
+#                        the null and pass it to mash as V. The focal cell
+#                        types are conditions in the same per-gene solve, so
+#                        they are correlated, and mash's default V = I
+#                        mis-calibrates lfsr. FALSE restores independence.
 # @return Long-form tibble.
 apply_mashr_shrinkage <- function(results, focals, neighbours,
                                   resp_term = NULL,
                                   min_significant = 10,
-                                  data_driven = TRUE) {
+                                  data_driven = TRUE,
+                                  null_correlation = TRUE) {
   ## data_driven=FALSE -> canonical covariances only (skip the slow cov_pca/cov_ed
   ## extreme-deconvolution step). Much faster when there are many neighbour terms
   ## (e.g. 16-type fits); shrinkage is slightly less adaptive but driver rankings
@@ -99,7 +142,15 @@ apply_mashr_shrinkage <- function(results, focals, neighbours,
       next
     }
 
-    data <- mash_set_data(Bhat, Shat)
+    ## The focal cell types are conditions estimated in the SAME per-gene
+    ## solve, so their errors are correlated. mash's default V = I treats them
+    ## as independent, which mis-calibrates lfsr. Estimate the null correlation
+    ## from the effects that look null in every condition (mashr's documented
+    ## two-step workflow), and fall back to independence when that estimate is
+    ## not usable, which happens on slices with too few null genes.
+    V <- if (isTRUE(null_correlation)) .null_correlation(Bhat, Shat, target_term) else NULL
+    data <- if (is.null(V)) mash_set_data(Bhat, Shat)
+            else mash_set_data(Bhat, Shat, V = V)
     U_c  <- cov_canonical(data)
     ## Be defensive about data-driven covariances: cov_pca / cov_ed can
     ## produce non-PSD components on small / degenerate slices, which then

@@ -11,8 +11,9 @@
 #'   per-cell contamination loadings, gene-wise overdispersions, variance
 #'   components).
 #' @slot neighbourSlopes A data frame of shrunken proximity coefficients, one row
-#'   per (gene, focal cell type, neighbour cell type[, condition term]), with the
-#'   raw estimate, shrunken estimate, and local false sign rate (lfsr).
+#'   per gene, focal cell type and neighbour cell type, plus the condition term
+#'   for condition cohorts, with the raw estimate, shrunken estimate, and local
+#'   false sign rate (lfsr).
 #' @slot varianceDecomposition A list of per-gene, per-focal variance
 #'   decomposition tables (cell-type identity, spatial cell state, contamination,
 #'   residual; and, for condition cohorts, a responder spatial block).
@@ -30,6 +31,7 @@
 #' fit
 #' neighbourSlopes(fit)
 #' @name PACEFit
+#' @aliases PACEFit-class
 #' @rdname PACEFit-class
 #' @exportClass PACEFit
 setClass(

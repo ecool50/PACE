@@ -26,8 +26,8 @@ cohorts), populating \code{\link[=varianceDecomposition]{varianceDecomposition()
 the same \code{SpatialExperiment} used for \code{\link[=paceModel]{paceModel()}} (to read the counts).
 }
 \examples{
-spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+# paceDecompose() needs a fit that retains `mu`. The packaged example fit has
+# it stripped to keep the file small, so read its stored decomposition:
 fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
-fit <- paceDecompose(fit, spe)
 head(varianceDecomposition(fit))
 }

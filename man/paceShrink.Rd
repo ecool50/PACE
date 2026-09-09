@@ -12,7 +12,10 @@ paceShrink(object, ...)
 \arguments{
 \item{object}{A \link{PACEFit} from \code{\link[=paceModel]{paceModel()}}.}
 
-\item{...}{Unused.}
+\item{...}{Further arguments passed to the shrinkage step, notably
+\code{null_correlation} (default \code{TRUE}: estimate the correlation between focal
+cell types under the null and pass it to mash as \code{V}; \code{FALSE} treats them
+as independent) and \code{data_driven}.}
 }
 \value{
 The \code{PACEFit} with the shrunken neighbour slopes added.

@@ -139,17 +139,19 @@ full stacked bar; the right zooms in on the two small spatial components.
 plotDecomposition(fit)
 ```
 
-Beyond the dominant cell-type identity component, macrophages, stromal and
-myoepithelial cells carry the largest spatial cell-state contributions. The
-underlying per-gene table is available with `varianceDecomposition(fit)`.
+Beyond the dominant cell-type identity component, B cells, stromal cells and
+macrophages carry the largest spatial cell-state contributions, while dendritic
+and myoepithelial cells carry none on this crop. The underlying per-gene table
+is available with `varianceDecomposition(fit)`.
 
 # Pairwise spatial interactions
 
 `plotPairHeatmap()` gives the percentage of each focal type's total variance
 contributed by spatial interaction with each neighbour, computed as the focal's
 spatial share split across neighbours by a normalised Pratt attribution.
-**Tumour as a neighbour** drives the strongest spatial signal across the
-microenvironment.
+**Tumour as a neighbour** acts the most widely across the microenvironment,
+reaching four focal types where no other neighbour reaches more than two. The
+single strongest pair is B cells next to T cells.
 
 ```{r pairs, fig.width = 6.5, fig.height = 5}
 plotPairHeatmap(fit)

@@ -23,9 +23,22 @@
 #' @import ggplot2
 #' @import tibble
 #' @importFrom tidyr pivot_wider pivot_longer
-#' @importFrom mashr mash mash_set_data cov_canonical cov_ed cov_pca get_significant_results
+#' @importFrom mashr mash mash_set_data cov_canonical cov_ed cov_pca get_significant_results estimate_null_correlation_simple
 #' @importFrom ashr get_lfsr get_pm get_psd
 #' @importFrom stats var sd median quantile pnorm qnorm optimize coef predict
 #'   as.formula model.matrix setNames rnorm
 #' @importFrom methods new validObject is
 "_PACKAGE"
+
+## Column names used inside dplyr/tidyr pipelines. Declaring them keeps
+## `R CMD check` from reading each one as an undefined global.
+utils::globalVariables(c(
+  "Block", "Cell type %", "MCSD", "MCSD4", "R2_RxS", "R2_S", "Residual %",
+  "Responder spatial state %", "Spatial state %", "Spillover %", "Total",
+  "V_RxS", "V_S", "V_resid", "V_total", "b_clean", "block",
+  "celltype_offset_sq", "delta", "drop_patient", "estimate", "estimate_shrunk",
+  "focal", "focal_mean", "gene", "group", "is_contaminated", "level", "lfsr",
+  "mu_bar", "n_focal", "neighbour", "pct", "pct_total", "per_gene",
+  "resp_pct_drop", "scaled_estimate", "sd_shrunk", "spec", "spec_w_sum",
+  "std.error", "term", "total_4", "u_raw"
+))

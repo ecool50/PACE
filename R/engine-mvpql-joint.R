@@ -20,6 +20,9 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
                                        sample_weight    = NULL,
                                        n_threads        = NULL,
                                        interior_precision = 1L,
+                                       ## Upper bound on the variance components; a binding cap means the
+                                       ## term is identified only by the ridge. See fit_pace_mvpql_streaming.
+                                       tau_max          = 100,
                                        data_informed_W  = NULL,        ## OPTIONAL q × G multiplicative weight matrix for tau_g_array.  When supplied (via R_DATA_INFORMED_TAU=1 in the builder), shrinks the prior variance for (focal, neighbour, gene) random-slope columns whose data support is weak (low detection rate × low K-variance).  See .compute_data_informed_weights().
                                        ## Ambient field carriers for the per-cell contamination model (bleed_percell).
                                        ## ambient_mat (n × G) = RAW E^tech local cross-type ambient a_ig; ambient_image_idx
@@ -55,7 +58,7 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
       stop("R_INNER_SOLVE=", INNER_SOLVE, " requires pace_laplace_solver.R + the TMB DLL; ",
            "neither pace_laplace_chunk nor ensure_laplace_dll() is in the search path. ",
            "Confirm zzz.R sourced helpers/pace_laplace_solver.R.")
-    ensure_laplace_dll()
+    get("ensure_laplace_dll", mode = "function")()
     if (verbose) cat(sprintf("  [mvpql.joint.multi] INNER SOLVE: %s\n",
                               toupper(INNER_SOLVE)))
   }
@@ -149,7 +152,8 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
   }
   prev_eta   <- log(mu) - offset_vec
   prev_alpha <- alpha
-  hist <- list(tau_blocks = list(), alpha = list(), rel_delta = numeric())
+  hist <- list(tau_blocks = list(), alpha = list(), rel_delta = numeric(),
+               n_nonfinite = integer(), tau_max_seen = numeric())
   converged <- FALSE
 
   B <- matrix(0, p, g_n); U <- matrix(0, q, g_n)
@@ -203,7 +207,7 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
         ## Warm start from previous iteration's BLUPs
         B_init <- B[, gene_idx_chk, drop = FALSE]
         U_init <- U[, gene_idx_chk, drop = FALSE]
-        per_gene_chk <- pace_laplace_chunk(
+        per_gene_chk <- get("pace_laplace_chunk", mode = "function")(
           Y_chunk         = Y_chk,
           X               = X_fixed,
           Z               = Z,
@@ -250,6 +254,10 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
         }
         if (!is.null(sample_weight)) w_chk <- w_chk * sample_weight
         lam_chk   <- lam_diag_mat[, gene_idx_chk, drop = FALSE]
+        ## Keep the ridge out of single precision: below eps_float * sum(w) it
+        ## is quantised away, at a threshold that falls as 1/n.
+        if (iter_precision != 0L && .ridge_needs_double(lam_chk, w_chk))
+          iter_precision <- 0L
         per_gene_chk <- .solve_genes_chunk_multiblock(
           X_fixed, re$X_terms_list, re$cell_grp_list, re$cells_by_grp_list,
           w_chk, z_chk, lam_chk, re$blocks,
@@ -378,10 +386,23 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
       ## Re-impose a numeric floor so 1/tau in the ridge stays finite
       tau_g_array <- pmax(tau_g_array, 1e-8)
     }
+    ## ...and a ceiling, so a ridge-identified column cannot climb without end.
+    tau_g_array <- .clamp_tau(tau_g_array, tau_max, it)
+    hist$tau_max_seen[it] <- max(tau_g_array, na.rm = TRUE)
 
-    rel_delta <- max(abs(eta_new - prev_eta) /
-                       pmax(abs(prev_eta), 1e-3), na.rm = TRUE)
+    rd_mat    <- abs(eta_new - prev_eta) / pmax(abs(prev_eta), 1e-3)
+    ## na.rm below hides every gene whose linear predictor has gone non-finite,
+    ## so count them and say so rather than reporting a clean metric.
+    n_nonfinite <- sum(!is.finite(rd_mat))
+    rel_delta   <- max(rd_mat, na.rm = TRUE)
+    rm(rd_mat)
+    if (n_nonfinite > 0L) {
+      warning(sprintf(
+        "iter %d: %d gene-cell linear predictors are non-finite and are excluded from the convergence metric.",
+        it, n_nonfinite), call. = FALSE)
+    }
     prev_eta <- eta_new
+    hist$n_nonfinite[it]  <- n_nonfinite
     hist$tau_blocks[[it]] <- tau_blocks
     hist$alpha[[it]]      <- alpha
     hist$rel_delta[it]    <- rel_delta
@@ -434,7 +455,7 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
       tau_inv_chk  <- 1 / pmax(tau_g_array[, gene_idx_chk, drop = FALSE], 1e-6)
       B_init       <- B[, gene_idx_chk, drop = FALSE]
       U_init       <- U[, gene_idx_chk, drop = FALSE]
-      pol_chk <- pace_laplace_chunk(
+      pol_chk <- get("pace_laplace_chunk", mode = "function")(
         Y_chunk         = Y_chk,
         X               = X_fixed,
         Z               = Z,
@@ -487,6 +508,10 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
   percell_bleed_rho     <- if (additive_active && percell_mode) add_rho else NULL
   mu_spill_out          <- if (additive_active) mu_spill   else NULL
   mu_bio_out            <- if (additive_active) mu_bio     else NULL
+  ## Same definition as the [percell_bleed] fitting-trace diagnostic, and as the
+  ## streaming solver's `contam_frac`.
+  contam_frac_out       <- if (additive_active)
+                             rowSums(mu_spill) / pmax(rowSums(mu), 1e-9) else NULL
 
   list(B = B, U = U, se_B = se_B, se_U = se_U,
        alpha          = alpha,
@@ -506,5 +531,6 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
        percell_bleed_rho      = percell_bleed_rho,
        mu_spill               = mu_spill_out,
        mu_bio                 = mu_bio_out,
+       contam_frac            = contam_frac_out,
        n_iter         = it, converged = converged, history = hist)
 }

@@ -109,6 +109,15 @@ build_random_design_multi <- function(df, re_specs) {
 
     ## model.matrix-based random-effect block.
     X_terms <- stats::model.matrix(spec$formula, df)
+    ## model.matrix() applies na.omit and silently drops rows. The index vectors
+    ## below are built from n, so a short X_terms makes sparseMatrix RECYCLE x
+    ## rather than error, handing every later cell another cell's covariate.
+    if (nrow(X_terms) != n) {
+      stop(sprintf(
+        paste0("re_spec '%s': model.matrix dropped %d of %d rows (NA in the ",
+               "formula variables). Remove or impute those cells before fitting."),
+        gcol, n - nrow(X_terms), n))
+    }
     storage.mode(X_terms) <- "double"
     K_t_b   <- ncol(X_terms)
     term_levels <- colnames(X_terms)
@@ -350,7 +359,7 @@ build_random_design_multi <- function(df, re_specs) {
   W <- pmax(W, 1e-8)   # numerical safety only
 
   if (verbose) {
-    cat(sprintf("  [data-informed tau] q × G weight matrix: dim %d × %d, range [%.3f, %.3f], median %.3f\n",
+    cat(sprintf("  [data-informed tau] q x G weight matrix: dim %d x %d, range [%.3f, %.3f], median %.3f\n",
                 nrow(W), ncol(W), min(W), max(W), median(W)))
   }
   W
@@ -372,6 +381,44 @@ build_random_design_multi <- function(df, re_specs) {
   }
   pmax(out, 1e-6)
 }
+
+# Bound the variance components from above.
+#
+# Every tau write in the engines is a pmax against a floor. Without a ceiling a
+# column that is identified only by the ridge climbs by mean(u^2) per iteration
+# and the inflated posterior variance feeds the next update, so the term never
+# settles. A binding cap is diagnostic, not cosmetic: it means the term is not
+# identified by the data, so it is reported rather than applied silently.
+.clamp_tau <- function(tau, tau_max, it = NA_integer_) {
+  if (is.null(tau_max) || !is.finite(tau_max)) return(tau)
+  n_bind <- sum(tau > tau_max, na.rm = TRUE)
+  if (n_bind > 0L) {
+    warning(sprintf(
+      paste0("iter %s: %d variance component(s) reached tau_max = %.4g. A binding cap ",
+             "means the term is identified only by the ridge; inspect the design rather ",
+             "than raising the cap."),
+      as.character(it), n_bind, tau_max), call. = FALSE)
+    tau <- pmin(tau, tau_max)
+  }
+  tau
+}
+
+
+# Force a double interior when the ridge is small relative to the diagonal it
+# is added to.
+#
+# The ridge (1/tau) is accumulated inside the float kernel, where the smallest
+# representable increment on a diagonal of order sum(w) is eps_float * sum(w).
+# Below that the regularisation is quantised away and the terms it identifies
+# come loose. The threshold scales as 1/n, so the same model and the same
+# design lose their ridge purely by growing the cohort. Threshold (~84 float
+# ulps) follows the correctness audit's recommendation.
+.ridge_needs_double <- function(lam_chk, w_chk) {
+  lam_min <- suppressWarnings(min(lam_chk, na.rm = TRUE))
+  w_max   <- suppressWarnings(max(colSums(w_chk, na.rm = TRUE)))
+  is.finite(lam_min) && is.finite(w_max) && lam_min < 1e-5 * w_max
+}
+
 
 .adaptive_tau_half_cauchy <- function(s2_mat, K_t, K_g, gene_names = NULL,
                                        lambda_sq_prev = NULL,
@@ -437,7 +484,7 @@ build_random_design_multi <- function(df, re_specs) {
   stopifnot(q == K_t * K_g)
   out <- matrix(NA_real_, q, G,
                  dimnames = list(rownames(s2_mat), gene_names))
-  panel <- numeric(q); d0 <- numeric(q)
+  panel <- numeric(q); panel_med <- numeric(q); d0 <- numeric(q)
   ## Wolfinger-O'Connell (1993) / Schall (1991) REML correction on the variance-
   ## component EM update.  PACE's PQL EM update used mean(û² + V̂), which is the
   ## ML moment estimator and underestimates τ for sparse counts (Lin-Breslow
@@ -462,7 +509,8 @@ build_random_design_multi <- function(df, re_specs) {
         pmin(K_g / pmax(K_g - p_fixed, 1L), 2)
       } else 1
       vals <- vals * reml_fac
-      panel[k] <- mean(vals, na.rm = TRUE)
+      panel[k]     <- mean(vals, na.rm = TRUE)
+      panel_med[k] <- stats::median(vals, na.rm = TRUE)
       ## Cap minimum d0: very weak shrinkage produces wild per-gene tau
       ## that destabilise the per-gene WLS solve (LU singular). d0_min=1
       ## means at least 50/50 between data and panel.
@@ -472,8 +520,11 @@ build_random_design_multi <- function(df, re_specs) {
   }
   ## Floor: per-(t, c) at panel/100 OR a global tau_floor, whichever is larger.
   ## This prevents 1/tau_g from blowing up the ridge penalty and singularising
-  ## the per-gene WLS system.
-  per_tc_floor <- pmax(panel / 100, 1e-4)
+  ## the per-gene WLS system. The floor scale is the MEDIAN across genes, not
+  ## the mean: a single runaway gene lifts a mean-based floor for every gene in
+  ## the row (one gene at s2 = 2.9e5 among 931 lifted it to 3.1, two hundred
+  ## times a healthy tau). The EB shrinkage target above is left as the mean.
+  per_tc_floor <- pmax(panel_med / 100, 1e-4)
   for (k in seq_len(q)) {
     out[k, ] <- pmax(out[k, ],
                       if (is.null(tau_floor)) per_tc_floor[k] else tau_floor)
@@ -1340,6 +1391,9 @@ fit_pace_mvpql_multi <- function(Y, X_fixed, df, re_specs,
                                   sample_weight = NULL,
                                   n_threads = NULL,
                                   interior_precision = 0L,
+                                  ## Upper bound on the variance components; a binding cap means the
+                                  ## term is identified only by the ridge. See fit_pace_mvpql_streaming.
+                                  tau_max = 100,
                                   verbose = TRUE) {
   tau_shrinkage <- match.arg(tau_shrinkage)
   if (is.null(offset_vec)) offset_vec <- rep(0, nrow(Y))
@@ -1398,7 +1452,8 @@ fit_pace_mvpql_multi <- function(Y, X_fixed, df, re_specs,
   alpha <- rep(1, g_n)
   prev_eta   <- log(mu) - offset_vec
   prev_alpha <- alpha
-  hist <- list(tau_blocks = list(), alpha = list(), rel_delta = numeric())
+  hist <- list(tau_blocks = list(), alpha = list(), rel_delta = numeric(),
+               n_nonfinite = integer(), tau_max_seen = numeric())
   converged <- FALSE
 
   B <- matrix(0, p, g_n); U <- matrix(0, q, g_n)
@@ -1424,9 +1479,12 @@ fit_pace_mvpql_multi <- function(Y, X_fixed, df, re_specs,
     out
   }
 
+  ## Set once the convergence criterion has been met on a float interior; the
+  ## next pass then runs in double so the SEs we keep are not float-quantised.
+  final_pass <- FALSE
   for (it in seq_len(n_iter)) {
     t_it <- Sys.time()
-    last_iter <- (it == n_iter)
+    last_iter <- (it == n_iter) || final_pass
     lam_diag_mat <- 1 / tau_g_array
 
     ## Process genes in chunks. To control peak memory, compute the
@@ -1449,6 +1507,8 @@ fit_pace_mvpql_multi <- function(Y, X_fixed, df, re_specs,
       ## last iter so the SE diagonal inherits double precision. Caller can
       ## force double everywhere with interior_precision = 0.
       iter_precision <- if (last_iter) 0L else as.integer(interior_precision)
+      if (iter_precision != 0L && .ridge_needs_double(lam_chk, w_chk))
+        iter_precision <- 0L
       per_gene_chk <- .solve_genes_chunk_multiblock(
         X_fixed, re$X_terms_list, re$cell_grp_list, re$cells_by_grp_list,
         w_chk, z_chk, lam_chk, re$blocks,
@@ -1462,10 +1522,12 @@ fit_pace_mvpql_multi <- function(Y, X_fixed, df, re_specs,
         B[, gi]      <- res$beta
         U[, gi]      <- res$u
         re_var[, gi] <- pmax(res$Ainv_diag[p + seq_len(q)], 0)
-        if (last_iter) {
-          se_B[, gi] <- sqrt(pmax(res$Ainv_diag[seq_len(p)], 0))
-          se_U[, gi] <- sqrt(pmax(res$Ainv_diag[p + seq_len(q)], 0))
-        }
+        ## Always compute SEs so early-exit at convergence still yields valid
+        ## se_B/se_U (mashr filter rejects NA SEs), matching the single-block
+        ## sibling above. Non-final iterations may run a float interior, so
+        ## these are refreshed in double on the last iteration.
+        se_B[, gi] <- sqrt(pmax(res$Ainv_diag[seq_len(p)], 0))
+        se_U[, gi] <- sqrt(pmax(res$Ainv_diag[p + seq_len(q)], 0))
       }
       rm(per_gene_chk, z_chk, w_chk, lam_chk)
     }
@@ -1511,10 +1573,17 @@ fit_pace_mvpql_multi <- function(Y, X_fixed, df, re_specs,
         tau_g_array[rng, ] <- tau_b_g
       }
     }
+    tau_g_array <- .clamp_tau(tau_g_array, tau_max, it)
+    hist$tau_max_seen[it] <- max(tau_g_array, na.rm = TRUE)
 
-    rel_delta <- max(abs(eta_new - prev_eta) /
-                       pmax(abs(prev_eta), 1e-3), na.rm = TRUE)
+    rd_mat    <- abs(eta_new - prev_eta) / pmax(abs(prev_eta), 1e-3)
+    ## na.rm below hides every gene whose linear predictor has gone non-finite,
+    ## so count them and refuse to declare convergence while any remain.
+    n_nonfinite <- sum(!is.finite(rd_mat))
+    rel_delta   <- max(rd_mat, na.rm = TRUE)
+    rm(rd_mat)
     prev_eta <- eta_new
+    hist$n_nonfinite[it]  <- n_nonfinite
     hist$tau_blocks[[it]] <- tau_blocks
     hist$alpha[[it]]      <- alpha
     hist$rel_delta[it]    <- rel_delta
@@ -1522,13 +1591,24 @@ fit_pace_mvpql_multi <- function(Y, X_fixed, df, re_specs,
     if (verbose) {
       tau_med_per_block <- vapply(tau_blocks, function(m)
                                     stats::median(m), numeric(1))
-      cat(sprintf("  [mvpql.multi] iter %d  rel_delta=%.3g  alpha[med]=%.2f  tau_med_per_block=[%s]  (%.1fs)\n",
+      cat(sprintf("  [mvpql.multi] iter %d  rel_delta=%.3g  alpha[med]=%.2f  tau_med_per_block=[%s] (max %.3g)  (%.1fs)\n",
                   it, rel_delta, median(alpha),
                   paste(sprintf("%.3f", tau_med_per_block), collapse=","),
+                  hist$tau_max_seen[it],
                   as.numeric(difftime(Sys.time(), t_it, units = "secs"))))
     }
-    if (it >= 2 && is.finite(rel_delta) && rel_delta < tol) {
-      converged <- TRUE; break
+    if (n_nonfinite > 0L) {
+      warning(sprintf(
+        "iter %d: %d gene-cell linear predictors are non-finite; these are excluded from the convergence metric and the fit will not be reported as converged.",
+        it, n_nonfinite), call. = FALSE)
+    }
+    if (it >= 2 && is.finite(rel_delta) && rel_delta < tol && n_nonfinite == 0L) {
+      if (final_pass || as.integer(interior_precision) == 0L) {
+        converged <- TRUE; break
+      }
+      ## Converged on a float interior: take one more pass in double so the
+      ## retained SEs come from an unquantised ridge, then stop.
+      final_pass <- TRUE
     }
     ## Release per-iter scratch before next iteration to keep peak RSS down
     if (exists("per_gene", inherits = FALSE)) {
@@ -2475,6 +2555,12 @@ mvpql_variance_decomposition_lopo <- function(fit, df, Y, vars, X_fixed,
     X_p  <- X_fixed[keep, , drop = FALSE]
     fit_p <- fit
     fit_p$mu <- fit_p$mu[keep, , drop = FALSE]
+    ## The consumer indexes technical_offset_mat by positions in the SUBSET
+    ## frame, so it has to be subset alongside mu; leaving it at full length
+    ## silently offsets every cell after the dropped patient's first row.
+    if (!is.null(fit_p$technical_offset_mat))
+      fit_p$technical_offset_mat <-
+        fit_p$technical_offset_mat[keep, , drop = FALSE]
     dec_p <- mvpql_variance_decomposition_multi(
       fit = fit_p, df = df_p, Y = Y_p, vars = vars, X_fixed = X_p,
       resp_term = resp_term, focal_levels = focal_levels,
@@ -3337,12 +3423,15 @@ mvpql_variance_decomposition_v6 <- function(fit, df, vars, X_fixed,
     has_resp <- !is.null(resp_term) && any(grepl(paste0("^", resp_term, ":"), blk_ct$term_levels))
     if (has_resp) {
       resp_term_names <- paste0(resp_term, ":", vars)
-      resp_idx <- vapply(resp_term_names, function(nm) {
+      matched  <- vapply(resp_term_names, function(nm) {
         v <- term2t_ct[[nm]]; if (is.null(v)) NA_integer_ else as.integer(v)
-      }, integer(1)); resp_idx <- resp_idx[!is.na(resp_idx)]
+      }, integer(1))
+      keep_v   <- which(!is.na(matched))
+      resp_idx <- matched[keep_v]
       rblups <- fit$U[ct_col_fn(resp_idx, c_idx), , drop=FALSE]
       rpost  <- fit$se_U[ct_col_fn(resp_idx, c_idx), , drop=FALSE]^2
-      N_r_c <- N_c[, vars[seq_along(resp_idx)], drop=FALSE] * R_c
+      resp_vars <- vars[keep_v]                        # neighbour labels for the surviving rows
+      N_r_c <- N_c[, resp_vars, drop=FALSE] * R_c      # surviving neighbours (was vars[seq_along] — misaligned)
       var_Nr <- vapply(seq_along(resp_idx),
                        function(ti) var_within_or_total(N_r_c[, ti], pat_c, variance_estimator),
                        numeric(1))
@@ -3366,6 +3455,7 @@ mvpql_variance_decomposition_v6 <- function(fit, df, vars, X_fixed,
       V_state_responder <- colSums(V_resp_pair_g)
     } else {
       V_resp_pair_g <- matrix(0, length(slope_term_idx), G)
+      resp_vars <- vars
       V_state_responder <- numeric(G)
     }
 
@@ -3409,7 +3499,11 @@ mvpql_variance_decomposition_v6 <- function(fit, df, vars, X_fixed,
     ## Per-pair % for spatial and condition × spatial blocks
     for (block in c("spatial","responder_spatial")) {
       M <- if (block == "spatial") V_spat_pair_g else V_resp_pair_g
-      for (ti in seq_along(vars)) {
+      ## The responder block keeps only the neighbours whose interaction term
+      ## matched, so it can have fewer rows than vars. Label rows from the
+      ## matching vector, never from seq_along(vars).
+      nbr <- if (block == "spatial") vars else resp_vars
+      for (ti in seq_along(nbr)) {
         if (aggregate == "pooled") {
           pp <- agg_pooled(M[ti, ], Total_g)
         } else if (isTRUE(weight_by_spec_sq)) {
@@ -3418,7 +3512,7 @@ mvpql_variance_decomposition_v6 <- function(fit, df, vars, X_fixed,
           pp <- agg_unweighted(safe_pct(M[ti, ]))
         }
         pair_rows[[length(pair_rows) + 1L]] <- tibble::tibble(
-          focal = c_name, neighbour = vars[ti], block = block,
+          focal = c_name, neighbour = nbr[ti], block = block,
           pair_pct = pp,
           pair_pct_med = stats::median(safe_pct(M[ti, ]), na.rm=TRUE))
       }

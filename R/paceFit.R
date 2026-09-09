@@ -25,11 +25,21 @@
   ## derive the responder term prefix for condition cohorts, and set the 0/1
   ## condition indicator the decomposition and driver scoring require.
   if (!is.null(condition_col)) {
-    if (is.null(resp_term)) {
-      lev <- levels(factor(df[[condition_col]]))
-      resp_term <- paste0("Responder", lev[length(lev)])
+    ## model.matrix names the term paste0(condition_col, level), so both the
+    ## default term and the level it refers to must come from condition_col.
+    ## Hardcoding "Responder" here left .resp_dummy all zeros for any other
+    ## column name, silently zeroing the whole responder block.
+    lev        <- levels(factor(df[[condition_col]]))
+    cond_terms <- paste0(condition_col, lev)
+    if (is.null(resp_term)) resp_term <- cond_terms[length(cond_terms)]
+    hit <- match(resp_term, cond_terms)
+    if (is.na(hit)) {
+      stop(sprintf(
+        "resp_term '%s' does not name a level of condition_col '%s'. Valid terms: %s.",
+        resp_term, condition_col, paste(cond_terms, collapse = ", ")),
+        call. = FALSE)
     }
-    resp_case <- sub("^Responder", "", resp_term)
+    resp_case <- lev[hit]
     df$.resp_dummy <- as.integer(as.character(df[[condition_col]]) == resp_case)
   }
   list(Y = Y, df = df, image_col = image_col, resp_term = resp_term)
@@ -145,7 +155,10 @@ setMethod(
 #' multivariate adaptive shrinkage, populating [neighbourSlopes()].
 #'
 #' @param object A [PACEFit] from [paceModel()].
-#' @param ... Unused.
+#' @param ... Further arguments passed to the shrinkage step, notably
+#'   `null_correlation` (default `TRUE`: estimate the correlation between focal
+#'   cell types under the null and pass it to mash as `V`; `FALSE` treats them
+#'   as independent) and `data_driven`.
 #' @return The `PACEFit` with the shrunken neighbour slopes added.
 #' @examples
 #' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
@@ -155,7 +168,7 @@ setMethod(
 #' @export
 setMethod("paceShrink", "PACEFit", function(object, ...) {
   slopes <- pace_shrink(object@fit, object@cellTypes,
-                        resp_term = object@params$resp_term)
+                        resp_term = object@params$resp_term, ...)
   object@neighbourSlopes <- as.data.frame(slopes)
   object
 })
@@ -176,13 +189,20 @@ setMethod("paceShrink", "PACEFit", function(object, ...) {
 #' @param ... Unused.
 #' @return The `PACEFit` with the variance decomposition added.
 #' @examples
-#' spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+#' # paceDecompose() needs a fit that retains `mu`. The packaged example fit has
+#' # it stripped to keep the file small, so read its stored decomposition:
 #' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
-#' fit <- paceDecompose(fit, spe)
 #' head(varianceDecomposition(fit))
 #' @rdname paceDecompose
 #' @export
 setMethod("paceDecompose", "PACEFit", function(object, spe, ...) {
+  ## The decomposition reads the fitted means cell by cell, so it needs the
+  ## full n x G `mu`. Fits keep it by default; one that has had it dropped to
+  ## save space (as the packaged example fit has) cannot be re-decomposed.
+  if (is.null(object@fit$mu))
+    stop("this fit does not retain `mu`, which the decomposition needs. ",
+         "Refit with paceModel(..., return_mu = TRUE), or read the stored ",
+         "decomposition with varianceDecomposition().", call. = FALSE)
   genes <- object@context$genes
   Y  <- t(as.matrix(SummarizedExperiment::assay(spe, object@params$assay_name)))
   Y  <- Y[, genes, drop = FALSE]
