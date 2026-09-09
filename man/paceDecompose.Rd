@@ -25,9 +25,14 @@ state, contamination, and residual (plus a responder block for condition
 cohorts), populating \code{\link[=varianceDecomposition]{varianceDecomposition()}}. Needs the fitted object plus
 the same \code{SpatialExperiment} used for \code{\link[=paceModel]{paceModel()}} (to read the counts).
 }
+\details{
+The decomposition needs the fitted means. A fit that has had its \verb{n x G}
+matrices dropped to save space still carries everything needed to rebuild
+them exactly, so they are recomputed rather than required.
+}
 \examples{
-# paceDecompose() needs a fit that retains `mu`. The packaged example fit has
-# it stripped to keep the file small, so read its stored decomposition:
+spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
 fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+fit <- paceDecompose(fit, spe)
 head(varianceDecomposition(fit))
 }

@@ -142,7 +142,7 @@ setMethod(
                     celltype_col = celltype_col, image_col = prep$image_col,
                     condition_col = condition_col, resp_term = prep$resp_term,
                     kernel_per_image = kernel_per_image, image_re = image_re,
-                    assay_name = assay_name))
+                    assay_name = assay_name, edge_correct = res$edge_correct))
   })
 
 ## ===========================================================================
@@ -184,25 +184,22 @@ setMethod("paceShrink", "PACEFit", function(object, ...) {
 #' cohorts), populating [varianceDecomposition()]. Needs the fitted object plus
 #' the same `SpatialExperiment` used for [paceModel()] (to read the counts).
 #'
+#' The decomposition needs the fitted means. A fit that has had its `n x G`
+#' matrices dropped to save space still carries everything needed to rebuild
+#' them exactly, so they are recomputed rather than required.
+#'
 #' @param object A [PACEFit] from [paceModel()].
 #' @param spe The [SpatialExperiment::SpatialExperiment] that was fitted.
 #' @param ... Unused.
 #' @return The `PACEFit` with the variance decomposition added.
 #' @examples
-#' # paceDecompose() needs a fit that retains `mu`. The packaged example fit has
-#' # it stripped to keep the file small, so read its stored decomposition:
+#' spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
 #' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+#' fit <- paceDecompose(fit, spe)
 #' head(varianceDecomposition(fit))
 #' @rdname paceDecompose
 #' @export
 setMethod("paceDecompose", "PACEFit", function(object, spe, ...) {
-  ## The decomposition reads the fitted means cell by cell, so it needs the
-  ## full n x G `mu`. Fits keep it by default; one that has had it dropped to
-  ## save space (as the packaged example fit has) cannot be re-decomposed.
-  if (is.null(object@fit$mu))
-    stop("this fit does not retain `mu`, which the decomposition needs. ",
-         "Refit with paceModel(..., return_mu = TRUE), or read the stored ",
-         "decomposition with varianceDecomposition().", call. = FALSE)
   genes <- object@context$genes
   Y  <- t(as.matrix(SummarizedExperiment::assay(spe, object@params$assay_name)))
   Y  <- Y[, genes, drop = FALSE]
@@ -210,7 +207,15 @@ setMethod("paceDecompose", "PACEFit", function(object, spe, ...) {
   if (nrow(Y) != nrow(df))
     stop("`spe` has ", nrow(Y), " cells but the fit has ", nrow(df),
          "; pass the same object used for paceModel().", call. = FALSE)
-  dec <- pace_decompose(object@fit, df, Y, object@cellTypes,
+  ## The decomposition reads the fitted means cell by cell. A fit that had the
+  ## n x G matrices dropped to save space still carries everything needed to
+  ## rebuild them exactly, so rebuild rather than refuse.
+  parts <- .pace_mu_parts(object, spe)
+  fit_mu <- object@fit
+  fit_mu$mu                   <- parts$mu
+  fit_mu$technical_offset_mat <- parts$technical_offset_mat
+  fit_mu$bleed_offset_mat     <- parts$technical_offset_mat
+  dec <- pace_decompose(fit_mu, df, Y, object@cellTypes,
                         object@context$X_fixed, resp_term = object@params$resp_term)
   sf  <- .pace_single_frame(Y, df, object@params$celltype_col, dec,
                             has_condition = !is.null(object@params$condition_col))

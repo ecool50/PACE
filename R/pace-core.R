@@ -305,6 +305,65 @@ pace_ambient_field <- function(coords, Y, celltype, image, types, h_tech,
 }
 
 ## ----------------------------------------------------------------------------
+## Fitted means and the contamination log-offset, rebuilt rather than stored.
+##
+## mu is a deterministic function of what the fit already holds: on the log
+## scale eta = X B + Z U has rank at most p + q, so B, U, X_fixed and re_meta$Z
+## are the factored form of it, and the dense n x G matrix is the expanded copy.
+## Only the ambient field has to be recomputed, from the same counts and the
+## same settings the fit used. Reconstruction is exact, not approximate.
+##
+## technical_offset_mat = log1p(mu_spill / mu_bio) must be rebuilt alongside mu:
+## it is what gates the spillover block of the decomposition (`use_bleed`), so a
+## fit missing it does not fail, it silently reports no spillover.
+##
+## The settings must come from the fit, never from the defaults of the exported
+## ambientField(): a fit with another h_tech, image grouping, cell-type order or
+## edge correction would otherwise be handed a different field and would return
+## plausible, wrong numbers.
+## ----------------------------------------------------------------------------
+.pace_mu_parts <- function(object, spe) {
+  f <- object@fit
+  ## The two travel together: both solvers return them from the same pass, so
+  ## either both are present or neither is.
+  if (!is.null(f$mu) && !is.null(f$technical_offset_mat))
+    return(list(mu = f$mu, technical_offset_mat = f$technical_offset_mat))
+
+  df <- object@context$df
+  p  <- object@params
+  Y  <- t(as.matrix(SummarizedExperiment::assay(spe, p$assay_name)))
+  Y  <- Y[, object@context$genes, drop = FALSE]
+  if (nrow(Y) != nrow(df))
+    stop("`spe` has ", nrow(Y), " cells but the fit has ", nrow(df),
+         "; pass the same object used for paceModel().", call. = FALSE)
+
+  ## mu_bio = exp(eta + offset), offset = log library size (pace_fit_streaming).
+  eta    <- as.matrix(object@context$X_fixed %*% f$B) +
+            as.matrix(f$re_meta$Z %*% f$U)
+  mu_bio <- pmax(exp(eta + log(df$nCount)), 1e-6)
+
+  ## contamination = "none" carries no ambient term: mu = mu_bio, no spillover.
+  if (!identical(p$contamination, "percell_hc") || is.null(f$percell_bleed_rho))
+    return(list(mu = mu_bio,
+                technical_offset_mat = matrix(0, nrow(mu_bio), ncol(mu_bio),
+                                              dimnames = dimnames(mu_bio))))
+
+  if (is.null(p$edge_correct))
+    stop("this fit predates the recording of `edge_correct` and its ambient ",
+         "field cannot be rebuilt faithfully; refit, or decompose a fit that ",
+         "retains `mu`.", call. = FALSE)
+
+  amb <- pace_ambient_field(SpatialExperiment::spatialCoords(spe), Y,
+                            df$celltype, df$imageID, object@cellTypes,
+                            h_tech = p$h_tech, edge_correct = p$edge_correct,
+                            validate = FALSE, verbose = FALSE)
+  ## Same expressions and floors as the solver's final pass.
+  mu_spill <- pmax(as.matrix(amb$W %*% Y) * f$percell_bleed_rho, 0)
+  list(mu                   = pmax(mu_bio + mu_spill, 1e-6),
+       technical_offset_mat = log1p(mu_spill / mu_bio))
+}
+
+## ----------------------------------------------------------------------------
 ## THE method: compose kernels + ambient + anchors + data-informed tau and run
 ## the streaming PQL fit. All knobs that were `R_*` env flags in the builder are
 ## explicit arguments here. Returns the fit plus the working frame / X_fixed / Y
@@ -473,7 +532,11 @@ pace_fit_streaming <- function(Y, df, types = NULL,
   }
 
   list(fit = fit, df = df, X_fixed = X_fixed, Y = Y,
-       K_tech = K_tech, K_bio = K_bio, types = types)
+       K_tech = K_tech, K_bio = K_bio, types = types,
+       ## Returned so the fit can record it: it is the one ambient-field input
+       ## not otherwise recoverable from the fit, and .pace_mu() needs it to
+       ## rebuild the same field.
+       edge_correct = edge_correct)
 }
 
 ## ----------------------------------------------------------------------------
