@@ -1,0 +1,181 @@
+---
+title: "Comparing proximity effects between conditions"
+author: "Elijah Willie"
+date: "`r Sys.Date()`"
+output:
+    BiocStyle::html_document:
+        toc: true
+        toc_float: true
+vignette: >
+  %\VignetteIndexEntry{Comparing proximity effects between conditions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE, comment = "#>", message = FALSE, warning = FALSE,
+  fig.width = 6, fig.height = 4, dpi = 90)
+```
+
+# Introduction
+
+The `r Biocpkg("PACE")` manual fits a single section and asks how expression
+changes with proximity to each neighbouring cell type. This vignette asks the
+next question: **does that proximity effect differ between two groups of
+patients?**
+
+Answering it needs a cohort rather than a section, and it adds one component to
+the model. Alongside the spatial cell state block, which is the proximity effect
+common to everyone, PACE estimates a **responder spatial state** block: the part
+of the proximity effect that differs between conditions. Read the two together,
+a gene can respond to a neighbour in both arms equally (spatial, no responder
+signal), or respond differently depending on outcome (responder signal).
+
+# The melanoma subset
+
+The package ships a subset of a CosMx melanoma cohort of patients profiled after
+immune checkpoint blockade, contrasting progressive disease (PD) against
+non-progressive disease (non-PD, pooling stable, partial and complete
+responders).
+
+```{r load, message = FALSE}
+library(PACE)
+library(SpatialExperiment)
+library(ggplot2)
+library(dplyr)
+
+spe <- readRDS(system.file("extdata", "mel_cosmx_subset.rds", package = "PACE"))
+spe
+table(spe$cellType)
+table(unique(data.frame(image = spe$image, arm = spe$Responder))$arm)
+```
+
+One section per patient, so the condition contrast is between patients, not
+within a section. Each section here is a contiguous spatial crop of the
+published one; the derivation is in `inst/scripts/make-mel-cosmx-subset.R`.
+
+> **Provenance.** These data are a modified subset of the deposit accompanying
+> Dong, Su, Kluger, Fan and Kluger, *SIMVI disentangles intrinsic and
+> spatial-induced cellular states in spatial omics data*
+> ([doi:10.5281/zenodo.14708000](https://doi.org/10.5281/zenodo.14708000)),
+> used here under CC-BY-4.0.
+
+> **Read this before drawing conclusions.** The subset is 8,454 of the cohort's
+> 56,274 cells, sized so the package stays small enough to distribute. It is an
+> illustration of the workflow, not an analysis. The section on statistical
+> power below shows what that costs, with numbers.
+
+# Fitting with a condition
+
+The call is the single-section one plus three arguments:
+
+- `condition_col` names the column holding the contrast, and switches on the
+  responder spatial state block.
+- `kernel_per_image = TRUE` builds neighbourhoods within each section, so no
+  cell is ever a neighbour of a cell from another patient.
+- `image_re = "intercept"` gives each section a random intercept, so
+  patient-level differences in overall expression are absorbed rather than
+  being attributed to the condition.
+
+```{r fit}
+fit <- paceFit(spe,
+               celltype_col     = "cellType",
+               condition_col    = "Responder",
+               image_col        = "image",
+               kernel_per_image = TRUE,
+               image_re         = "intercept",
+               dispersion       = "nb1",
+               verbose          = FALSE)
+fit
+```
+
+The interaction term is named from the non-reference level of `condition_col`:
+
+```{r respterm}
+fit@params$resp_term
+```
+
+so `ResponderPD:Tumour` is the extra change in expression per unit of tumour
+proximity in the PD arm, on top of the `Tumour` effect shared by both arms.
+
+# The responder block in the decomposition
+
+`varianceDecomposition()` now carries a `Responder spatial %` column beside the
+`Spatial %` one:
+
+```{r decomp}
+varianceDecomposition(fit) |>
+  group_by(focal) |>
+  summarise(`Spatial %`           = round(median(`Spatial %`), 4),
+            `Responder spatial %` = round(median(`Responder spatial %`), 4),
+            `Spillover %`         = round(median(`Spillover %`), 2),
+            .groups = "drop")
+```
+
+The responder block is far smaller than the shared spatial block, which is the
+expected shape: most of how a cell responds to its neighbours is common to both
+arms, and only a thin slice of it depends on outcome. Contamination is larger
+than either, and largest in the sparsely distributed immune populations.
+
+# Which pairs carry the condition difference
+
+`pairVariance()` and `plotPairHeatmap()` both take `block = "responder"`, which
+attributes the responder block across neighbours instead of the shared spatial
+one:
+
+```{r pairs-responder, fig.width = 6, fig.height = 4.6}
+pairVariance(fit, block = "responder") |>
+  arrange(desc(val)) |>
+  head(5)
+
+plotPairHeatmap(fit, block = "responder")
+```
+
+Macrophages next to tumour cells is among the strongest pairs here, which is the
+relationship the accompanying paper reports for the full cohort. Compare it with
+the shared spatial block on the same fit:
+
+```{r pairs-spatial, fig.width = 6, fig.height = 4.6}
+plotPairHeatmap(fit, block = "spatial")
+```
+
+# Statistical power, and what this subset cannot show
+
+The condition contrast is between patients, and the outcome-dependent part of
+the spatial signal is sparse. Both facts mean it needs the whole cohort. In this
+subset, no gene reaches the usual significance threshold:
+
+```{r calls}
+ns <- neighbourSlopes(fit)
+c(rows = nrow(ns), calls_lfsr_under_0.05 = sum(ns$lfsr < 0.05, na.rm = TRUE))
+```
+
+`topDrivers()` scores every pair and labels each one, and its own verdict for
+all thirty here is the right one:
+
+```{r drivers}
+table(vapply(topDrivers(fit), function(x) x$status, character(1)))
+```
+
+For scale: fitting the **full** cohort, 56,274 cells across the same 26 patients,
+returns 46 calls at `lfsr < 0.05`, among them the macrophage *SPP1* response to
+tumour proximity, shrunken to −0.0668 with an `lfsr` of 0 — the result the paper
+reports. Cropping each section to 15% of its cells removes that entirely; the
+signal only begins to reappear at around 60% of the cohort, and even there it is
+less than half its full size.
+
+So the ranking above is worth reading as a direction, and the significance
+column is worth reading as a warning. If you want the published result, fit the
+full deposit rather than this subset.
+
+The practical lesson generalises beyond this dataset: a condition analysis is
+powered by **patients**, not by cells. Adding cells from the patients you
+already have sharpens each patient's estimate, but the contrast is still a
+comparison of two small groups.
+
+# Session info
+
+```{r sessioninfo}
+sessionInfo()
+```
