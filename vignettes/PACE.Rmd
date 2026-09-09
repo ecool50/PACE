@@ -144,6 +144,36 @@ macrophages carry the largest spatial cell-state contributions, while dendritic
 and myoepithelial cells carry none on this crop. The underlying per-gene table
 is available with `varianceDecomposition(fit)`.
 
+# Per-cell contamination
+
+The spillover component above is a variance share per gene. `cellContamination()`
+gives the per-cell view of the same term: the loading `rho_i` and, more usefully,
+`contamFraction`, the share of a cell's expected counts attributed to its local
+ambient field. A high fraction marks a cell whose profile is largely explained by
+its neighbours rather than by its own type, which is what a segmentation or
+transcript-assignment error looks like.
+
+```{r contamination}
+cc <- cellContamination(fit)
+head(cc, 3)
+round(tapply(cc$contamFraction, cc$celltype, median), 3)
+```
+
+Read the fraction rather than the loading. The ambient field is cross-cell-type,
+so a cell with no differently-typed neighbour inside the technical kernel has no
+ambient signal at all; its `rho_i` is unidentified and shrinks to the empirical
+Bayes prior mean, giving every such cell the same apparently middling loading.
+On this crop that is most of the tumour interior:
+
+```{r contamination-zero}
+zero <- cc$contamFraction == 0
+c(cells = sum(zero), distinct_rho = length(unique(round(cc$rho[zero], 12))))
+round(tapply(zero, cc$celltype, mean), 2)
+```
+
+`contamFraction` reports those cells as zero, which is correct; `rho` alone does
+not.
+
 # Pairwise spatial interactions
 
 `plotPairHeatmap()` gives the percentage of each focal type's total variance
@@ -200,6 +230,40 @@ tumour cells. Because PACE separates this proximity effect from the transcript
 contamination that would otherwise inflate tumour-marker signal in the
 macrophages, the drivers it promotes are genuine macrophage genes rather than
 tumour genes bleeding across cell boundaries.
+
+# Saving a fit
+
+A fit holds the fitted means and the contamination log-offset as full
+`cells x genes` matrices. They make the object large: even this small crop is
+
+```{r fit-size}
+round(as.numeric(object.size(fit)) / 1e6, 1)   # MB
+```
+
+and a whole section runs to several hundred megabytes. They do not have to be
+kept. `paceDecompose()` rebuilds them from the fit and the `SpatialExperiment`,
+exactly, so a fit can be saved without them and still be re-decomposed:
+
+```{r fit-strip}
+fit_small <- fit
+for (nm in c("mu", "technical_offset_mat", "bleed_offset_mat"))
+  fit_small@fit[[nm]] <- NULL
+round(as.numeric(object.size(fit_small)) / 1e6, 1)   # MB
+```
+
+```{r fit-save, eval = FALSE}
+saveRDS(fit_small, "fit.rds", compress = "xz")
+```
+
+Every readout above still works on the stripped fit, and re-decomposing it
+reproduces the table it already carries:
+
+```{r fit-strip-check}
+redone <- paceDecompose(fit_small, spe)
+stored <- varianceDecomposition(fit)
+num <- vapply(stored, is.numeric, logical(1))
+max(abs(as.matrix(varianceDecomposition(redone)[num]) - as.matrix(stored[num])))
+```
 
 # Session info
 
