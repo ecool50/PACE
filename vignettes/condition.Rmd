@@ -20,17 +20,12 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-The `r Biocpkg("PACE")` manual fits a single section and asks how expression
-changes with proximity to each neighbouring cell type. This vignette asks the
-next question: **does that proximity effect differ between two groups of
-patients?**
+The `r Biocpkg("PACE")` manual fits one section. This vignette asks whether a
+proximity effect differs between two groups of patients.
 
-Answering it needs a cohort rather than a section, and it adds one component to
-the model. Alongside the spatial cell state block, which is the proximity effect
-common to everyone, PACE estimates a **responder spatial state** block: the part
-of the proximity effect that differs between conditions. Read the two together,
-a gene can respond to a neighbour in both arms equally (spatial, no responder
-signal), or respond differently depending on outcome (responder signal).
+That needs a cohort, and adds one block to the model. Beside the spatial cell
+state block, the proximity effect common to both arms, PACE estimates a
+**responder spatial state** block: the part that differs between them.
 
 # The melanoma subset
 
@@ -51,15 +46,10 @@ table(spe$cellType)
 table(unique(data.frame(image = spe$image, arm = spe$Responder))$arm)
 ```
 
-One section per patient, so the condition contrast is between patients rather
-than within a section. That is what makes a cohort necessary: the effect is
-estimated across patients, and no number of extra cells from the same patients
-substitutes for it.
+One section per patient, so the contrast is between patients.
 
-Every cell and every patient of the published cohort is here. What has been
-reduced is the panel: 180 of the 927 genes, the most widely detected ones, kept
-so the data are small enough to ship. Cells and neighbourhoods are untouched,
-which is what the model reads; the derivation is in
+Every cell and patient of the published cohort is here; only the panel is
+reduced, to the 180 most detected of 927 genes. Derivation:
 `inst/scripts/make-mel-cosmx-subset.R`.
 
 > **Provenance.** These data are a subset of the deposit accompanying Dong, Su,
@@ -70,15 +60,12 @@ which is what the model reads; the derivation is in
 
 # Fitting with a condition
 
-The call is the single-section one plus three arguments:
+Three arguments beyond the single-section call:
 
-- `condition_col` names the column holding the contrast, and switches on the
-  responder spatial state block.
-- `kernel_per_image = TRUE` builds neighbourhoods within each section, so no
-  cell is ever a neighbour of a cell from another patient.
-- `image_re = "intercept"` gives each section a random intercept, so
-  patient-level differences in overall expression are absorbed rather than
-  being attributed to the condition.
+- `condition_col` names the contrast and switches on the responder block.
+- `kernel_per_image = TRUE` keeps neighbourhoods within a section, so no cell
+  neighbours another patient's.
+- `image_re = "intercept"` absorbs patient-level shifts in overall expression.
 
 ```{r fit}
 fit <- paceFit(spe,
@@ -115,10 +102,9 @@ varianceDecomposition(fit) |>
             .groups = "drop")
 ```
 
-The responder block is far smaller than the shared spatial block, which is the
-expected shape: most of how a cell responds to its neighbours is common to both
-arms, and only a thin slice of it depends on outcome. Contamination is larger
-than either, and largest in the sparsely distributed immune populations.
+The responder block is much the smaller: most of a cell's response to its
+neighbours is common to both arms. Contamination exceeds both, and is largest in
+the sparse immune populations.
 
 # Which pairs carry the condition difference
 
@@ -134,10 +120,8 @@ pairVariance(fit, block = "responder") |>
 plotPairHeatmap(fit, block = "responder")
 ```
 
-Fibroblasts next to endothelium carries the largest share, with tumour and
-macrophage pairs behind it; the responder signal is concentrated in stromal and
-myeloid populations rather than spread evenly. Compare it with the shared
-spatial block on the same fit, where the ordering is different:
+Fibroblast next to endothelium takes the largest share. Compare the shared
+spatial block, which orders differently:
 
 ```{r pairs-spatial, fig.width = 6, fig.height = 4.6}
 plotPairHeatmap(fit, block = "spatial")
@@ -145,8 +129,8 @@ plotPairHeatmap(fit, block = "spatial")
 
 # The genes that carry it
 
-Pair shares say where to look; `neighbourSlopes()` says which genes. The
-`ResponderPD:` terms are the ones that differ between arms:
+Pair shares say where to look, `neighbourSlopes()` which genes. The
+`ResponderPD:` terms differ between arms:
 
 ```{r calls}
 ns <- neighbourSlopes(fit)
@@ -163,11 +147,10 @@ Among the strongest is *SPP1* in macrophages next to tumour cells:
 subset(ns, gene == "SPP1" & focal == "Macrophage" & neighbour == "Tumour")
 ```
 
-The `Tumour` row is the response shared by both arms; the `ResponderPD:Tumour`
-row is how much that response differs in progressive disease. It is negative,
-so macrophage *SPP1* rises less steeply with tumour proximity in patients whose
-disease progressed. This is the melanoma result reported in the accompanying
-paper, recovered here from the shipped data.
+`Tumour` is the response shared by both arms; `ResponderPD:Tumour` is how much
+it differs in progressive disease. Negative, so macrophage *SPP1* rises less
+steeply with tumour proximity when disease progressed. This is the paper's
+melanoma result.
 
 The counts behind it, split by arm:
 
@@ -176,25 +159,23 @@ plotProximity(fit, spe, "SPP1", "Macrophage", "Tumour",
               breaks = c(0, 10, 20, 30, 40, Inf), condition = TRUE)
 ```
 
-`plotResponseCurve()` puts the model on top of the data: the solid lines are
-binned means and standard errors, the dashed lines the PACE slopes read from the
-fit rather than smoothed from the points.
+`plotResponseCurve()` puts the model over the data: solid lines are binned means
+and standard errors, dashed lines the PACE slopes read from the fit.
 
 ```{r curve, fig.width = 7, fig.height = 5}
 plotResponseCurve(fit, spe, "SPP1", "Macrophage", "Tumour")
 ```
 
-The two dashed lines diverge, which is the interaction. Note the x axis is the
-model's own covariate, the Gaussian kernel density centred within each section,
-so a slope drawn against it is on the scale it was estimated on.
+The dashed lines diverge; that divergence is the interaction. The x axis is the
+model's own covariate, so the slopes are drawn on the scale they were estimated
+on.
 
-`plotResponseMap()` gives the spatial view for one exemplar section per arm:
-tumour density with macrophages coloured by *SPP1* above, expression against
-density below. Pass `images` to choose the sections; the default takes the one
-with the most focal cells in each arm.
+`plotResponseMap()` gives the spatial view, using the two sections shown in the
+paper:
 
 ```{r map, fig.width = 9, fig.height = 8}
-plotResponseMap(fit, spe, "SPP1", "Macrophage", "Tumour")
+plotResponseMap(fit, spe, "SPP1", "Macrophage", "Tumour",
+                images = c(nonPD = "32157_18", PD = "32156_17"))
 ```
 
 # Session info
