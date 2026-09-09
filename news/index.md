@@ -169,38 +169,35 @@ identical to 0.99.0 (`max|diff| = 0`).
 
 - A second vignette covers condition-stratified cohorts: what
   `condition_col`, `kernel_per_image` and `image_re` do, the responder
-  spatial state block in the decomposition, and
+  spatial state block in the decomposition,
   [`pairVariance()`](https://ecool50.github.io/PACE/reference/pairVariance.md)
   /
   [`plotPairHeatmap()`](https://ecool50.github.io/PACE/reference/plotPairHeatmap.md)
-  with `block = "responder"`.
+  with `block = "responder"`, and the gene-level responder slopes.
 
   It runs on a new shipped subset of the CosMx melanoma cohort of Dong
-  et al. (<doi:10.5281/zenodo.14708000>, CC-BY-4.0): all 26 patients,
-  each section cropped contiguously to 15% of its cells, giving 8,454
-  cells and 927 genes. All patients are kept because the condition
-  effect is a between-patient contrast, and the crop is contiguous
-  rather than a random sample because the model reads local
-  neighbourhoods. `inst/scripts/make-mel-cosmx-subset.R` records the
-  derivation.
+  et al. (<doi:10.5281/zenodo.14708000>, CC-BY-4.0). The subset keeps
+  every cell and every patient of the published cohort, 56,274 cells
+  across 26 sections, and reduces only the panel, to the 180 most widely
+  detected genes. File size is cells times genes, and of the two it is
+  the cells that have to be preserved: the model reads local
+  neighbourhoods, and the condition effect is a between-patient
+  contrast. Cropping cells was tried first and abandoned, since at 15%
+  of each section nothing reached `lfsr < 0.05` at all and no cell-based
+  crop under about 5 MB recovered the result.
 
-  No gene in the subset reaches `lfsr < 0.05`, so rather than assert
-  what the cohort shows, the package also ships the macrophage neighbour
-  slopes fitted on the full 56,274-cell cohort
-  (`mel_full_cohort_macrophage_slopes.rds`, 5,562 rows, 0.14 MB, with a
-  `provenance` attribute recording the fit settings). The vignette puts
-  the two rows side by side: SPP1 next to tumour is `-0.0668` with an
-  `lfsr` of 0 in the cohort, and exactly 0 with an `lfsr` of 1 in the
-  subset.
+  The vignette therefore computes the melanoma finding rather than
+  citing it: macrophage *SPP1* responds less steeply to tumour proximity
+  in progressive disease, `-0.0663` with an `lfsr` of 0, the second
+  strongest responder call in the fit.
+  `inst/scripts/make-mel-cosmx-subset.R` records the derivation.
 
-  The vignette is explicit that this is not a threshold that could be
-  relaxed. 32,445 of the 33,372 responder terms are shrunk to exactly
-  zero in the subset, so no `lfsr` cut recovers SPP1: there is no
-  estimate left to recover. The unshrunk estimate keeps the right sign
-  but is smaller than its own standard error. Cropping to 15% removes
-  the effect, it only returns at around 60% of the cohort, and
-  macrophage-targeted crops recover it only by keeping most of the
-  tissue, because the macrophages are spread through all of it.
+  The reduced panel leaves estimates alone but shifts mash’s
+  calibration, which the vignette says: 76 responder calls here against
+  46 on the full panel, and SPP1 at `-0.0663` against `-0.0668`. Below
+  about 150 genes a focal type runs out of genes to decompose and
+  [`paceDecompose()`](https://ecool50.github.io/PACE/reference/paceDecompose.md)
+  fails, so the panel cannot be cut much further.
 
 ## PACE 0.99.0
 

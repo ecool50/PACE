@@ -114,7 +114,7 @@ fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computing 278 x 590 likelihood matrix.
 #>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.56 seconds.
+#>  - Model fitting took 0.57 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>   [mashr] Tumour: 278 genes shrunk; sig (lfsr<0.05) = 30

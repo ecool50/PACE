@@ -124,13 +124,13 @@ fit <- paceFit(spe,
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.14 seconds.
+#>  - Model fitting took 0.15 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 417 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.21 seconds.
+#>  - Model fitting took 0.22 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
@@ -148,7 +148,7 @@ fit <- paceFit(spe,
 #>  - Computing 278 x 430 likelihood matrix.
 #>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 0.13 seconds.
+#>  - Model fitting took 0.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 628 likelihood matrix.

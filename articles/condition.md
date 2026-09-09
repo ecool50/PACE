@@ -32,12 +32,12 @@ library(dplyr)
 spe <- readRDS(system.file("extdata", "mel_cosmx_subset.rds", package = "PACE"))
 spe
 #> class: SpatialExperiment 
-#> dim: 927 8454 
+#> dim: 180 56274 
 #> metadata(0):
 #> assays(1): counts
-#> rownames(927): AATK ABL1 ... YES1 ZFP36
+#> rownames(180): ANXA2 APOD ... WIF1 YBX3
 #> rowData names(0):
-#> colnames(8454): Cell53068 Cell53069 ... Cell21330 Cell21344
+#> colnames(56274): Cell52866 Cell52867 ... Cell21744 Cell21745
 #> colData names(4): cellType Responder image sample_id
 #> reducedDimNames(0):
 #> mainExpName: NULL
@@ -47,29 +47,29 @@ spe
 table(spe$cellType)
 #> 
 #>      B_Cell Endothelial  Fibroblast  Macrophage      T_Cell      Tumour 
-#>         174         182         211         453         437        6997
+#>        1129        1261        1488        3101        3406       45889
 table(unique(data.frame(image = spe$image, arm = spe$Responder))$arm)
 #> 
 #> nonPD    PD 
 #>    19     7
 ```
 
-One section per patient, so the condition contrast is between patients,
-not within a section. Each section here is a contiguous spatial crop of
-the published one; the derivation is in
-`inst/scripts/make-mel-cosmx-subset.R`.
+One section per patient, so the condition contrast is between patients
+rather than within a section. That is what makes a cohort necessary: the
+effect is estimated across patients, and no number of extra cells from
+the same patients substitutes for it.
 
-> **Provenance.** These data are a modified subset of the deposit
-> accompanying Dong, Su, Kluger, Fan and Kluger, *SIMVI disentangles
-> intrinsic and spatial-induced cellular states in spatial omics data*
+Every cell and every patient of the published cohort is here. What has
+been reduced is the panel: 180 of the 927 genes, the most widely
+detected ones, kept so the data are small enough to ship. Cells and
+neighbourhoods are untouched, which is what the model reads; the
+derivation is in `inst/scripts/make-mel-cosmx-subset.R`.
+
+> **Provenance.** These data are a subset of the deposit accompanying
+> Dong, Su, Kluger, Fan and Kluger, *SIMVI disentangles intrinsic and
+> spatial-induced cellular states in spatial omics data*
 > ([doi:10.5281/zenodo.14708000](https://doi.org/10.5281/zenodo.14708000)),
 > used here under CC-BY-4.0.
-
-> **Read this before drawing conclusions.** The subset is 8,454 of the
-> cohort’s 56,274 cells, sized so the package stays small enough to
-> distribute. It is an illustration of the workflow, not an analysis.
-> The section on statistical power below shows what that costs, with
-> numbers.
 
 ## Fitting with a condition
 
@@ -93,40 +93,64 @@ fit <- paceFit(spe,
                image_re         = "intercept",
                dispersion       = "nb1",
                verbose          = FALSE)
-#>  - Computing 927 x 78 likelihood matrix.
-#>  - Likelihood calculations took 0.06 seconds.
-#>  - Fitting model with 78 mixture components.
-#>  - Model fitting took 0.05 seconds.
+#>  - Computing 180 x 298 likelihood matrix.
+#>  - Likelihood calculations took 0.04 seconds.
+#>  - Fitting model with 298 mixture components.
+#>  - Model fitting took 0.13 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
-#>  - Computing 927 x 254 likelihood matrix.
-#>  - Likelihood calculations took 0.18 seconds.
-#>  - Fitting model with 254 mixture components.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 375 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 375 mixture components.
+#>  - Model fitting took 0.24 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 579 likelihood matrix.
+#>  - Likelihood calculations took 0.08 seconds.
+#>  - Fitting model with 579 mixture components.
+#>  - Model fitting took 0.51 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 364 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 364 mixture components.
+#>  - Model fitting took 0.21 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 243 likelihood matrix.
+#>  - Likelihood calculations took 0.03 seconds.
+#>  - Fitting model with 243 mixture components.
 #>  - Model fitting took 0.12 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
-#>  - Computing 927 x 265 likelihood matrix.
-#>  - Likelihood calculations took 0.19 seconds.
-#>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.11 seconds.
+#>  - Computing 180 x 375 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 375 mixture components.
+#>  - Model fitting took 0.29 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
-#>  - Computing 927 x 78 likelihood matrix.
+#>  - Computing 180 x 364 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 364 mixture components.
+#>  - Model fitting took 0.09 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 562 likelihood matrix.
+#>  - Likelihood calculations took 0.08 seconds.
+#>  - Fitting model with 562 mixture components.
+#>  - Model fitting took 0.15 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 265 likelihood matrix.
+#>  - Likelihood calculations took 0.04 seconds.
+#>  - Fitting model with 265 mixture components.
+#>  - Model fitting took 0.21 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 409 likelihood matrix.
 #>  - Likelihood calculations took 0.06 seconds.
-#>  - Fitting model with 78 mixture components.
-#>  - Model fitting took 0.04 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 927 x 254 likelihood matrix.
-#>  - Likelihood calculations took 0.17 seconds.
-#>  - Fitting model with 254 mixture components.
-#>  - Model fitting took 0.14 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 927 x 265 likelihood matrix.
-#>  - Likelihood calculations took 0.18 seconds.
-#>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Fitting model with 409 mixture components.
+#>  - Model fitting took 0.60 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 fit
@@ -135,7 +159,7 @@ fit
 #> kernels: h_bio = 30 um, h_tech = 5 um | contamination: percell_hc; dispersion: nb1
 #> condition: Responder (ResponderPD)
 #> pipeline: model -> shrink -> decompose -> drivers
-#>   neighbour slopes: 33372 rows (0 at lfsr < 0.05)
+#>   neighbour slopes: 6480 rows (76 at lfsr < 0.05)
 ```
 
 The interaction term is named from the non-reference level of
@@ -167,12 +191,12 @@ varianceDecomposition(fit) |>
 #> # A tibble: 6 × 4
 #>   focal       `Spatial %` `Responder spatial %` `Spillover %`
 #>   <chr>             <dbl>                 <dbl>         <dbl>
-#> 1 B_Cell           0.0151                0               6.21
-#> 2 Endothelial      0.0021                0               5.3 
-#> 3 Fibroblast       0.0007                0.0004          5.78
-#> 4 Macrophage       0.0344                0.0028          8.34
-#> 5 T_Cell           0.0232                0               6.54
-#> 6 Tumour           0.0342                0.0106          1.31
+#> 1 B_Cell            0.230                0.0005          12.1
+#> 2 Endothelial       0.238                0.0242          13.9
+#> 3 Fibroblast        0.343                0.0762          18.4
+#> 4 Macrophage        0.478                0.025           19.6
+#> 5 T_Cell            0.317                0.0019          13  
+#> 6 Tumour            0.307                0.034            3.2
 ```
 
 The responder block is far smaller than the shared spatial block, which
@@ -195,22 +219,24 @@ pairVariance(fit, block = "responder") |>
   arrange(desc(val)) |>
   head(5)
 #> # A tibble: 5 × 3
-#>   focal      neighbour       val
-#>   <chr>      <chr>         <dbl>
-#> 1 Tumour     Fibroblast  0.0278 
-#> 2 Macrophage Tumour      0.0164 
-#> 3 Tumour     Endothelial 0.0101 
-#> 4 Tumour     T_Cell      0.00274
-#> 5 Tumour     Macrophage  0.00233
+#>   focal      neighbour      val
+#>   <chr>      <chr>        <dbl>
+#> 1 Fibroblast Endothelial 0.271 
+#> 2 Tumour     Endothelial 0.0741
+#> 3 Macrophage Fibroblast  0.0417
+#> 4 Fibroblast Tumour      0.0380
+#> 5 Macrophage Tumour      0.0365
 
 plotPairHeatmap(fit, block = "responder")
 ```
 
 ![](condition_files/figure-html/pairs-responder-1.png)
 
-Macrophages next to tumour cells is among the strongest pairs here,
-which is the relationship the accompanying paper reports for the full
-cohort. Compare it with the shared spatial block on the same fit:
+Fibroblasts next to endothelium carries the largest share, with tumour
+and macrophage pairs behind it; the responder signal is concentrated in
+stromal and myeloid populations rather than spread evenly. Compare it
+with the shared spatial block on the same fit, where the ordering is
+different:
 
 ``` r
 
@@ -219,90 +245,76 @@ plotPairHeatmap(fit, block = "spatial")
 
 ![](condition_files/figure-html/pairs-spatial-1.png)
 
-## Statistical power, and what this subset cannot show
+## The genes that carry it
 
-The condition contrast is between patients, and the outcome-dependent
-part of the spatial signal is sparse. Both facts mean it needs the whole
-cohort. In this subset, no gene reaches the usual significance
-threshold:
+Pair shares say where to look;
+[`neighbourSlopes()`](https://ecool50.github.io/PACE/reference/neighbourSlopes.md)
+says which genes. The `ResponderPD:` terms are the ones that differ
+between arms:
 
 ``` r
 
 ns <- neighbourSlopes(fit)
-c(rows = nrow(ns), calls_lfsr_under_0.05 = sum(ns$lfsr < 0.05, na.rm = TRUE))
-#>                  rows calls_lfsr_under_0.05 
-#>                 33372                     0
+resp <- subset(ns, grepl("^ResponderPD:", term) & lfsr < 0.05)
+nrow(resp)
+#> [1] 76
+
+resp[order(resp$lfsr), c("gene", "focal", "neighbour", "estimate_shrunk", "lfsr")] |>
+  head(8)
+#>        gene      focal   neighbour estimate_shrunk         lfsr
+#> 2053   GLUL     Tumour Endothelial     -0.39965573 0.000000e+00
+#> 6100   SPP1 Macrophage      Tumour     -0.06630620 0.000000e+00
+#> 5351    MX1     Tumour      T_Cell      0.23157932 7.979372e-53
+#> 5317 IFITM1     Tumour      T_Cell      0.18729859 4.405081e-33
+#> 6373   GLUL     Tumour      Tumour      0.01628370 2.387829e-23
+#> 5226    B2M     Tumour      T_Cell      0.10499260 6.530095e-23
+#> 5383  STAT1     Tumour      T_Cell      0.14030844 2.374834e-22
+#> 6401 IGFBP7     Tumour      Tumour      0.01674059 6.350817e-22
 ```
 
-[`topDrivers()`](https://ecool50.github.io/PACE/reference/topDrivers.md)
-scores every pair and labels each one, and its own verdict for all
-thirty here is the right one:
+Among the strongest is *SPP1* in macrophages next to tumour cells:
 
 ``` r
 
-table(vapply(topDrivers(fit), function(x) x$status, character(1)))
-#> 
-#> honestly null 
-#>            30
+subset(ns, gene == "SPP1" & focal == "Macrophage" & neighbour == "Tumour")
+#>      gene      focal neighbour               term    estimate   std.error
+#> 6100 SPP1 Macrophage    Tumour ResponderPD:Tumour -0.06738867 0.006192822
+#>      estimate_shrunk   sd_shrunk lfsr
+#> 6100      -0.0663062 0.006056031    0
 ```
 
-### What the full cohort gives
+The `Tumour` row is the response shared by both arms; the
+`ResponderPD:Tumour` row is how much that response differs in
+progressive disease. It is negative, so macrophage *SPP1* rises less
+steeply with tumour proximity in patients whose disease progressed. This
+is the melanoma result reported in the accompanying paper, recovered
+here from the shipped data.
 
-Rather than assert the difference, the package ships the macrophage
-slopes from the **full** cohort, all 56,274 cells across these same 26
-patients, so the two can be put side by side. It is a fitted result, not
-something this vignette computes; the `provenance` attribute records
-how:
+[`plotProximity()`](https://ecool50.github.io/PACE/reference/plotProximity.md)
+shows the counts behind it:
 
 ``` r
 
-full <- readRDS(system.file("extdata", "mel_full_cohort_macrophage_slopes.rds",
-                            package = "PACE"))
-nrow(full)
-#> [1] 5562
-subset(full, gene == "SPP1" & neighbour == "Tumour" & term == "ResponderPD:Tumour")
-#>     gene      focal neighbour               term    estimate   std.error
-#> 810 SPP1 Macrophage    Tumour ResponderPD:Tumour -0.06738296 0.006050728
-#>     estimate_shrunk   sd_shrunk lfsr
-#> 810     -0.06683963 0.006026284    0
+plotProximity(fit, spe, "SPP1", "Macrophage", "Tumour")
 ```
 
-That is the result the paper reports: in macrophages, the response of
-*SPP1* to tumour proximity differs between arms, more negative in
-progressive disease. Now the same row from the subset fitted above:
+![](condition_files/figure-html/proximity-1.png)
 
-``` r
+## A note on the reduced panel
 
-subset(ns, gene == "SPP1" & focal == "Macrophage" &
-           neighbour == "Tumour" & term == "ResponderPD:Tumour")
-#>       gene      focal neighbour               term     estimate   std.error
-#> 31401 SPP1 Macrophage    Tumour ResponderPD:Tumour -0.004324059 0.006125521
-#>       estimate_shrunk sd_shrunk lfsr
-#> 31401               0         0    1
-```
+Fitting 180 of the 927 genes leaves the estimates alone but not the
+shrinkage. mash calibrates against the genes it is given, so a narrower
+panel shifts the local false sign rates: this fit reports 76 responder
+calls where the full panel reports 46. The *SPP1* estimate is
+essentially unchanged, −0.0663 against −0.0668 on the full panel, but
+treat the significance column here as belonging to this panel rather
+than to the published analysis, and fit the full deposit if you need to
+reproduce the paper exactly.
 
-The estimate has been shrunk to exactly zero. This is worth being
-precise about, because it is not a threshold that could be relaxed:
-32,445 of the 33,372 responder terms are shrunk to zero here, mash
-having concluded that the block carries no signal at this sample size.
-No `lfsr` cut recovers *SPP1*, because there is no estimate left to
-recover. The unshrunk estimate does keep the right sign, but it is
-smaller than its own standard error.
-
-Cropping each section to 15% removes the effect entirely; it only begins
-to reappear at around 60% of the cohort, and even there it is less than
-half its full size. Crops targeted at the macrophages do recover it, but
-only by keeping most of the tissue, because the macrophages are spread
-through all of it.
-
-So the pair ranking above is worth reading as a direction, and the
-significance column as a warning. For the published result, fit the full
-deposit.
-
-The practical lesson generalises beyond this dataset: a condition
-analysis is powered by **patients**, not by cells. Adding cells from the
-patients you already have sharpens each patient’s estimate, but the
-contrast is still a comparison of two small groups.
+The panel cannot be cut much further. Below roughly 150 genes some focal
+cell type runs out of genes to decompose and
+[`paceDecompose()`](https://ecool50.github.io/PACE/reference/paceDecompose.md)
+fails outright.
 
 ## Session info
 
