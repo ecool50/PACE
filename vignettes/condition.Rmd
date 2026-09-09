@@ -169,31 +169,37 @@ so macrophage *SPP1* rises less steeply with tumour proximity in patients whose
 disease progressed. This is the melanoma result reported in the accompanying
 paper, recovered here from the shipped data.
 
-`plotProximity()` shows the counts behind it. The default bin breaks are set for
-sparser tissue; this section is dense enough that a macrophage has a median of 22
-tumour cells within 30 um, so the bins are widened to spread the cells out
-rather than piling 83% of them into the last one:
+The counts behind it, split by arm:
 
-```{r proximity, fig.width = 6.5, fig.height = 4.2}
-plotProximity(fit, spe, "SPP1", "Macrophage", "Tumour",
-              breaks = c(0, 10, 20, 30, 40, Inf))
+```{r proximity, fig.width = 6.5, fig.height = 3.6}
+ct <- as.character(spe$cellType)
+xy <- as.matrix(spatialCoords(spe))
+mac <- which(ct == "Macrophage")
+tum <- which(ct == "Tumour")
+
+d <- data.frame(
+  arm  = factor(as.character(spe$Responder)[mac], levels = c("nonPD", "PD")),
+  ntum = lengths(dbscan::frNN(xy[tum, ], eps = 30, query = xy[mac, ])$id),
+  spp1 = as.numeric(assay(spe, "counts")["SPP1", mac]))
+d$bin <- cut(d$ntum, c(-1, 10, 20, 30, 40, Inf),
+             labels = c("0-10", "11-20", "21-30", "31-40", "41+"))
+
+d |>
+  group_by(arm, bin) |>
+  summarise(mean = mean(spp1), se = sd(spp1) / sqrt(n()), .groups = "drop") |>
+  ggplot(aes(bin, mean, colour = arm, group = arm)) +
+  geom_ribbon(aes(ymin = mean - se, ymax = mean + se, fill = arm),
+              alpha = 0.18, colour = NA) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
+  labs(x = "Tumour cells within 30 um", y = "Mean macrophage SPP1 count",
+       colour = "Response", fill = "Response") +
+  theme_minimal(base_size = 11)
 ```
 
-That is the response shared by both arms, rising steeply with tumour proximity.
-The condition term above says the rise is shallower in progressive disease.
-
-# A note on the reduced panel
-
-Fitting 180 of the 927 genes leaves the estimates alone but not the shrinkage.
-mash calibrates against the genes it is given, so a narrower panel shifts the
-local false sign rates: this fit reports `r nrow(resp)` responder calls where the
-full panel reports 46. The *SPP1* estimate is essentially unchanged, −0.0663
-against −0.0668 on the full panel, but treat the significance column here as
-belonging to this panel rather than to the published analysis, and fit the full
-deposit if you need to reproduce the paper exactly.
-
-The panel cannot be cut much further. Below roughly 150 genes some focal cell
-type runs out of genes to decompose and `paceDecompose()` fails outright.
+In non-progressive disease macrophage *SPP1* climbs with tumour proximity; in
+progressive disease it does not. That divergence is what the negative
+`ResponderPD:Tumour` coefficient measures.
 
 # Session info
 
