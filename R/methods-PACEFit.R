@@ -57,6 +57,7 @@ setMethod("topDrivers", "PACEFit", function(object, ...) {
   object@topDrivers
 })
 
+#' @param object A [PACEFit] object.
 #' @importFrom methods show
 #' @rdname PACEFit-class
 #' @export

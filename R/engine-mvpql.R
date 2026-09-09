@@ -359,7 +359,7 @@ build_random_design_multi <- function(df, re_specs) {
   W <- pmax(W, 1e-8)   # numerical safety only
 
   if (verbose) {
-    cat(sprintf("  [data-informed tau] q × G weight matrix: dim %d × %d, range [%.3f, %.3f], median %.3f\n",
+    cat(sprintf("  [data-informed tau] q x G weight matrix: dim %d x %d, range [%.3f, %.3f], median %.3f\n",
                 nrow(W), ncol(W), min(W), max(W), median(W)))
   }
   W

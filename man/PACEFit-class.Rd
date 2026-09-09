@@ -3,10 +3,14 @@
 \docType{class}
 \name{PACEFit}
 \alias{PACEFit}
+\alias{PACEFit-class}
 \alias{show,PACEFit-method}
 \title{PACEFit: a fitted PACE model}
 \usage{
 \S4method{show}{PACEFit}(object)
+}
+\arguments{
+\item{object}{A \link{PACEFit} object.}
 }
 \description{
 An S4 container for the result of a PACE fit. It holds the raw penalised
@@ -24,8 +28,9 @@ per-cell contamination loadings, gene-wise overdispersions, variance
 components).}
 
 \item{\code{neighbourSlopes}}{A data frame of shrunken proximity coefficients, one row
-per (gene, focal cell type, neighbour cell type\link{, condition term}), with the
-raw estimate, shrunken estimate, and local false sign rate (lfsr).}
+per gene, focal cell type and neighbour cell type, plus the condition term
+for condition cohorts, with the raw estimate, shrunken estimate, and local
+false sign rate (lfsr).}
 
 \item{\code{varianceDecomposition}}{A list of per-gene, per-focal variance
 decomposition tables (cell-type identity, spatial cell state, contamination,

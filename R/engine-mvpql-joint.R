@@ -58,7 +58,7 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
       stop("R_INNER_SOLVE=", INNER_SOLVE, " requires pace_laplace_solver.R + the TMB DLL; ",
            "neither pace_laplace_chunk nor ensure_laplace_dll() is in the search path. ",
            "Confirm zzz.R sourced helpers/pace_laplace_solver.R.")
-    ensure_laplace_dll()
+    get("ensure_laplace_dll", mode = "function")()
     if (verbose) cat(sprintf("  [mvpql.joint.multi] INNER SOLVE: %s\n",
                               toupper(INNER_SOLVE)))
   }
@@ -207,7 +207,7 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
         ## Warm start from previous iteration's BLUPs
         B_init <- B[, gene_idx_chk, drop = FALSE]
         U_init <- U[, gene_idx_chk, drop = FALSE]
-        per_gene_chk <- pace_laplace_chunk(
+        per_gene_chk <- get("pace_laplace_chunk", mode = "function")(
           Y_chunk         = Y_chk,
           X               = X_fixed,
           Z               = Z,
@@ -455,7 +455,7 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
       tau_inv_chk  <- 1 / pmax(tau_g_array[, gene_idx_chk, drop = FALSE], 1e-6)
       B_init       <- B[, gene_idx_chk, drop = FALSE]
       U_init       <- U[, gene_idx_chk, drop = FALSE]
-      pol_chk <- pace_laplace_chunk(
+      pol_chk <- get("pace_laplace_chunk", mode = "function")(
         Y_chunk         = Y_chk,
         X               = X_fixed,
         Z               = Z,

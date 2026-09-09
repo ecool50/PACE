@@ -29,3 +29,16 @@
 #'   as.formula model.matrix setNames rnorm
 #' @importFrom methods new validObject is
 "_PACKAGE"
+
+## Column names used inside dplyr/tidyr pipelines. Declaring them keeps
+## `R CMD check` from reading each one as an undefined global.
+utils::globalVariables(c(
+  "Block", "Cell type %", "MCSD", "MCSD4", "R2_RxS", "R2_S", "Residual %",
+  "Responder spatial state %", "Spatial state %", "Spillover %", "Total",
+  "V_RxS", "V_S", "V_resid", "V_total", "b_clean", "block",
+  "celltype_offset_sq", "delta", "drop_patient", "estimate", "estimate_shrunk",
+  "focal", "focal_mean", "gene", "group", "is_contaminated", "level", "lfsr",
+  "mu_bar", "n_focal", "neighbour", "pct", "pct_total", "per_gene",
+  "resp_pct_drop", "scaled_estimate", "sd_shrunk", "spec", "spec_w_sum",
+  "std.error", "term", "total_4", "u_raw"
+))

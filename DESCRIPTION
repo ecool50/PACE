@@ -25,11 +25,11 @@ Depends:
 Imports:
     methods,
     stats,
+    utils,
     Rcpp,
     Matrix,
     SpatialExperiment,
     SummarizedExperiment,
-    S4Vectors,
     BiocParallel,
     dplyr,
     tidyr,
@@ -37,7 +37,6 @@ Imports:
     spatstat.geom,
     dbscan,
     lme4,
-    limma,
     mashr,
     ashr,
     ggplot2,
@@ -45,6 +44,9 @@ Imports:
     scales,
     stringr
 Suggests:
+    glmmTMB,
+    broom.mixed,
+    glue,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,

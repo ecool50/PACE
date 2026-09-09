@@ -146,7 +146,7 @@ pace_drop_sparse_k <- function(K_bio, celltype, types, neff_min, verbose = TRUE)
 pace_center_within_image <- function(K_bio, celltype, image, types) {
   for (tc in types) {
     col <- K_bio[, tc]
-    K_bio[, tc] <- col - ave(col, image, celltype, FUN = mean)
+    K_bio[, tc] <- col - stats::ave(col, image, celltype, FUN = mean)
   }
   K_bio
 }
