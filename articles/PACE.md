@@ -110,7 +110,7 @@ fit <- paceFit(spe,
                dispersion    = "nb1",
                verbose       = FALSE)
 #>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
+#>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 313 mixture components.
 #>  - Model fitting took 0.10 seconds.
 #>  - Computing posterior matrices.
@@ -122,15 +122,15 @@ fit <- paceFit(spe,
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.10 seconds.
+#>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.15 seconds.
+#>  - Model fitting took 0.17 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 417 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.23 seconds.
+#>  - Model fitting took 0.22 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
@@ -140,33 +140,33 @@ fit <- paceFit(spe,
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.10 seconds.
+#>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 391 mixture components.
 #>  - Model fitting took 0.12 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 430 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
+#>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 0.13 seconds.
+#>  - Model fitting took 0.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.16 seconds.
+#>  - Likelihood calculations took 0.17 seconds.
 #>  - Fitting model with 628 mixture components.
 #>  - Model fitting took 0.17 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.10 seconds.
+#>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.38 seconds.
+#>  - Model fitting took 0.36 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.15 seconds.
+#>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.59 seconds.
+#>  - Model fitting took 0.57 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 fit
@@ -223,6 +223,55 @@ and macrophages carry the largest spatial cell-state contributions,
 while dendritic and myoepithelial cells carry none on this crop. The
 underlying per-gene table is available with
 `varianceDecomposition(fit)`.
+
+## Per-cell contamination
+
+The spillover component above is a variance share per gene.
+[`cellContamination()`](https://ecool50.github.io/PACE/reference/cellContamination.md)
+gives the per-cell view of the same term: the loading `rho_i` and, more
+usefully, `contamFraction`, the share of a cell’s expected counts
+attributed to its local ambient field. A high fraction marks a cell
+whose profile is largely explained by its neighbours rather than by its
+own type, which is what a segmentation or transcript-assignment error
+looks like.
+
+``` r
+
+cc <- cellContamination(fit)
+head(cc, 3)
+#>   cell   celltype        rho contamFraction
+#> 1  442     Tumour 0.11504406    0.000000000
+#> 2  444     B_Cell 0.00282706    0.001557513
+#> 3  446 Macrophage 0.58779262    0.123800291
+round(tapply(cc$contamFraction, cc$celltype, median), 3)
+#>         B_Cell Dendritic_Cell    Endothelial     Macrophage  Myoepithelial 
+#>          0.091          0.083          0.018          0.073          0.038 
+#>        Stromal         T_Cell         Tumour 
+#>          0.038          0.072          0.000
+```
+
+Read the fraction rather than the loading. The ambient field is
+cross-cell-type, so a cell with no differently-typed neighbour inside
+the technical kernel has no ambient signal at all; its `rho_i` is
+unidentified and shrinks to the empirical Bayes prior mean, giving every
+such cell the same apparently middling loading. On this crop that is
+most of the tumour interior:
+
+``` r
+
+zero <- cc$contamFraction == 0
+c(cells = sum(zero), distinct_rho = length(unique(round(cc$rho[zero], 12))))
+#>        cells distinct_rho 
+#>         4589            1
+round(tapply(zero, cc$celltype, mean), 2)
+#>         B_Cell Dendritic_Cell    Endothelial     Macrophage  Myoepithelial 
+#>           0.10           0.16           0.26           0.19           0.23 
+#>        Stromal         T_Cell         Tumour 
+#>           0.30           0.18           0.84
+```
+
+`contamFraction` reports those cells as zero, which is correct; `rho`
+alone does not.
 
 ## Pairwise spatial interactions
 
@@ -299,6 +348,50 @@ tumour-marker signal in the macrophages, the drivers it promotes are
 genuine macrophage genes rather than tumour genes bleeding across cell
 boundaries.
 
+## Saving a fit
+
+A fit holds the fitted means and the contamination log-offset as full
+`cells x genes` matrices. They make the object large: even this small
+crop is
+
+``` r
+
+round(as.numeric(object.size(fit)) / 1e6, 1)   # MB
+#> [1] 59.8
+```
+
+and a whole section runs to several hundred megabytes. They do not have
+to be kept.
+[`paceDecompose()`](https://ecool50.github.io/PACE/reference/paceDecompose.md)
+rebuilds them from the fit and the `SpatialExperiment`, exactly, so a
+fit can be saved without them and still be re-decomposed:
+
+``` r
+
+fit_small <- fit
+for (nm in c("mu", "technical_offset_mat", "bleed_offset_mat"))
+  fit_small@fit[[nm]] <- NULL
+round(as.numeric(object.size(fit_small)) / 1e6, 1)   # MB
+#> [1] 7.1
+```
+
+``` r
+
+saveRDS(fit_small, "fit.rds", compress = "xz")
+```
+
+Every readout above still works on the stripped fit, and re-decomposing
+it reproduces the table it already carries:
+
+``` r
+
+redone <- paceDecompose(fit_small, spe)
+stored <- varianceDecomposition(fit)
+num <- vapply(stored, is.numeric, logical(1))
+max(abs(as.matrix(varianceDecomposition(redone)[num]) - as.matrix(stored[num])))
+#> [1] 0
+```
+
 ## Session info
 
 ``` r
@@ -306,7 +399,7 @@ boundaries.
 sessionInfo()
 #> R version 4.6.1 (2026-06-24)
 #> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.5 LTS
+#> Running under: Ubuntu 24.04.4 LTS
 #> 
 #> Matrix products: default
 #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
