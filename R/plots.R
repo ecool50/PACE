@@ -614,9 +614,19 @@ plotProximity <- function(object, spe, genes, focal, neighbour,
     stop("this fit has no condition; use plotProximity() instead.", call. = FALSE)
   Y <- SummarizedExperiment::assay(spe, object@params$assay_name)
   if (!gene %in% rownames(Y)) stop("gene not in `spe`: ", gene, call. = FALSE)
+  ## The fit's own kernel column is centred within (image, celltype), which puts
+  ## half the density below zero. Recompute the RAW kernel with the fit's own
+  ## settings: a slope is unchanged by centring, so it still overlays correctly.
+  types <- object@cellTypes
+  K <- pace_neighbour_kernel(
+    coords = as.matrix(df[, c("x", "y")]), celltype = as.character(df$celltype),
+    types = types, h_bio = object@params$h_bio, h_tech = object@params$h_tech,
+    eps = 3 * object@params$h_bio, image = as.character(df$imageID),
+    per_image = isTRUE(object@params$kernel_per_image))$K_bio
+
   keep <- as.character(df$celltype) == focal
   cp10k <- as.numeric(Y[gene, keep]) / pmax(df$nCount[keep], 1) * 1e4
-  data.frame(density = as.numeric(df[[neighbour]][keep]),
+  data.frame(density = as.numeric(K[keep, neighbour]),
              expr    = log1p(cp10k),
              arm     = factor(as.character(df[[cond]])[keep]),
              x       = df$x[keep], y = df$y[keep],
@@ -670,16 +680,20 @@ plotResponseCurve <- function(object, spe, gene, focal, neighbour,
                      n = dplyr::n(), .groups = "drop") |>
     dplyr::filter(.data$n >= min_bin_n)
 
-  x_range <- c(0, max(d$density))
+  ## Each arm's slope is drawn across that arm's own density range; extending it
+  ## over the whole panel would be extrapolation into cells that do not exist.
   centro <- d |>
     dplyr::group_by(.data$arm) |>
     dplyr::summarise(dx = mean(.data$density), ey = mean(.data$expr),
-                     .groups = "drop")
+                     lo = stats::quantile(.data$density, 0.01),
+                     hi = stats::quantile(.data$density, 0.99), .groups = "drop")
   pace_lines <- do.call(rbind, lapply(seq_len(nrow(centro)), function(i) {
-    a <- as.character(centro$arm[i])
-    data.frame(arm = centro$arm[i], x = x_range,
-               y = centro$ey[i] + slope_by_arm[[a]] * (x_range - centro$dx[i]))
+    a  <- as.character(centro$arm[i])
+    xs <- c(centro$lo[i], centro$hi[i])
+    data.frame(arm = centro$arm[i], x = xs,
+               y = centro$ey[i] + slope_by_arm[[a]] * (xs - centro$dx[i]))
   }))
+  x_range <- range(c(binned$x, pace_lines$x))
 
   cols <- colours
   if (is.null(names(cols))) names(cols) <- arms[seq_along(cols)]
@@ -752,9 +766,12 @@ plotResponseMap <- function(object, spe, gene, focal, neighbour, images = NULL,
     }, character(1))
   }
 
-  ## Shared scales across arms, or the two panels cannot be compared.
-  expr_limits <- range(fd$expr, na.rm = TRUE)
-  x_limits    <- range(fd$density, na.rm = TRUE)
+  ## Shared scales across arms, or the two panels cannot be compared. Ranged on
+  ## the sections actually drawn, not the whole cohort, which would leave most
+  ## of each panel empty.
+  shown       <- fd[fd$image %in% images, , drop = FALSE]
+  expr_limits <- range(shown$expr, na.rm = TRUE)
+  x_limits    <- range(shown$density, na.rm = TRUE)
 
   kdes <- lapply(images, function(img) {
     cells <- df[as.character(df$imageID) == img, , drop = FALSE]
