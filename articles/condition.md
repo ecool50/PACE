@@ -98,11 +98,11 @@ fit <- paceFit(spe,
 #>  - Fitting model with 78 mixture components.
 #>  - Model fitting took 0.05 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 927 x 254 likelihood matrix.
 #>  - Likelihood calculations took 0.18 seconds.
 #>  - Fitting model with 254 mixture components.
-#>  - Model fitting took 0.13 seconds.
+#>  - Model fitting took 0.12 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 927 x 265 likelihood matrix.
@@ -118,15 +118,15 @@ fit <- paceFit(spe,
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 927 x 254 likelihood matrix.
-#>  - Likelihood calculations took 0.18 seconds.
+#>  - Likelihood calculations took 0.17 seconds.
 #>  - Fitting model with 254 mixture components.
 #>  - Model fitting took 0.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 927 x 265 likelihood matrix.
-#>  - Likelihood calculations took 0.19 seconds.
+#>  - Likelihood calculations took 0.18 seconds.
 #>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.13 seconds.
+#>  - Model fitting took 0.12 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 fit
@@ -246,17 +246,58 @@ table(vapply(topDrivers(fit), function(x) x$status, character(1)))
 #>            30
 ```
 
-For scale: fitting the **full** cohort, 56,274 cells across the same 26
-patients, returns 46 calls at `lfsr < 0.05`, among them the macrophage
-*SPP1* response to tumour proximity, shrunken to −0.0668 with an `lfsr`
-of 0 — the result the paper reports. Cropping each section to 15% of its
-cells removes that entirely; the signal only begins to reappear at
-around 60% of the cohort, and even there it is less than half its full
-size.
+### What the full cohort gives
 
-So the ranking above is worth reading as a direction, and the
-significance column is worth reading as a warning. If you want the
-published result, fit the full deposit rather than this subset.
+Rather than assert the difference, the package ships the macrophage
+slopes from the **full** cohort, all 56,274 cells across these same 26
+patients, so the two can be put side by side. It is a fitted result, not
+something this vignette computes; the `provenance` attribute records
+how:
+
+``` r
+
+full <- readRDS(system.file("extdata", "mel_full_cohort_macrophage_slopes.rds",
+                            package = "PACE"))
+nrow(full)
+#> [1] 5562
+subset(full, gene == "SPP1" & neighbour == "Tumour" & term == "ResponderPD:Tumour")
+#>     gene      focal neighbour               term    estimate   std.error
+#> 810 SPP1 Macrophage    Tumour ResponderPD:Tumour -0.06738296 0.006050728
+#>     estimate_shrunk   sd_shrunk lfsr
+#> 810     -0.06683963 0.006026284    0
+```
+
+That is the result the paper reports: in macrophages, the response of
+*SPP1* to tumour proximity differs between arms, more negative in
+progressive disease. Now the same row from the subset fitted above:
+
+``` r
+
+subset(ns, gene == "SPP1" & focal == "Macrophage" &
+           neighbour == "Tumour" & term == "ResponderPD:Tumour")
+#>       gene      focal neighbour               term     estimate   std.error
+#> 31401 SPP1 Macrophage    Tumour ResponderPD:Tumour -0.004324059 0.006125521
+#>       estimate_shrunk sd_shrunk lfsr
+#> 31401               0         0    1
+```
+
+The estimate has been shrunk to exactly zero. This is worth being
+precise about, because it is not a threshold that could be relaxed:
+32,445 of the 33,372 responder terms are shrunk to zero here, mash
+having concluded that the block carries no signal at this sample size.
+No `lfsr` cut recovers *SPP1*, because there is no estimate left to
+recover. The unshrunk estimate does keep the right sign, but it is
+smaller than its own standard error.
+
+Cropping each section to 15% removes the effect entirely; it only begins
+to reappear at around 60% of the cohort, and even there it is less than
+half its full size. Crops targeted at the macrophages do recover it, but
+only by keeping most of the tissue, because the macrophages are spread
+through all of it.
+
+So the pair ranking above is worth reading as a direction, and the
+significance column as a warning. For the published result, fit the full
+deposit.
 
 The practical lesson generalises beyond this dataset: a condition
 analysis is powered by **patients**, not by cells. Adding cells from the
