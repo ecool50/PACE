@@ -102,6 +102,12 @@ precision guard disabled the refit is identical to 0.99.0 (`max|diff| = 0`).
   apparently middling loading. On the shipped breast cancer subset that is 4,589
   of 7,898 cells, including 84% of the tumour cells.
 
+* `paceDecompose()` refuses a fit that does not retain `mu` instead of failing
+  several steps later with a missing-column error from inside a grouped
+  summarise. Fits keep `mu` by default; the packaged example fit has it
+  stripped, so its documentation now reads the stored decomposition rather than
+  recomputing one.
+
 # PACE 0.99.0
 
 * Initial package: `paceFit()` for SpatialExperiment input, the `PACEFit` S4

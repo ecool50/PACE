@@ -189,13 +189,20 @@ setMethod("paceShrink", "PACEFit", function(object, ...) {
 #' @param ... Unused.
 #' @return The `PACEFit` with the variance decomposition added.
 #' @examples
-#' spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
+#' # paceDecompose() needs a fit that retains `mu`. The packaged example fit has
+#' # it stripped to keep the file small, so read its stored decomposition:
 #' fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
-#' fit <- paceDecompose(fit, spe)
 #' head(varianceDecomposition(fit))
 #' @rdname paceDecompose
 #' @export
 setMethod("paceDecompose", "PACEFit", function(object, spe, ...) {
+  ## The decomposition reads the fitted means cell by cell, so it needs the
+  ## full n x G `mu`. Fits keep it by default; one that has had it dropped to
+  ## save space (as the packaged example fit has) cannot be re-decomposed.
+  if (is.null(object@fit$mu))
+    stop("this fit does not retain `mu`, which the decomposition needs. ",
+         "Refit with paceModel(..., return_mu = TRUE), or read the stored ",
+         "decomposition with varianceDecomposition().", call. = FALSE)
   genes <- object@context$genes
   Y  <- t(as.matrix(SummarizedExperiment::assay(spe, object@params$assay_name)))
   Y  <- Y[, genes, drop = FALSE]
