@@ -131,11 +131,41 @@ identical to 0.99.0 (`max|diff| = 0`).
   the tumour cells.
 
 - [`paceDecompose()`](https://ecool50.github.io/PACE/reference/paceDecompose.md)
-  refuses a fit that does not retain `mu` instead of failing several
-  steps later with a missing-column error from inside a grouped
-  summarise. Fits keep `mu` by default; the packaged example fit has it
-  stripped, so its documentation now reads the stored decomposition
-  rather than recomputing one.
+  rebuilds the fitted means it needs instead of requiring them to have
+  been stored. `mu` is a deterministic function of what the fit already
+  holds: on the log scale `eta = X B + Z U` has rank at most `p + q`, so
+  `B`, `U`, `X_fixed` and `re_meta$Z` are its factored form and the
+  dense `n x G` matrix is the expanded copy. Only the ambient field is
+  recomputed, from the counts in the `SpatialExperiment` the function
+  already takes. The rebuild is exact rather than approximate:
+  `max|diff| = 0` against the solver’s own matrices, and a decomposition
+  identical to the stored one, across per-cell contamination and no
+  contamination, edge correction on and off, a non-default technical
+  bandwidth, per-image kernels, a condition cohort, and a non-
+  alphabetical cell-type order.
+
+  `technical_offset_mat` is rebuilt alongside `mu`, not as a detail: it
+  gates the spillover block, so rebuilding only `mu` leaves a
+  decomposition that reports no spillover without raising anything. On
+  the packaged fit that is a block with a median of 1.6% and a maximum
+  of 46%.
+
+  The ambient field is rebuilt from the settings the fit recorded, never
+  from the defaults of the exported
+  [`ambientField()`](https://ecool50.github.io/PACE/reference/ambientField.md),
+  since a fit made with another bandwidth, image grouping, cell-type
+  order or edge correction would otherwise be handed a different field
+  and return plausible, wrong numbers.
+  [`paceModel()`](https://ecool50.github.io/PACE/reference/paceModel.md)
+  now records `edge_correct`, the one such input that was not already
+  kept; a fit made before this is refused rather than rebuilt on a
+  guess.
+
+  A fit can therefore be saved without its `n x G` matrices and still be
+  re-decomposed. Dropping them takes the packaged example fit from 59.8
+  MB to 7.1 MB in memory and 1.03 MB on disk. Note that this saves
+  storage, not peak memory: the matrices are still materialised while
+  the decomposition runs.
 
 ## PACE 0.99.0
 

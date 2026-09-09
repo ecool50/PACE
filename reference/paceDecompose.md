@@ -39,12 +39,18 @@ paceDecompose(object, spe, ...)
 
 The `PACEFit` with the variance decomposition added.
 
+## Details
+
+The decomposition needs the fitted means. A fit that has had its `n x G`
+matrices dropped to save space still carries everything needed to
+rebuild them exactly, so they are recomputed rather than required.
+
 ## Examples
 
 ``` r
-# paceDecompose() needs a fit that retains `mu`. The packaged example fit has
-# it stripped to keep the file small, so read its stored decomposition:
+spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
 fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
+fit <- paceDecompose(fit, spe)
 head(varianceDecomposition(fit))
 #>          focal    gene Cell type %    Spatial % Spillover % Residual %
 #> SEC11C  B_Cell  SEC11C  18.7147181 14.494678992   0.6373641   66.15324

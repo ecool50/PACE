@@ -71,12 +71,18 @@ the same <code>SpatialExperiment</code> used for <code><a href="paceModel.html">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>The <code>PACEFit</code> with the variance decomposition added.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The decomposition needs the fitted means. A fit that has had its <code>n x G</code>
+matrices dropped to save space still carries everything needed to rebuild
+them exactly, so they are recomputed rather than required.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># paceDecompose() needs a fit that retains `mu`. The packaged example fit has</span></span></span>
-<span class="r-in"><span><span class="co"># it stripped to keep the file small, so read its stored decomposition:</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">spe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"bc_xenium_subset.rds"</span>, package <span class="op">=</span> <span class="st">"PACE"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"pace_fit_example.rds"</span>, package <span class="op">=</span> <span class="st">"PACE"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">paceDecompose</span><span class="op">(</span><span class="va">fit</span>, <span class="va">spe</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="varianceDecomposition.html">varianceDecomposition</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          focal    gene Cell type %    Spatial % Spillover % Residual %</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> SEC11C  B_Cell  SEC11C  18.7147181 14.494678992   0.6373641   66.15324</span>
