@@ -35,6 +35,7 @@ Imports:
     tidyr,
     tibble,
     spatstat.geom,
+    MASS,
     dbscan,
     lme4,
     mashr,

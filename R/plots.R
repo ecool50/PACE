@@ -485,7 +485,11 @@ plotDrivers <- function(object, focal, neighbour, n_top = 5,
 #' @param focal,neighbour Focal and neighbour cell types.
 #' @param radius Neighbour search radius in micrometres (default 30).
 #' @param breaks Neighbour-count bin breaks (default `c(0, 2, 4, 6, 8, Inf)`).
-#' @param box_colour Box and mean-point colour.
+#' @param condition Optional `colData` column splitting the boxes by group, so
+#'   the two arms of a condition cohort can be compared within each bin. `TRUE`
+#'   uses the fit's own `condition_col`; `NULL` (default) pools all cells.
+#' @param condition_colours Colours for the condition levels.
+#' @param box_colour Box and mean-point colour, used when `condition` is `NULL`.
 #' @param assay_name Counts assay name (default `"counts"`).
 #' @return A `ggplot` object.
 #' @examples
@@ -498,8 +502,14 @@ plotDrivers <- function(object, focal, neighbour, n_top = 5,
 #' @export
 plotProximity <- function(object, spe, genes, focal, neighbour,
                           radius = 30, breaks = c(0, 2, 4, 6, 8, Inf),
+                          condition = NULL, condition_colours = c("#3B6FB6", "#C0392B"),
                           box_colour = "#4F8B5E", assay_name = "counts") {
   stopifnot(methods::is(object, "PACEFit"))
+  if (isTRUE(condition)) condition <- object@params$condition_col
+  if (!is.null(condition) && !condition %in%
+      names(SummarizedExperiment::colData(spe)))
+    stop("`condition` column '", condition, "' is not in colData(spe).",
+         call. = FALSE)
   ct     <- as.character(SummarizedExperiment::colData(spe)[[object@params$celltype_col]])
   coords <- as.matrix(SpatialExperiment::spatialCoords(spe))
   focal_idx <- which(ct == focal)
@@ -516,6 +526,10 @@ plotProximity <- function(object, spe, genes, focal, neighbour,
     n_neighbours = rep(n_neighbours, times = length(genes)),
     gene = factor(rep(genes, each = length(focal_idx)), levels = genes),
     expr = as.numeric(t(expr_mat)))
+  if (!is.null(condition)) {
+    arm <- as.character(SummarizedExperiment::colData(spe)[[condition]])[focal_idx]
+    plot_data$condition <- factor(rep(arm, times = length(genes)))
+  }
   plot_data$bin <- cut(plot_data$n_neighbours, breaks = breaks, include.lowest = TRUE)
   plot_data <- plot_data[!is.na(plot_data$bin), ]
   ## relabel the open top bin with the observed maximum count
@@ -524,10 +538,27 @@ plotProximity <- function(object, spe, genes, focal, neighbour,
                               max(plot_data$n_neighbours))
   levels(plot_data$bin) <- lev
 
-  p <- ggplot(plot_data, aes(.data$bin, .data$expr)) +
-    geom_boxplot(colour = box_colour, fill = "white", linewidth = 0.6,
-                 outlier.colour = box_colour, outlier.alpha = 0.25, outlier.size = 1.2) +
-    stat_summary(fun = mean, geom = "point", colour = box_colour, size = 3.2) +
+  if (is.null(condition)) {
+    p <- ggplot(plot_data, aes(.data$bin, .data$expr)) +
+      geom_boxplot(colour = box_colour, fill = "white", linewidth = 0.6,
+                   outlier.colour = box_colour, outlier.alpha = 0.25,
+                   outlier.size = 1.2) +
+      stat_summary(fun = mean, geom = "point", colour = box_colour, size = 3.2)
+  } else {
+    ## One box per (bin, arm); the arms are the comparison, so they are dodged
+    ## side by side rather than faceted apart.
+    cols <- condition_colours
+    if (is.null(names(cols)))
+      names(cols) <- levels(plot_data$condition)[seq_along(cols)]
+    p <- ggplot(plot_data, aes(.data$bin, .data$expr, colour = .data$condition)) +
+      geom_boxplot(fill = "white", linewidth = 0.6, outlier.alpha = 0.25,
+                   outlier.size = 1.2,
+                   position = position_dodge(width = 0.8)) +
+      stat_summary(fun = mean, geom = "point", size = 3.2,
+                   position = position_dodge(width = 0.8)) +
+      scale_colour_manual(values = cols, name = condition)
+  }
+  p <- p +
     labs(x = paste("Number of", neighbour, "neighbours"),
          y = paste(focal, "RAW counts")) +
     theme_minimal(base_size = 15) +
@@ -540,4 +571,269 @@ plotProximity <- function(object, spe, genes, focal, neighbour,
              y = paste(focal, genes, "counts"))
   else
     p + facet_wrap(~ gene, scales = "free_y")
+}
+
+## ---------------------------------------------------------------------------
+## Condition-stratified response figures.
+##
+## Ported from pace_mv/scripts/helpers/pace_response_figures.R, the code behind
+## the manuscript's melanoma figures, so the package draws them rather than
+## leaving each user to reassemble them.
+## ---------------------------------------------------------------------------
+
+## PACE shrunken slope of `gene` for focal <- neighbour, per condition arm, read
+## from the fit rather than refitted. The reference arm is the focal::neighbour
+## BLUP; the other arm adds the focal::<resp_term>:neighbour interaction.
+.pace_arm_slopes <- function(object, gene, focal, neighbour) {
+  U <- object@fit$U
+  if (!gene %in% colnames(U)) stop("gene not in the fit: ", gene, call. = FALSE)
+  u <- stats::setNames(U[, gene], rownames(U))
+  base <- paste0(focal, "::", neighbour)
+  if (!base %in% names(u))
+    stop("no slope for ", focal, " <- ", neighbour, call. = FALSE)
+  s_ref <- unname(u[[base]])
+  s_alt <- s_ref
+  rt <- object@params$resp_term
+  if (!is.null(rt)) {
+    int <- paste0(focal, "::", rt, ":", neighbour)
+    if (int %in% names(u)) s_alt <- s_ref + unname(u[[int]])
+  }
+  c(ref = s_ref, alt = s_alt)
+}
+
+## Focal-cell kernel density of `neighbour` and log1p CP10K of `gene`, plus the
+## arm label. The density is the Gaussian kernel the model itself used, which
+## the fit already carries in its working frame.
+.pace_response_data <- function(object, spe, gene, focal, neighbour) {
+  df <- object@context$df
+  if (!neighbour %in% names(df))
+    stop("no kernel column for neighbour '", neighbour, "' in the fit.",
+         call. = FALSE)
+  cond <- object@params$condition_col
+  if (is.null(cond))
+    stop("this fit has no condition; use plotProximity() instead.", call. = FALSE)
+  Y <- SummarizedExperiment::assay(spe, object@params$assay_name)
+  if (!gene %in% rownames(Y)) stop("gene not in `spe`: ", gene, call. = FALSE)
+  keep <- as.character(df$celltype) == focal
+  cp10k <- as.numeric(Y[gene, keep]) / pmax(df$nCount[keep], 1) * 1e4
+  data.frame(density = as.numeric(df[[neighbour]][keep]),
+             expr    = log1p(cp10k),
+             arm     = factor(as.character(df[[cond]])[keep]),
+             x       = df$x[keep], y = df$y[keep],
+             image   = as.character(df$imageID)[keep])
+}
+
+#' Response curve: binned means with the PACE slope overlaid
+#'
+#' Population view of one gene in `focal` cells against `neighbour` density,
+#' split by the fit's condition. The solid line and ribbon are binned means and
+#' standard errors of the observed data; the dashed line is the PACE slope read
+#' straight from the fitted model, anchored at each arm's data centroid. It is
+#' the model's estimate drawn over the data, not a smoother refitted to it.
+#'
+#' @param object A [PACEFit] fitted with a `condition_col`.
+#' @param spe The [SpatialExperiment::SpatialExperiment] that was fitted.
+#' @param gene,focal,neighbour Gene, focal cell type and neighbour cell type.
+#' @param n_bins Number of density quantile bins (default 10).
+#' @param min_bin_n Bins with fewer focal cells than this are dropped.
+#' @param colours Colours for the two arms.
+#' @return A `ggplot` object.
+#' @examples
+#' spe <- readRDS(system.file("extdata", "mel_cosmx_subset.rds", package = "PACE"))
+#' \donttest{
+#' fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
+#'                image_col = "image", kernel_per_image = TRUE,
+#'                image_re = "intercept", verbose = FALSE)
+#' plotResponseCurve(fit, spe, "SPP1", "Macrophage", "Tumour")
+#' }
+#' @export
+plotResponseCurve <- function(object, spe, gene, focal, neighbour,
+                              n_bins = 10, min_bin_n = 10,
+                              colours = c("#3B6FB6", "#C0392B")) {
+  stopifnot(methods::is(object, "PACEFit"))
+  d <- .pace_response_data(object, spe, gene, focal, neighbour)
+  d <- d[is.finite(d$density) & is.finite(d$expr), ]
+
+  ## The reference arm is the first factor level, matching how the model codes
+  ## the condition; the other arm carries the interaction.
+  arms   <- levels(d$arm)
+  slopes <- .pace_arm_slopes(object, gene, focal, neighbour)
+  slope_by_arm <- stats::setNames(c(slopes[["ref"]], slopes[["alt"]]), arms)
+
+  brks <- unique(stats::quantile(d$density, seq(0, 1, length.out = n_bins + 1),
+                                 na.rm = TRUE))
+  d$bin <- cut(d$density, breaks = brks, include.lowest = TRUE)
+  binned <- d |>
+    dplyr::group_by(.data$arm, .data$bin) |>
+    dplyr::summarise(x = mean(.data$density), mean_e = mean(.data$expr),
+                     se = stats::sd(.data$expr) / sqrt(dplyr::n()),
+                     n = dplyr::n(), .groups = "drop") |>
+    dplyr::filter(.data$n >= min_bin_n)
+
+  x_range <- c(0, max(d$density))
+  centro <- d |>
+    dplyr::group_by(.data$arm) |>
+    dplyr::summarise(dx = mean(.data$density), ey = mean(.data$expr),
+                     .groups = "drop")
+  pace_lines <- do.call(rbind, lapply(seq_len(nrow(centro)), function(i) {
+    a <- as.character(centro$arm[i])
+    data.frame(arm = centro$arm[i], x = x_range,
+               y = centro$ey[i] + slope_by_arm[[a]] * (x_range - centro$dx[i]))
+  }))
+
+  cols <- colours
+  if (is.null(names(cols))) names(cols) <- arms[seq_along(cols)]
+
+  ggplot() +
+    geom_ribbon(data = binned,
+                aes(.data$x, ymin = .data$mean_e - .data$se,
+                    ymax = .data$mean_e + .data$se, fill = .data$arm),
+                alpha = 0.18) +
+    geom_line(data = binned, aes(.data$x, .data$mean_e, colour = .data$arm),
+              linewidth = 0.9) +
+    geom_point(data = binned, aes(.data$x, .data$mean_e, colour = .data$arm),
+               size = 1.8) +
+    geom_line(data = pace_lines, aes(.data$x, .data$y, colour = .data$arm),
+              linetype = "dashed", linewidth = 1.1) +
+    scale_colour_manual(values = cols, name = object@params$condition_col) +
+    scale_fill_manual(values = cols, guide = "none") +
+    coord_cartesian(xlim = x_range, ylim = c(0, max(binned$mean_e + binned$se) * 1.05)) +
+    labs(title = sprintf("%s in %s vs %s-neighbour density", gene, focal, neighbour),
+         subtitle = sprintf("Solid = binned means +/- SE; dashed = PACE slope (%s)",
+                            paste(sprintf("%s %+.3f", arms, slope_by_arm),
+                                  collapse = ", ")),
+         x = sprintf("%s-neighbour density (Gaussian kernel)", neighbour),
+         y = sprintf("%s expression (CP10K, log1p)", gene)) +
+    theme_bw(base_size = 12) +
+    theme(legend.position = "top", panel.grid.minor = element_blank(),
+          plot.title = element_text(face = "bold"),
+          plot.subtitle = element_text(size = 9))
+}
+
+#' Tissue maps and scatters for one exemplar image per arm
+#'
+#' The spatial view behind [plotResponseCurve()]. For one image per condition
+#' arm: a smooth kernel-density map of the neighbour type with the focal cells
+#' overlaid and coloured by expression (top), and expression against neighbour
+#' density for the same cells with a fitted line (bottom). Colour scales are
+#' shared across the panels so the arms are directly comparable.
+#'
+#' @param object A [PACEFit] fitted with a `condition_col`.
+#' @param spe The [SpatialExperiment::SpatialExperiment] that was fitted.
+#' @param gene,focal,neighbour Gene, focal cell type and neighbour cell type.
+#' @param images Optional named character vector of image identifiers, one per
+#'   arm. The default picks, for each arm, the image with the most focal cells.
+#' @param kde_h,ngrid Kernel bandwidth and grid size for the density map.
+#' @param scalebar_len Scale-bar length in micrometres.
+#' @return A `patchwork` object.
+#' @examples
+#' spe <- readRDS(system.file("extdata", "mel_cosmx_subset.rds", package = "PACE"))
+#' \donttest{
+#' fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
+#'                image_col = "image", kernel_per_image = TRUE,
+#'                image_re = "intercept", verbose = FALSE)
+#' plotResponseMap(fit, spe, "SPP1", "Macrophage", "Tumour")
+#' }
+#' @export
+plotResponseMap <- function(object, spe, gene, focal, neighbour, images = NULL,
+                            kde_h = 60, ngrid = 200, scalebar_len = 100) {
+  stopifnot(methods::is(object, "PACEFit"))
+  df   <- object@context$df
+  cond <- object@params$condition_col
+  if (is.null(cond))
+    stop("this fit has no condition; use plotProximity() instead.", call. = FALSE)
+  fd <- .pace_response_data(object, spe, gene, focal, neighbour)
+
+  ## One exemplar image per arm: by default the one with the most focal cells,
+  ## since a map of a handful of cells shows nothing.
+  if (is.null(images)) {
+    images <- vapply(split(fd, fd$arm), function(a) {
+      tb <- sort(table(a$image), decreasing = TRUE); names(tb)[1]
+    }, character(1))
+  }
+
+  ## Shared scales across arms, or the two panels cannot be compared.
+  expr_limits <- range(fd$expr, na.rm = TRUE)
+  x_limits    <- range(fd$density, na.rm = TRUE)
+
+  kdes <- lapply(images, function(img) {
+    cells <- df[as.character(df$imageID) == img, , drop = FALSE]
+    nb <- cells[as.character(cells$celltype) == neighbour, , drop = FALSE]
+    xr <- range(cells$x) + c(-20, 20); yr <- range(cells$y) + c(-20, 20)
+    k  <- MASS::kde2d(nb$x, nb$y, n = ngrid, h = c(kde_h, kde_h), lims = c(xr, yr))
+    g  <- expand.grid(x = k$x, y = k$y)
+    g$z <- as.vector(k$z) * nrow(nb)
+    g
+  })
+  density_limits <- range(unlist(lapply(kdes, `[[`, "z")))
+
+  heat_cols <- c("#000000", "#4D0000", "#8B0000", "#E41A1C", "#FF7F00",
+                 "#FFD92F", "#FFFFB2")
+  emax <- expr_limits[2]
+  heat_values <- scales::rescale(c(0, 2, 3.2, 4.2, 5.2, 6.2, emax),
+                                 from = c(0, emax))
+
+  maps <- scatters <- vector("list", length(images))
+  for (i in seq_along(images)) {
+    arm <- names(images)[i]
+    fc  <- fd[fd$image == images[i], , drop = FALSE]
+    kde <- kdes[[i]]
+    sb_x0 <- min(kde$x) + 0.06 * diff(range(kde$x))
+    sb_y0 <- min(kde$y) + 0.06 * diff(range(kde$y))
+
+    maps[[i]] <- ggplot() +
+      geom_raster(data = kde, aes(.data$x, .data$y, fill = .data$z),
+                  interpolate = TRUE) +
+      geom_point(data = fc, aes(.data$x, .data$y, colour = .data$expr),
+                 size = 2.4, alpha = 0.97, shape = 16) +
+      scale_fill_gradientn(
+        colours = c("white", "#DEEBF7", "#9ECAE1", "#4292C6", "#08519C", "#08306B"),
+        limits = density_limits, name = paste(neighbour, "density"),
+        guide = guide_colourbar(order = 2, direction = "horizontal",
+                                title.position = "top", barwidth = 8,
+                                barheight = 0.5)) +
+      scale_colour_gradientn(
+        colours = heat_cols, values = heat_values, limits = expr_limits,
+        name = sprintf("%s %s (log CP10K)", focal, gene),
+        guide = guide_colourbar(order = 1, direction = "horizontal",
+                                title.position = "top", barwidth = 8,
+                                barheight = 0.5)) +
+      annotate("segment", x = sb_x0, xend = sb_x0 + scalebar_len,
+               y = sb_y0, yend = sb_y0, colour = "black", linewidth = 1.4) +
+      annotate("text", x = sb_x0 + scalebar_len / 2,
+               y = sb_y0 + 0.035 * diff(range(kde$y)),
+               label = paste(scalebar_len, "um"), size = 2.8, vjust = 0) +
+      coord_equal(expand = FALSE) +
+      labs(title = arm) +
+      theme_void(base_size = 11) +
+      theme(legend.position = "bottom", legend.box = "horizontal",
+            legend.title = element_text(size = 8),
+            legend.text = element_text(size = 7),
+            plot.title = element_text(size = 11, hjust = 0.5,
+                                      margin = margin(b = 4)))
+
+    f  <- stats::lm(expr ~ density, data = fc)
+    co <- summary(f)$coefficients
+    ann <- sprintf("slope = %+.3f\nn = %d", co[2, 1], nrow(fc))
+    scatters[[i]] <- ggplot(fc, aes(.data$density, .data$expr)) +
+      geom_point(colour = "#1f77b4", alpha = 0.5, size = 1.1) +
+      geom_smooth(method = "lm", formula = y ~ x, colour = "black",
+                  fill = "grey60", alpha = 0.3) +
+      annotate("label", x = x_limits[1], y = expr_limits[2], hjust = 0, vjust = 1,
+               label = ann, size = 2.9,
+               fill = scales::alpha("white", 0.7)) +
+      coord_cartesian(xlim = x_limits, ylim = expr_limits) +
+      labs(title = arm, x = sprintf("%s density (Gaussian kernel)", neighbour),
+           y = sprintf("%s %s (log CP10K)", focal, gene)) +
+      theme_bw(base_size = 11) +
+      theme(plot.title = element_text(size = 10))
+  }
+
+  ## wrap_plots rather than Reduce(`+`): patchwork is imported, not attached,
+  ## so `+` on ggplots would not dispatch to it here.
+  patchwork::wrap_plots(
+    patchwork::wrap_plots(maps, nrow = 1),
+    patchwork::wrap_plots(scatters, nrow = 1),
+    nrow = 2, heights = c(1.4, 1), guides = "collect") &
+    theme(legend.position = "bottom", legend.box = "horizontal")
 }

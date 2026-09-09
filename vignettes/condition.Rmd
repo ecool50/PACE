@@ -171,35 +171,31 @@ paper, recovered here from the shipped data.
 
 The counts behind it, split by arm:
 
-```{r proximity, fig.width = 6.5, fig.height = 3.6}
-ct <- as.character(spe$cellType)
-xy <- as.matrix(spatialCoords(spe))
-mac <- which(ct == "Macrophage")
-tum <- which(ct == "Tumour")
-
-d <- data.frame(
-  arm  = factor(as.character(spe$Responder)[mac], levels = c("nonPD", "PD")),
-  ntum = lengths(dbscan::frNN(xy[tum, ], eps = 30, query = xy[mac, ])$id),
-  spp1 = as.numeric(assay(spe, "counts")["SPP1", mac]))
-d$bin <- cut(d$ntum, c(-1, 10, 20, 30, 40, Inf),
-             labels = c("0-10", "11-20", "21-30", "31-40", "41+"))
-
-d |>
-  group_by(arm, bin) |>
-  summarise(mean = mean(spp1), se = sd(spp1) / sqrt(n()), .groups = "drop") |>
-  ggplot(aes(bin, mean, colour = arm, group = arm)) +
-  geom_ribbon(aes(ymin = mean - se, ymax = mean + se, fill = arm),
-              alpha = 0.18, colour = NA) +
-  geom_line(linewidth = 0.9) +
-  geom_point(size = 2) +
-  labs(x = "Tumour cells within 30 um", y = "Mean macrophage SPP1 count",
-       colour = "Response", fill = "Response") +
-  theme_minimal(base_size = 11)
+```{r proximity, fig.width = 7, fig.height = 4}
+plotProximity(fit, spe, "SPP1", "Macrophage", "Tumour",
+              breaks = c(0, 10, 20, 30, 40, Inf), condition = TRUE)
 ```
 
-In non-progressive disease macrophage *SPP1* climbs with tumour proximity; in
-progressive disease it does not. That divergence is what the negative
-`ResponderPD:Tumour` coefficient measures.
+`plotResponseCurve()` puts the model on top of the data: the solid lines are
+binned means and standard errors, the dashed lines the PACE slopes read from the
+fit rather than smoothed from the points.
+
+```{r curve, fig.width = 7, fig.height = 5}
+plotResponseCurve(fit, spe, "SPP1", "Macrophage", "Tumour")
+```
+
+The two dashed lines diverge, which is the interaction. Note the x axis is the
+model's own covariate, the Gaussian kernel density centred within each section,
+so a slope drawn against it is on the scale it was estimated on.
+
+`plotResponseMap()` gives the spatial view for one exemplar section per arm:
+tumour density with macrophages coloured by *SPP1* above, expression against
+density below. Pass `images` to choose the sections; the default takes the one
+with the most focal cells in each arm.
+
+```{r map, fig.width = 9, fig.height = 8}
+plotResponseMap(fit, spe, "SPP1", "Macrophage", "Tumour")
+```
 
 # Session info
 
