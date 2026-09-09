@@ -15,17 +15,29 @@
 ## in fewer than 5% of the cells of every type, and drop zero-count cells. That
 ## gives 56,274 cells and 927 genes across 26 sections, one per patient.
 ##
-## The subset then keeps ALL 26 patients and crops each section spatially: the
-## cells nearest that section's centroid, 15% of it or 120 cells, whichever is
-## larger. Cropping contiguously rather than sampling at random is deliberate,
-## because the model reads local neighbourhoods and a random subsample would
-## thin them. Keeping every patient is also deliberate: the condition effect is
-## a between-patient contrast, so dropping patients would weaken the very thing
-## the vignette illustrates. The result is 8,454 cells, 927 genes, 26 sections.
+## The subset keeps EVERY cell and EVERY patient and reduces only the panel, to
+## the 180 most widely detected genes by the same max-per-cell-type criterion
+## already used for QC. File size is cells x genes, and of the two the cells are
+## what must be preserved: the model reads local neighbourhoods, and the
+## condition effect is a between-patient contrast, so cropping cells or dropping
+## patients destroys exactly what this vignette demonstrates while cutting the
+## panel does not. Cropping cells was tried first and abandoned; at 15% of each
+## section nothing reached lfsr < 0.05 at all, and no cell-based crop under
+## about 5 MB recovered the macrophage SPP1 result, including crops targeted at
+## the macrophages themselves, which keep most of the tissue because the
+## macrophages are spread through all of it.
 ##
-## The subset is sized for a package vignette, not for inference. It does NOT
-## reproduce the cohort-level macrophage SPP1 result; see the vignette, which
-## says so and explains why.
+## SPP1 sits at rank 173 by detection, so it is forced into the panel rather
+## than arriving on merit; every other gene is taken in detection order.
+##
+## The panel cannot go much lower. At 120 genes some focal cell type has nothing
+## left to decompose and mvpql_variance_decomposition_multi() fails with
+## "Column `focal` is not found".
+##
+## The reduced panel leaves estimates alone but shifts mash's calibration, since
+## it calibrates against the genes it is given: this subset yields 76 responder
+## calls where the full panel yields 46. SPP1 Macrophage <- Tumour is -0.0663
+## here against -0.0668 on the full panel.
 
 library(SpatialExperiment)
 library(zellkonverter)
@@ -33,46 +45,20 @@ library(zellkonverter)
 ## ... published preparation of Melanoma_5612.h5ad, yielding `Y` (cells x genes
 ## integer counts) and `df` (celltype, imageID, Responder, x, y) ...
 
-crop <- function(df, frac = 0.15, min_cells = 120L) {
-  sort(unlist(lapply(split(seq_len(nrow(df)), df$imageID), function(idx) {
-    xy <- as.matrix(df[idx, c("x", "y")])
-    d  <- sqrt((xy[, 1] - mean(xy[, 1]))^2 + (xy[, 2] - mean(xy[, 2]))^2)
-    idx[order(d)][seq_len(max(min_cells, ceiling(frac * length(idx))))]
-  }), use.names = FALSE))
-}
+## Panel reduction: all cells, all patients, 180 most-detected genes.
+ct   <- as.character(df$celltype)
+cbt  <- lapply(cell_types, function(t) which(ct == t))
+maxdet <- apply(Y, 2, function(g) max(vapply(cbt, function(i) mean(g[i] > 0), numeric(1))))
+keep <- names(sort(maxdet, decreasing = TRUE))[seq_len(180L)]
+if (!"SPP1" %in% keep) keep <- c(keep[-180L], "SPP1")
+keep <- sort(keep)
 
-idx <- crop(df)
 spe <- SpatialExperiment(
-  assays  = list(counts = as(t(Y[idx, , drop = FALSE]), "dgCMatrix")),
+  assays  = list(counts = as(t(Y[, keep, drop = FALSE]), "dgCMatrix")),
   colData = DataFrame(
-    cellType  = as.character(df$celltype)[idx],
-    Responder = factor(as.character(df$Responder)[idx], levels = c("nonPD", "PD")),
-    image     = as.character(df$imageID)[idx]),
-  spatialCoords = as.matrix(df[idx, c("x", "y")]))
+    cellType  = ct,
+    Responder = factor(as.character(df$Responder), levels = c("nonPD", "PD")),
+    image     = as.character(df$imageID)),
+  spatialCoords = as.matrix(df[, c("x", "y")]))
 
 saveRDS(spe, "inst/extdata/mel_cosmx_subset.rds", compress = "xz")
-
-## ---------------------------------------------------------------------------
-## inst/extdata/mel_full_cohort_macrophage_slopes.rds
-##
-## Shrunken neighbour slopes for macrophage focal cells from the FULL cohort
-## (56,274 cells, 927 genes, 26 patients), not the subset above. Shipped so the
-## vignette can display the cohort-level macrophage SPP1 result that a subset
-## small enough to distribute cannot support: no crop under about 5 MB carries
-## it, and cropping around the macrophages does not help because they are spread
-## through the whole section. 5,562 rows, 0.14 MB. Its `provenance` attribute
-## records the fit settings.
-##
-##   fit <- pace_fit_streaming(Y, df, types = cell_types,
-##            celltype_col = "celltype", image_col = "imageID",
-##            h_bio = 30, h_tech = 5, eps = 90,
-##            contamination = "percell_hc", dispersion = "nb1",
-##            condition_col = "Responder", kernel_per_image = TRUE,
-##            image_re = "intercept", drop_sparse_neff = 30,
-##            within_image = TRUE, edge_correct = TRUE,
-##            data_informed_tau = TRUE, n_iter = 32, threads = 4,
-##            tau_shrinkage = "adaptive")
-##   shr <- pace_shrink(fit$fit, cell_types, resp_term = "ResponderPD",
-##                      null_correlation = FALSE)   # matches the published analysis
-##   saveRDS(subset(shr, focal == "Macrophage"),
-##           "inst/extdata/mel_full_cohort_macrophage_slopes.rds", compress = "xz")

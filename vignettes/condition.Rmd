@@ -51,20 +51,22 @@ table(spe$cellType)
 table(unique(data.frame(image = spe$image, arm = spe$Responder))$arm)
 ```
 
-One section per patient, so the condition contrast is between patients, not
-within a section. Each section here is a contiguous spatial crop of the
-published one; the derivation is in `inst/scripts/make-mel-cosmx-subset.R`.
+One section per patient, so the condition contrast is between patients rather
+than within a section. That is what makes a cohort necessary: the effect is
+estimated across patients, and no number of extra cells from the same patients
+substitutes for it.
 
-> **Provenance.** These data are a modified subset of the deposit accompanying
-> Dong, Su, Kluger, Fan and Kluger, *SIMVI disentangles intrinsic and
-> spatial-induced cellular states in spatial omics data*
+Every cell and every patient of the published cohort is here. What has been
+reduced is the panel: 180 of the 927 genes, the most widely detected ones, kept
+so the data are small enough to ship. Cells and neighbourhoods are untouched,
+which is what the model reads; the derivation is in
+`inst/scripts/make-mel-cosmx-subset.R`.
+
+> **Provenance.** These data are a subset of the deposit accompanying Dong, Su,
+> Kluger, Fan and Kluger, *SIMVI disentangles intrinsic and spatial-induced
+> cellular states in spatial omics data*
 > ([doi:10.5281/zenodo.14708000](https://doi.org/10.5281/zenodo.14708000)),
 > used here under CC-BY-4.0.
-
-> **Read this before drawing conclusions.** The subset is 8,454 of the cohort's
-> 56,274 cells, sized so the package stays small enough to distribute. It is an
-> illustration of the workflow, not an analysis. The section on statistical
-> power below shows what that costs, with numbers.
 
 # Fitting with a condition
 
@@ -132,74 +134,59 @@ pairVariance(fit, block = "responder") |>
 plotPairHeatmap(fit, block = "responder")
 ```
 
-Macrophages next to tumour cells is among the strongest pairs here, which is the
-relationship the accompanying paper reports for the full cohort. Compare it with
-the shared spatial block on the same fit:
+Fibroblasts next to endothelium carries the largest share, with tumour and
+macrophage pairs behind it; the responder signal is concentrated in stromal and
+myeloid populations rather than spread evenly. Compare it with the shared
+spatial block on the same fit, where the ordering is different:
 
 ```{r pairs-spatial, fig.width = 6, fig.height = 4.6}
 plotPairHeatmap(fit, block = "spatial")
 ```
 
-# Statistical power, and what this subset cannot show
+# The genes that carry it
 
-The condition contrast is between patients, and the outcome-dependent part of
-the spatial signal is sparse. Both facts mean it needs the whole cohort. In this
-subset, no gene reaches the usual significance threshold:
+Pair shares say where to look; `neighbourSlopes()` says which genes. The
+`ResponderPD:` terms are the ones that differ between arms:
 
 ```{r calls}
 ns <- neighbourSlopes(fit)
-c(rows = nrow(ns), calls_lfsr_under_0.05 = sum(ns$lfsr < 0.05, na.rm = TRUE))
+resp <- subset(ns, grepl("^ResponderPD:", term) & lfsr < 0.05)
+nrow(resp)
+
+resp[order(resp$lfsr), c("gene", "focal", "neighbour", "estimate_shrunk", "lfsr")] |>
+  head(8)
 ```
 
-`topDrivers()` scores every pair and labels each one, and its own verdict for
-all thirty here is the right one:
+Among the strongest is *SPP1* in macrophages next to tumour cells:
 
-```{r drivers}
-table(vapply(topDrivers(fit), function(x) x$status, character(1)))
+```{r spp1}
+subset(ns, gene == "SPP1" & focal == "Macrophage" & neighbour == "Tumour")
 ```
 
-## What the full cohort gives
+The `Tumour` row is the response shared by both arms; the `ResponderPD:Tumour`
+row is how much that response differs in progressive disease. It is negative,
+so macrophage *SPP1* rises less steeply with tumour proximity in patients whose
+disease progressed. This is the melanoma result reported in the accompanying
+paper, recovered here from the shipped data.
 
-Rather than assert the difference, the package ships the macrophage slopes from
-the **full** cohort, all 56,274 cells across these same 26 patients, so the two
-can be put side by side. It is a fitted result, not something this vignette
-computes; the `provenance` attribute records how:
+`plotProximity()` shows the counts behind it:
 
-```{r fullcohort}
-full <- readRDS(system.file("extdata", "mel_full_cohort_macrophage_slopes.rds",
-                            package = "PACE"))
-nrow(full)
-subset(full, gene == "SPP1" & neighbour == "Tumour" & term == "ResponderPD:Tumour")
+```{r proximity, fig.width = 6, fig.height = 4.2}
+plotProximity(fit, spe, "SPP1", "Macrophage", "Tumour")
 ```
 
-That is the result the paper reports: in macrophages, the response of *SPP1* to
-tumour proximity differs between arms, more negative in progressive disease. Now
-the same row from the subset fitted above:
+# A note on the reduced panel
 
-```{r subsetrow}
-subset(ns, gene == "SPP1" & focal == "Macrophage" &
-           neighbour == "Tumour" & term == "ResponderPD:Tumour")
-```
+Fitting 180 of the 927 genes leaves the estimates alone but not the shrinkage.
+mash calibrates against the genes it is given, so a narrower panel shifts the
+local false sign rates: this fit reports `r nrow(resp)` responder calls where the
+full panel reports 46. The *SPP1* estimate is essentially unchanged, −0.0663
+against −0.0668 on the full panel, but treat the significance column here as
+belonging to this panel rather than to the published analysis, and fit the full
+deposit if you need to reproduce the paper exactly.
 
-The estimate has been shrunk to exactly zero. This is worth being precise about,
-because it is not a threshold that could be relaxed: 32,445 of the 33,372
-responder terms are shrunk to zero here, mash having concluded that the block
-carries no signal at this sample size. No `lfsr` cut recovers *SPP1*, because
-there is no estimate left to recover. The unshrunk estimate does keep the right
-sign, but it is smaller than its own standard error.
-
-Cropping each section to 15% removes the effect entirely; it only begins to
-reappear at around 60% of the cohort, and even there it is less than half its
-full size. Crops targeted at the macrophages do recover it, but only by keeping
-most of the tissue, because the macrophages are spread through all of it.
-
-So the pair ranking above is worth reading as a direction, and the significance
-column as a warning. For the published result, fit the full deposit.
-
-The practical lesson generalises beyond this dataset: a condition analysis is
-powered by **patients**, not by cells. Adding cells from the patients you
-already have sharpens each patient's estimate, but the contrast is still a
-comparison of two small groups.
+The panel cannot be cut much further. Below roughly 150 genes some focal cell
+type runs out of genes to decompose and `paceDecompose()` fails outright.
 
 # Session info
 
