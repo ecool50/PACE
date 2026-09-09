@@ -95,26 +95,26 @@ fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computing 278 x 430 likelihood matrix.
 #>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 0.13 seconds.
+#>  - Model fitting took 0.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
 #>  - Likelihood calculations took 0.17 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.17 seconds.
+#>  - Model fitting took 0.18 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] T_Cell: 278 genes shrunk; sig (lfsr<0.05) = 21
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.39 seconds.
+#>  - Model fitting took 0.36 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
 #>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.57 seconds.
+#>  - Model fitting took 0.58 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>   [mashr] Tumour: 278 genes shrunk; sig (lfsr<0.05) = 30

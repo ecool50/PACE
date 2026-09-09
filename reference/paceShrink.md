@@ -55,14 +55,14 @@ fit <- paceShrink(fit)
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.16 seconds.
+#>  - Model fitting took 0.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Endothelial: 278 genes shrunk; sig (lfsr<0.05) = 2
 #>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.12 seconds.
+#>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.23 seconds.
+#>  - Model fitting took 0.22 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Macrophage: 278 genes shrunk; sig (lfsr<0.05) = 5
@@ -77,7 +77,7 @@ fit <- paceShrink(fit)
 #>  - Computing 278 x 391 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Model fitting took 0.19 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Stromal: 278 genes shrunk; sig (lfsr<0.05) = 3
@@ -97,7 +97,7 @@ fit <- paceShrink(fit)
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.36 seconds.
+#>  - Model fitting took 0.37 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.

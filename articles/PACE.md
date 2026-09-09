@@ -124,7 +124,7 @@ fit <- paceFit(spe,
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.17 seconds.
+#>  - Model fitting took 0.15 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 417 likelihood matrix.
@@ -148,11 +148,11 @@ fit <- paceFit(spe,
 #>  - Computing 278 x 430 likelihood matrix.
 #>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 0.14 seconds.
+#>  - Model fitting took 0.13 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.17 seconds.
+#>  - Likelihood calculations took 0.19 seconds.
 #>  - Fitting model with 628 mixture components.
 #>  - Model fitting took 0.17 seconds.
 #>  - Computing posterior matrices.
@@ -290,6 +290,30 @@ plotPairHeatmap(fit)
 ```
 
 ![](PACE_files/figure-html/pairs-1.png)
+
+[`pairVariance()`](https://ecool50.github.io/PACE/reference/pairVariance.md)
+returns those same numbers as a long table. The heatmap is drawn from
+it, so the two cannot disagree, and the table is the easier thing to
+rank or pass on:
+
+``` r
+
+pairVariance(fit) |>
+  arrange(desc(val)) |>
+  head(5)
+#> # A tibble: 5 × 3
+#>   focal       neighbour   val
+#>   <chr>       <chr>     <dbl>
+#> 1 B_Cell      T_Cell    2.73 
+#> 2 Stromal     Tumour    1.59 
+#> 3 Macrophage  Tumour    0.756
+#> 4 Endothelial Tumour    0.372
+#> 5 Tumour      T_Cell    0.342
+```
+
+For a cohort with a condition, `block = "responder"` gives the same
+attribution for the responder-by-proximity block rather than the
+baseline spatial one.
 
 ## Macrophage–tumour drivers
 
@@ -434,25 +458,25 @@ sessionInfo()
 #>  [4] S7_0.2.2            fastmap_1.2.0       digest_0.6.39      
 #>  [7] lifecycle_1.0.5     invgamma_1.2        magrittr_2.0.5     
 #> [10] dbscan_1.2.6        compiler_4.6.1      rlang_1.3.0        
-#> [13] sass_0.4.10         tools_4.6.1         yaml_2.3.12        
-#> [16] knitr_1.52          S4Arrays_1.12.0     labeling_0.4.3     
-#> [19] DelayedArray_0.38.2 plyr_1.8.9          RColorBrewer_1.1-3 
-#> [22] abind_1.4-8         BiocParallel_1.46.0 withr_3.0.3        
-#> [25] purrr_1.2.2         desc_1.4.3          grid_4.6.1         
-#> [28] scales_1.4.0        cli_3.6.6           mvtnorm_1.4-2      
-#> [31] rmarkdown_2.32      ragg_1.5.2          otel_0.2.0         
-#> [34] rjson_0.2.23        cachem_1.1.0        stringr_1.6.0      
-#> [37] assertthat_0.2.1    parallel_4.6.1      BiocManager_1.30.27
-#> [40] XVector_0.52.0      vctrs_0.7.3         Matrix_1.7-5       
-#> [43] jsonlite_2.0.0      bookdown_0.48       patchwork_1.3.2    
-#> [46] mixsqp_0.3-54       irlba_2.3.7         systemfonts_1.3.2  
-#> [49] magick_2.9.1        jquerylib_0.1.4     glue_1.8.1         
-#> [52] pkgdown_2.2.1       codetools_0.2-20    stringi_1.8.9      
-#> [55] gtable_0.3.6        rmeta_3.0           tibble_3.3.1       
-#> [58] pillar_1.11.1       htmltools_0.5.9     truncnorm_1.0-9    
-#> [61] R6_2.6.1            mashr_0.2.79        textshaping_1.0.5  
-#> [64] evaluate_1.0.5      lattice_0.22-9      SQUAREM_2026.1     
-#> [67] ashr_2.2-63         bslib_0.12.0        Rcpp_1.1.2         
-#> [70] SparseArray_1.12.2  xfun_0.60           fs_2.1.0           
-#> [73] pkgconfig_2.0.3
+#> [13] sass_0.4.10         tools_4.6.1         utf8_1.2.6         
+#> [16] yaml_2.3.12         knitr_1.52          S4Arrays_1.12.0    
+#> [19] labeling_0.4.3      DelayedArray_0.38.2 plyr_1.8.9         
+#> [22] RColorBrewer_1.1-3  abind_1.4-8         BiocParallel_1.46.0
+#> [25] withr_3.0.3         purrr_1.2.2         desc_1.4.3         
+#> [28] grid_4.6.1          scales_1.4.0        cli_3.6.6          
+#> [31] mvtnorm_1.4-2       rmarkdown_2.32      ragg_1.5.2         
+#> [34] otel_0.2.0          rjson_0.2.23        cachem_1.1.0       
+#> [37] stringr_1.6.0       assertthat_0.2.1    parallel_4.6.1     
+#> [40] BiocManager_1.30.27 XVector_0.52.0      vctrs_0.7.3        
+#> [43] Matrix_1.7-5        jsonlite_2.0.0      bookdown_0.48      
+#> [46] patchwork_1.3.2     mixsqp_0.3-54       irlba_2.3.7        
+#> [49] systemfonts_1.3.2   magick_2.9.1        jquerylib_0.1.4    
+#> [52] glue_1.8.1          pkgdown_2.2.1       codetools_0.2-20   
+#> [55] stringi_1.8.9       gtable_0.3.6        rmeta_3.0          
+#> [58] tibble_3.3.1        pillar_1.11.1       htmltools_0.5.9    
+#> [61] truncnorm_1.0-9     R6_2.6.1            mashr_0.2.79       
+#> [64] textshaping_1.0.5   evaluate_1.0.5      lattice_0.22-9     
+#> [67] SQUAREM_2026.1      ashr_2.2-63         bslib_0.12.0       
+#> [70] Rcpp_1.1.2          SparseArray_1.12.2  xfun_0.60          
+#> [73] fs_2.1.0            pkgconfig_2.0.3
 ```
