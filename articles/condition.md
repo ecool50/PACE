@@ -96,37 +96,37 @@ fit <- paceFit(spe,
 #>  - Computing 180 x 298 likelihood matrix.
 #>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 298 mixture components.
+#>  - Model fitting took 0.14 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 375 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 375 mixture components.
+#>  - Model fitting took 0.26 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 579 likelihood matrix.
+#>  - Likelihood calculations took 0.08 seconds.
+#>  - Fitting model with 579 mixture components.
+#>  - Model fitting took 0.59 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 364 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 364 mixture components.
+#>  - Model fitting took 0.23 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 243 likelihood matrix.
+#>  - Likelihood calculations took 0.03 seconds.
+#>  - Fitting model with 243 mixture components.
 #>  - Model fitting took 0.13 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 375 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.24 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 579 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
-#>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.51 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 364 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
-#>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.21 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 243 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
-#>  - Fitting model with 243 mixture components.
-#>  - Model fitting took 0.12 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 375 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
-#>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.29 seconds.
+#>  - Model fitting took 0.30 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 364 likelihood matrix.
@@ -136,21 +136,21 @@ fit <- paceFit(spe,
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 562 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
+#>  - Likelihood calculations took 0.07 seconds.
 #>  - Fitting model with 562 mixture components.
-#>  - Model fitting took 0.15 seconds.
+#>  - Model fitting took 0.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 265 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
+#>  - Likelihood calculations took 0.03 seconds.
 #>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.21 seconds.
+#>  - Model fitting took 0.23 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 409 likelihood matrix.
-#>  - Likelihood calculations took 0.06 seconds.
+#>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 409 mixture components.
-#>  - Model fitting took 0.60 seconds.
+#>  - Model fitting took 0.61 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 fit
@@ -291,14 +291,22 @@ is the melanoma result reported in the accompanying paper, recovered
 here from the shipped data.
 
 [`plotProximity()`](https://ecool50.github.io/PACE/reference/plotProximity.md)
-shows the counts behind it:
+shows the counts behind it. The default bin breaks are set for sparser
+tissue; this section is dense enough that a macrophage has a median of
+22 tumour cells within 30 um, so the bins are widened to spread the
+cells out rather than piling 83% of them into the last one:
 
 ``` r
 
-plotProximity(fit, spe, "SPP1", "Macrophage", "Tumour")
+plotProximity(fit, spe, "SPP1", "Macrophage", "Tumour",
+              breaks = c(0, 10, 20, 30, 40, Inf))
 ```
 
 ![](condition_files/figure-html/proximity-1.png)
+
+That is the response shared by both arms, rising steeply with tumour
+proximity. The condition term above says the rise is shallower in
+progressive disease.
 
 ## A note on the reduced panel
 
