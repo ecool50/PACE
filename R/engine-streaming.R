@@ -742,6 +742,10 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
   mu_global_sum   <- numeric(g_n)
   mu_full         <- if (return_mu) matrix(0, n, g_n, dimnames = list(NULL, colnames(Y))) else NULL
   toff_full       <- if (return_mu) matrix(0, n, g_n, dimnames = list(NULL, colnames(Y))) else NULL
+  ## Per-cell contamination fraction, accumulated over gene chunks so that it is
+  ## available without retaining the n x G matrices (return_mu = FALSE).
+  contam_spill_sum <- numeric(n)
+  contam_tot_sum   <- numeric(n)
 
   chk_starts <- seq.int(1L, g_n, by = max(1L, as.integer(chunk_size)))
   for (cs in chk_starts) {
@@ -760,6 +764,8 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
         mu_celltype_sum[ci, gene_idx_chk] <- colSums(mu_chk[rr, , drop = FALSE])
     }
     mu_global_sum[gene_idx_chk] <- colSums(mu_chk)
+    contam_spill_sum <- contam_spill_sum + rowSums(mu_spill_chk)
+    contam_tot_sum   <- contam_tot_sum   + rowSums(mu_chk)
     if (return_mu) {
       mu_full[, gene_idx_chk]   <- mu_chk
       toff_full[, gene_idx_chk] <- toff_chk
@@ -769,6 +775,8 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
   n_by_ct <- vapply(cells_by_ct, length, integer(1))
   mu_celltype_means <- mu_celltype_sum / pmax(n_by_ct, 1L)
   mu_global_mean    <- mu_global_sum / n
+  ## Same definition as the [percell_bleed] fitting-trace diagnostic above.
+  contam_frac       <- contam_spill_sum / pmax(contam_tot_sum, 1e-9)
 
   list(B = B, U = U, se_B = se_B, se_U = se_U,
        alpha          = alpha,
@@ -787,5 +795,6 @@ fit_pace_mvpql_streaming <- function(Y, X_fixed, df, re_specs,
        bleed_re_U = NULL, bleed_re_se_U = NULL,
        bleed_re_group_levels = NULL, bleed_re_cell_group = NULL,
        percell_bleed_rho = add_rho,
+       contam_frac       = contam_frac,
        n_iter = it, converged = converged, history = hist)
 }

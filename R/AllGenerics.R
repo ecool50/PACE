@@ -26,6 +26,10 @@ setGeneric("buildNeighbourhood", function(object, ...) standardGeneric("buildNei
 #' @export
 setGeneric("ambientField", function(object, ...) standardGeneric("ambientField"))
 
+#' @rdname cellContamination
+#' @export
+setGeneric("cellContamination", function(object, ...) standardGeneric("cellContamination"))
+
 #' @rdname neighbourSlopes
 #' @export
 setGeneric("neighbourSlopes", function(object, ...) standardGeneric("neighbourSlopes"))

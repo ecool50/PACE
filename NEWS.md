@@ -14,6 +14,8 @@ moves at the `1e-04` level, and moves *towards* the full-double reference
 drops into single precision. Every other fix is exactly reproducing: with the
 precision guard disabled the refit is identical to 0.99.0 (`max|diff| = 0`).
 
+## Correctness fixes
+
 * An `NA` in any random-effect variable no longer corrupts the design matrix.
   `model.matrix()` drops such rows, which left the sparse assembly recycling
   covariates so that cells received other cells' values; this now stops with a
@@ -80,6 +82,25 @@ precision guard disabled the refit is identical to 0.99.0 (`max|diff| = 0`).
   `n` entries of the neighbour list, and pair rows are labelled from the same
   matching vector. The previous indexing misaligned neighbour columns whenever
   an interaction term was missing.
+
+## New features
+
+* `cellContamination()` reports, per cell, the contamination loading `rho_i` and
+  the fraction of the cell's expected counts attributed to its local ambient
+  field, `sum_g mu_spill_ig / sum_g mu_ig`. This is the quantity the solver
+  already printed in its fitting trace and then discarded; both engines now
+  retain it as `contam_frac`, which costs two length-`n` accumulators rather
+  than the `n x G` matrices, so it is available from an ordinary streaming fit
+  without `return_mu`. A high fraction marks a cell whose profile is largely
+  explained by its neighbours, the expected signature of a segmentation or
+  transcript-assignment error.
+
+  Read the fraction rather than the loading. The ambient field is
+  cross-cell-type, so a cell with no differently-typed neighbour inside the
+  technical kernel has no ambient signal at all; its `rho_i` is unidentified and
+  shrinks to the empirical Bayes prior mean, giving every such cell the same
+  apparently middling loading. On the shipped breast cancer subset that is 4,589
+  of 7,898 cells, including 84% of the tumour cells.
 
 # PACE 0.99.0
 

@@ -508,6 +508,10 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
   percell_bleed_rho     <- if (additive_active && percell_mode) add_rho else NULL
   mu_spill_out          <- if (additive_active) mu_spill   else NULL
   mu_bio_out            <- if (additive_active) mu_bio     else NULL
+  ## Same definition as the [percell_bleed] fitting-trace diagnostic, and as the
+  ## streaming solver's `contam_frac`.
+  contam_frac_out       <- if (additive_active)
+                             rowSums(mu_spill) / pmax(rowSums(mu), 1e-9) else NULL
 
   list(B = B, U = U, se_B = se_B, se_U = se_U,
        alpha          = alpha,
@@ -527,5 +531,6 @@ fit_pace_mvpql_joint_multi <- function(Y, X_fixed, df, re_specs,
        percell_bleed_rho      = percell_bleed_rho,
        mu_spill               = mu_spill_out,
        mu_bio                 = mu_bio_out,
+       contam_frac            = contam_frac_out,
        n_iter         = it, converged = converged, history = hist)
 }
