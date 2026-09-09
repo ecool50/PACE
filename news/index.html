@@ -17,6 +17,10 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/PACE.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/condition.html">Comparing proximity effects between conditions</a></li>
+  </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/ecool50/PACE/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
@@ -61,6 +65,11 @@
 <p><code>technical_offset_mat</code> is rebuilt alongside <code>mu</code>, not as a detail: it gates the spillover block, so rebuilding only <code>mu</code> leaves a decomposition that reports no spillover without raising anything. On the packaged fit that is a block with a median of 1.6% and a maximum of 46%.</p>
 <p>The ambient field is rebuilt from the settings the fit recorded, never from the defaults of the exported <code><a href="../reference/ambientField.html">ambientField()</a></code>, since a fit made with another bandwidth, image grouping, cell-type order or edge correction would otherwise be handed a different field and return plausible, wrong numbers. <code><a href="../reference/paceModel.html">paceModel()</a></code> now records <code>edge_correct</code>, the one such input that was not already kept; a fit made before this is refused rather than rebuilt on a guess.</p>
 <p>A fit can therefore be saved without its <code>n x G</code> matrices and still be re-decomposed. Dropping them takes the packaged example fit from 59.8 MB to 7.1 MB in memory and 1.03 MB on disk. Note that this saves storage, not peak memory: the matrices are still materialised while the decomposition runs.</p>
+</li>
+<li>
+<p>A second vignette covers condition-stratified cohorts: what <code>condition_col</code>, <code>kernel_per_image</code> and <code>image_re</code> do, the responder spatial state block in the decomposition, and <code><a href="../reference/pairVariance.html">pairVariance()</a></code> / <code><a href="../reference/plotPairHeatmap.html">plotPairHeatmap()</a></code> with <code>block = "responder"</code>.</p>
+<p>It runs on a new shipped subset of the CosMx melanoma cohort of Dong et al. (<a href="doi:10.5281/zenodo.14708000" class="uri">doi:10.5281/zenodo.14708000</a>, CC-BY-4.0): all 26 patients, each section cropped contiguously to 15% of its cells, giving 8,454 cells and 927 genes. All patients are kept because the condition effect is a between-patient contrast, and the crop is contiguous rather than a random sample because the model reads local neighbourhoods. <code>inst/scripts/make-mel-cosmx-subset.R</code> records the derivation.</p>
+<p>The vignette states plainly that no gene in the subset reaches <code>lfsr &lt; 0.05</code>, and why: the full cohort returns 46 calls including the macrophage SPP1 response to tumour proximity, cropping to 15% removes it, and it only begins to return at around 60% of the cohort. A subset small enough to ship cannot carry a cohort-scale effect, and the vignette is written around that rather than around a result it cannot support.</p>
 </li>
 </ul></div>
 </div>

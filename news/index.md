@@ -167,6 +167,31 @@ identical to 0.99.0 (`max|diff| = 0`).
   storage, not peak memory: the matrices are still materialised while
   the decomposition runs.
 
+- A second vignette covers condition-stratified cohorts: what
+  `condition_col`, `kernel_per_image` and `image_re` do, the responder
+  spatial state block in the decomposition, and
+  [`pairVariance()`](https://ecool50.github.io/PACE/reference/pairVariance.md)
+  /
+  [`plotPairHeatmap()`](https://ecool50.github.io/PACE/reference/plotPairHeatmap.md)
+  with `block = "responder"`.
+
+  It runs on a new shipped subset of the CosMx melanoma cohort of Dong
+  et al. (<doi:10.5281/zenodo.14708000>, CC-BY-4.0): all 26 patients,
+  each section cropped contiguously to 15% of its cells, giving 8,454
+  cells and 927 genes. All patients are kept because the condition
+  effect is a between-patient contrast, and the crop is contiguous
+  rather than a random sample because the model reads local
+  neighbourhoods. `inst/scripts/make-mel-cosmx-subset.R` records the
+  derivation.
+
+  The vignette states plainly that no gene in the subset reaches
+  `lfsr < 0.05`, and why: the full cohort returns 46 calls including the
+  macrophage SPP1 response to tumour proximity, cropping to 15% removes
+  it, and it only begins to return at around 60% of the cohort. A subset
+  small enough to ship cannot carry a cohort-scale effect, and the
+  vignette is written around that rather than around a result it cannot
+  support.
+
 ## PACE 0.99.0
 
 - Initial package:
