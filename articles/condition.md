@@ -2,18 +2,14 @@
 
 ## Introduction
 
-The *[PACE](https://bioconductor.org/packages/3.23/PACE)* manual fits a
-single section and asks how expression changes with proximity to each
-neighbouring cell type. This vignette asks the next question: **does
-that proximity effect differ between two groups of patients?**
+The *[PACE](https://bioconductor.org/packages/3.23/PACE)* manual fits
+one section. This vignette asks whether a proximity effect differs
+between two groups of patients.
 
-Answering it needs a cohort rather than a section, and it adds one
-component to the model. Alongside the spatial cell state block, which is
-the proximity effect common to everyone, PACE estimates a **responder
-spatial state** block: the part of the proximity effect that differs
-between conditions. Read the two together, a gene can respond to a
-neighbour in both arms equally (spatial, no responder signal), or
-respond differently depending on outcome (responder signal).
+That needs a cohort, and adds one block to the model. Beside the spatial
+cell state block, the proximity effect common to both arms, PACE
+estimates a **responder spatial state** block: the part that differs
+between them.
 
 ## The melanoma subset
 
@@ -54,16 +50,11 @@ table(unique(data.frame(image = spe$image, arm = spe$Responder))$arm)
 #>    19     7
 ```
 
-One section per patient, so the condition contrast is between patients
-rather than within a section. That is what makes a cohort necessary: the
-effect is estimated across patients, and no number of extra cells from
-the same patients substitutes for it.
+One section per patient, so the contrast is between patients.
 
-Every cell and every patient of the published cohort is here. What has
-been reduced is the panel: 180 of the 927 genes, the most widely
-detected ones, kept so the data are small enough to ship. Cells and
-neighbourhoods are untouched, which is what the model reads; the
-derivation is in `inst/scripts/make-mel-cosmx-subset.R`.
+Every cell and patient of the published cohort is here; only the panel
+is reduced, to the 180 most detected of 927 genes. Derivation:
+`inst/scripts/make-mel-cosmx-subset.R`.
 
 > **Provenance.** These data are a subset of the deposit accompanying
 > Dong, Su, Kluger, Fan and Kluger, *SIMVI disentangles intrinsic and
@@ -73,15 +64,14 @@ derivation is in `inst/scripts/make-mel-cosmx-subset.R`.
 
 ## Fitting with a condition
 
-The call is the single-section one plus three arguments:
+Three arguments beyond the single-section call:
 
-- `condition_col` names the column holding the contrast, and switches on
-  the responder spatial state block.
-- `kernel_per_image = TRUE` builds neighbourhoods within each section,
-  so no cell is ever a neighbour of a cell from another patient.
-- `image_re = "intercept"` gives each section a random intercept, so
-  patient-level differences in overall expression are absorbed rather
-  than being attributed to the condition.
+- `condition_col` names the contrast and switches on the responder
+  block.
+- `kernel_per_image = TRUE` keeps neighbourhoods within a section, so no
+  cell neighbours another patient’s.
+- `image_re = "intercept"` absorbs patient-level shifts in overall
+  expression.
 
 ``` r
 
@@ -94,63 +84,63 @@ fit <- paceFit(spe,
                dispersion       = "nb1",
                verbose          = FALSE)
 #>  - Computing 180 x 298 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
+#>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 298 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Model fitting took 0.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 375 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.24 seconds.
+#>  - Model fitting took 0.25 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 579 likelihood matrix.
-#>  - Likelihood calculations took 0.06 seconds.
+#>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.45 seconds.
+#>  - Model fitting took 0.51 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 364 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
+#>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.18 seconds.
+#>  - Model fitting took 0.21 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 243 likelihood matrix.
 #>  - Likelihood calculations took 0.03 seconds.
 #>  - Fitting model with 243 mixture components.
-#>  - Model fitting took 0.11 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 375 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
-#>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.25 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 364 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
-#>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.09 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 562 likelihood matrix.
-#>  - Likelihood calculations took 0.06 seconds.
-#>  - Fitting model with 562 mixture components.
 #>  - Model fitting took 0.13 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 375 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 375 mixture components.
+#>  - Model fitting took 0.29 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 364 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 364 mixture components.
+#>  - Model fitting took 0.10 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 562 likelihood matrix.
+#>  - Likelihood calculations took 0.08 seconds.
+#>  - Fitting model with 562 mixture components.
+#>  - Model fitting took 0.15 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 265 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
+#>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.19 seconds.
+#>  - Model fitting took 0.22 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 409 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
+#>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 409 mixture components.
-#>  - Model fitting took 0.51 seconds.
+#>  - Model fitting took 0.59 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 fit
@@ -199,11 +189,9 @@ varianceDecomposition(fit) |>
 #> 6 Tumour            0.307                0.034            3.2
 ```
 
-The responder block is far smaller than the shared spatial block, which
-is the expected shape: most of how a cell responds to its neighbours is
-common to both arms, and only a thin slice of it depends on outcome.
-Contamination is larger than either, and largest in the sparsely
-distributed immune populations.
+The responder block is much the smaller: most of a cell’s response to
+its neighbours is common to both arms. Contamination exceeds both, and
+is largest in the sparse immune populations.
 
 ## Which pairs carry the condition difference
 
@@ -232,11 +220,8 @@ plotPairHeatmap(fit, block = "responder")
 
 ![](condition_files/figure-html/pairs-responder-1.png)
 
-Fibroblasts next to endothelium carries the largest share, with tumour
-and macrophage pairs behind it; the responder signal is concentrated in
-stromal and myeloid populations rather than spread evenly. Compare it
-with the shared spatial block on the same fit, where the ordering is
-different:
+Fibroblast next to endothelium takes the largest share. Compare the
+shared spatial block, which orders differently:
 
 ``` r
 
@@ -247,10 +232,9 @@ plotPairHeatmap(fit, block = "spatial")
 
 ## The genes that carry it
 
-Pair shares say where to look;
+Pair shares say where to look,
 [`neighbourSlopes()`](https://ecool50.github.io/PACE/reference/neighbourSlopes.md)
-says which genes. The `ResponderPD:` terms are the ones that differ
-between arms:
+which genes. The `ResponderPD:` terms differ between arms:
 
 ``` r
 
@@ -262,14 +246,14 @@ nrow(resp)
 resp[order(resp$lfsr), c("gene", "focal", "neighbour", "estimate_shrunk", "lfsr")] |>
   head(8)
 #>        gene      focal   neighbour estimate_shrunk         lfsr
-#> 2053   GLUL     Tumour Endothelial    -0.399655732 0.000000e+00
-#> 6100   SPP1 Macrophage      Tumour    -0.066306203 0.000000e+00
-#> 6448  RPL37     Tumour      Tumour    -0.006615142 0.000000e+00
-#> 5351    MX1     Tumour      T_Cell     0.231579325 7.979372e-53
-#> 5317 IFITM1     Tumour      T_Cell     0.187298587 4.405081e-33
-#> 6373   GLUL     Tumour      Tumour     0.016283697 2.387829e-23
-#> 5226    B2M     Tumour      T_Cell     0.104992603 6.530095e-23
-#> 5383  STAT1     Tumour      T_Cell     0.140308439 2.374834e-22
+#> 2053   GLUL     Tumour Endothelial     -0.39965573 0.000000e+00
+#> 6100   SPP1 Macrophage      Tumour     -0.06630620 0.000000e+00
+#> 5351    MX1     Tumour      T_Cell      0.23157932 7.979372e-53
+#> 5317 IFITM1     Tumour      T_Cell      0.18729859 4.405081e-33
+#> 6373   GLUL     Tumour      Tumour      0.01628370 2.387829e-23
+#> 5226    B2M     Tumour      T_Cell      0.10499260 6.530095e-23
+#> 5383  STAT1     Tumour      T_Cell      0.14030844 2.374834e-22
+#> 6401 IGFBP7     Tumour      Tumour      0.01674059 6.350817e-22
 ```
 
 Among the strongest is *SPP1* in macrophages next to tumour cells:
@@ -283,12 +267,10 @@ subset(ns, gene == "SPP1" & focal == "Macrophage" & neighbour == "Tumour")
 #> 6100      -0.0663062 0.006056031    0
 ```
 
-The `Tumour` row is the response shared by both arms; the
-`ResponderPD:Tumour` row is how much that response differs in
-progressive disease. It is negative, so macrophage *SPP1* rises less
-steeply with tumour proximity in patients whose disease progressed. This
-is the melanoma result reported in the accompanying paper, recovered
-here from the shipped data.
+`Tumour` is the response shared by both arms; `ResponderPD:Tumour` is
+how much it differs in progressive disease. Negative, so macrophage
+*SPP1* rises less steeply with tumour proximity when disease progressed.
+This is the paper’s melanoma result.
 
 The counts behind it, split by arm:
 
@@ -301,9 +283,8 @@ plotProximity(fit, spe, "SPP1", "Macrophage", "Tumour",
 ![](condition_files/figure-html/proximity-1.png)
 
 [`plotResponseCurve()`](https://ecool50.github.io/PACE/reference/plotResponseCurve.md)
-puts the model on top of the data: the solid lines are binned means and
-standard errors, the dashed lines the PACE slopes read from the fit
-rather than smoothed from the points.
+puts the model over the data: solid lines are binned means and standard
+errors, dashed lines the PACE slopes read from the fit.
 
 ``` r
 
@@ -312,20 +293,17 @@ plotResponseCurve(fit, spe, "SPP1", "Macrophage", "Tumour")
 
 ![](condition_files/figure-html/curve-1.png)
 
-The two dashed lines diverge, which is the interaction. Note the x axis
-is the model’s own covariate, the Gaussian kernel density centred within
-each section, so a slope drawn against it is on the scale it was
-estimated on.
+The dashed lines diverge; that divergence is the interaction. The x axis
+is the model’s own covariate, so the slopes are drawn on the scale they
+were estimated on.
 
 [`plotResponseMap()`](https://ecool50.github.io/PACE/reference/plotResponseMap.md)
-gives the spatial view for one exemplar section per arm: tumour density
-with macrophages coloured by *SPP1* above, expression against density
-below. Pass `images` to choose the sections; the default takes the one
-with the most focal cells in each arm.
+gives the spatial view, using the two sections shown in the paper:
 
 ``` r
 
-plotResponseMap(fit, spe, "SPP1", "Macrophage", "Tumour")
+plotResponseMap(fit, spe, "SPP1", "Macrophage", "Tumour",
+                images = c(nonPD = "32157_18", PD = "32156_17"))
 ```
 
 ![](condition_files/figure-html/map-1.png)
@@ -337,7 +315,7 @@ plotResponseMap(fit, spe, "SPP1", "Macrophage", "Tumour")
 sessionInfo()
 #> R version 4.6.1 (2026-06-24)
 #> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.4 LTS
+#> Running under: Ubuntu 24.04.5 LTS
 #> 
 #> Matrix products: default
 #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 

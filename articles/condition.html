@@ -73,18 +73,12 @@ Willie</h4>
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>The <em><a href="https://bioconductor.org/packages/3.23/PACE" class="external-link">PACE</a></em> manual
-fits a single section and asks how expression changes with proximity to
-each neighbouring cell type. This vignette asks the next question:
-<strong>does that proximity effect differ between two groups of
-patients?</strong></p>
-<p>Answering it needs a cohort rather than a section, and it adds one
-component to the model. Alongside the spatial cell state block, which is
-the proximity effect common to everyone, PACE estimates a
-<strong>responder spatial state</strong> block: the part of the
-proximity effect that differs between conditions. Read the two together,
-a gene can respond to a neighbour in both arms equally (spatial, no
-responder signal), or respond differently depending on outcome
-(responder signal).</p>
+fits one section. This vignette asks whether a proximity effect differs
+between two groups of patients.</p>
+<p>That needs a cohort, and adds one block to the model. Beside the
+spatial cell state block, the proximity effect common to both arms, PACE
+estimates a <strong>responder spatial state</strong> block: the part
+that differs between them.</p>
 </div>
 <div class="section level2">
 <h2 id="the-melanoma-subset">The melanoma subset<a class="anchor" aria-label="anchor" href="#the-melanoma-subset"></a>
@@ -122,15 +116,10 @@ partial and complete responders).</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; nonPD    PD </span></span>
 <span><span class="co">#&gt;    19     7</span></span></code></pre></div>
-<p>One section per patient, so the condition contrast is between
-patients rather than within a section. That is what makes a cohort
-necessary: the effect is estimated across patients, and no number of
-extra cells from the same patients substitutes for it.</p>
-<p>Every cell and every patient of the published cohort is here. What
-has been reduced is the panel: 180 of the 927 genes, the most widely
-detected ones, kept so the data are small enough to ship. Cells and
-neighbourhoods are untouched, which is what the model reads; the
-derivation is in <code>inst/scripts/make-mel-cosmx-subset.R</code>.</p>
+<p>One section per patient, so the contrast is between patients.</p>
+<p>Every cell and patient of the published cohort is here; only the
+panel is reduced, to the 180 most detected of 927 genes. Derivation:
+<code>inst/scripts/make-mel-cosmx-subset.R</code>.</p>
 <blockquote>
 <p><strong>Provenance.</strong> These data are a subset of the deposit
 accompanying Dong, Su, Kluger, Fan and Kluger, <em>SIMVI disentangles
@@ -142,19 +131,17 @@ used here under CC-BY-4.0.</p>
 <div class="section level2">
 <h2 id="fitting-with-a-condition">Fitting with a condition<a class="anchor" aria-label="anchor" href="#fitting-with-a-condition"></a>
 </h2>
-<p>The call is the single-section one plus three arguments:</p>
+<p>Three arguments beyond the single-section call:</p>
 <ul>
 <li>
-<code>condition_col</code> names the column holding the contrast,
-and switches on the responder spatial state block.</li>
+<code>condition_col</code> names the contrast and switches on the
+responder block.</li>
 <li>
-<code>kernel_per_image = TRUE</code> builds neighbourhoods within
-each section, so no cell is ever a neighbour of a cell from another
-patient.</li>
+<code>kernel_per_image = TRUE</code> keeps neighbourhoods within a
+section, so no cell neighbours another patient’s.</li>
 <li>
-<code>image_re = "intercept"</code> gives each section a random
-intercept, so patient-level differences in overall expression are
-absorbed rather than being attributed to the condition.</li>
+<code>image_re = "intercept"</code> absorbs patient-level shifts in
+overall expression.</li>
 </ul>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/paceFit.html">paceFit</a></span><span class="op">(</span><span class="va">spe</span>,</span>
@@ -166,63 +153,63 @@ absorbed rather than being attributed to the condition.</li>
 <span>               dispersion       <span class="op">=</span> <span class="st">"nb1"</span>,</span>
 <span>               verbose          <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 298 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.03 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.04 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 298 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.12 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.14 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 375 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.05 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 375 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.24 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.25 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 579 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.06 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.08 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 579 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.45 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.51 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 364 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.04 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.05 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 364 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.18 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.21 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 243 likelihood matrix.</span></span>
 <span><span class="co">#&gt;  - Likelihood calculations took 0.03 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 243 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.11 seconds.</span></span>
-<span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
-<span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
-<span><span class="co">#&gt;  - Computing 180 x 375 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.04 seconds.</span></span>
-<span><span class="co">#&gt;  - Fitting model with 375 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.25 seconds.</span></span>
-<span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
-<span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
-<span><span class="co">#&gt;  - Computing 180 x 364 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.04 seconds.</span></span>
-<span><span class="co">#&gt;  - Fitting model with 364 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.09 seconds.</span></span>
-<span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
-<span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
-<span><span class="co">#&gt;  - Computing 180 x 562 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.06 seconds.</span></span>
-<span><span class="co">#&gt;  - Fitting model with 562 mixture components.</span></span>
 <span><span class="co">#&gt;  - Model fitting took 0.13 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
+<span><span class="co">#&gt;  - Computing 180 x 375 likelihood matrix.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.05 seconds.</span></span>
+<span><span class="co">#&gt;  - Fitting model with 375 mixture components.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.29 seconds.</span></span>
+<span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
+<span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
+<span><span class="co">#&gt;  - Computing 180 x 364 likelihood matrix.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.05 seconds.</span></span>
+<span><span class="co">#&gt;  - Fitting model with 364 mixture components.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.10 seconds.</span></span>
+<span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
+<span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
+<span><span class="co">#&gt;  - Computing 180 x 562 likelihood matrix.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.08 seconds.</span></span>
+<span><span class="co">#&gt;  - Fitting model with 562 mixture components.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.15 seconds.</span></span>
+<span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
+<span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 265 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.03 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.04 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 265 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.19 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.22 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing 180 x 409 likelihood matrix.</span></span>
-<span><span class="co">#&gt;  - Likelihood calculations took 0.04 seconds.</span></span>
+<span><span class="co">#&gt;  - Likelihood calculations took 0.06 seconds.</span></span>
 <span><span class="co">#&gt;  - Fitting model with 409 mixture components.</span></span>
-<span><span class="co">#&gt;  - Model fitting took 0.51 seconds.</span></span>
+<span><span class="co">#&gt;  - Model fitting took 0.59 seconds.</span></span>
 <span><span class="co">#&gt;  - Computing posterior matrices.</span></span>
 <span><span class="co">#&gt;  - Computation allocated took 0.00 seconds.</span></span>
 <span><span class="va">fit</span></span>
@@ -263,11 +250,9 @@ per unit of tumour proximity in the PD arm, on top of the
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Macrophage        0.478                0.025           19.6</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> T_Cell            0.317                0.001<span style="text-decoration: underline;">9</span>          13  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> Tumour            0.307                0.034            3.2</span></span></code></pre></div>
-<p>The responder block is far smaller than the shared spatial block,
-which is the expected shape: most of how a cell responds to its
-neighbours is common to both arms, and only a thin slice of it depends
-on outcome. Contamination is larger than either, and largest in the
-sparsely distributed immune populations.</p>
+<p>The responder block is much the smaller: most of a cell’s response to
+its neighbours is common to both arms. Contamination exceeds both, and
+is largest in the sparse immune populations.</p>
 </div>
 <div class="section level2">
 <h2 id="which-pairs-carry-the-condition-difference">Which pairs carry the condition difference<a class="anchor" aria-label="anchor" href="#which-pairs-carry-the-condition-difference"></a>
@@ -290,11 +275,8 @@ block across neighbours instead of the shared spatial one:</p>
 <span></span>
 <span><span class="fu"><a href="../reference/plotPairHeatmap.html">plotPairHeatmap</a></span><span class="op">(</span><span class="va">fit</span>, block <span class="op">=</span> <span class="st">"responder"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="condition_files/figure-html/pairs-responder-1.png" class="r-plt" alt="" width="540"></p>
-<p>Fibroblasts next to endothelium carries the largest share, with
-tumour and macrophage pairs behind it; the responder signal is
-concentrated in stromal and myeloid populations rather than spread
-evenly. Compare it with the shared spatial block on the same fit, where
-the ordering is different:</p>
+<p>Fibroblast next to endothelium takes the largest share. Compare the
+shared spatial block, which orders differently:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotPairHeatmap.html">plotPairHeatmap</a></span><span class="op">(</span><span class="va">fit</span>, block <span class="op">=</span> <span class="st">"spatial"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="condition_files/figure-html/pairs-spatial-1.png" class="r-plt" alt="" width="540"></p>
@@ -302,9 +284,8 @@ the ordering is different:</p>
 <div class="section level2">
 <h2 id="the-genes-that-carry-it">The genes that carry it<a class="anchor" aria-label="anchor" href="#the-genes-that-carry-it"></a>
 </h2>
-<p>Pair shares say where to look; <code><a href="../reference/neighbourSlopes.html">neighbourSlopes()</a></code> says
-which genes. The <code>ResponderPD:</code> terms are the ones that
-differ between arms:</p>
+<p>Pair shares say where to look, <code><a href="../reference/neighbourSlopes.html">neighbourSlopes()</a></code> which
+genes. The <code>ResponderPD:</code> terms differ between arms:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ns</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/neighbourSlopes.html">neighbourSlopes</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="va">resp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">ns</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^ResponderPD:"</span>, <span class="va">term</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">lfsr</span> <span class="op">&lt;</span> <span class="fl">0.05</span><span class="op">)</span></span>
@@ -314,14 +295,14 @@ differ between arms:</p>
 <span><span class="va">resp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">resp</span><span class="op">$</span><span class="va">lfsr</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gene"</span>, <span class="st">"focal"</span>, <span class="st">"neighbour"</span>, <span class="st">"estimate_shrunk"</span>, <span class="st">"lfsr"</span><span class="op">)</span><span class="op">]</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">8</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        gene      focal   neighbour estimate_shrunk         lfsr</span></span>
-<span><span class="co">#&gt; 2053   GLUL     Tumour Endothelial    -0.399655732 0.000000e+00</span></span>
-<span><span class="co">#&gt; 6100   SPP1 Macrophage      Tumour    -0.066306203 0.000000e+00</span></span>
-<span><span class="co">#&gt; 6448  RPL37     Tumour      Tumour    -0.006615142 0.000000e+00</span></span>
-<span><span class="co">#&gt; 5351    MX1     Tumour      T_Cell     0.231579325 7.979372e-53</span></span>
-<span><span class="co">#&gt; 5317 IFITM1     Tumour      T_Cell     0.187298587 4.405081e-33</span></span>
-<span><span class="co">#&gt; 6373   GLUL     Tumour      Tumour     0.016283697 2.387829e-23</span></span>
-<span><span class="co">#&gt; 5226    B2M     Tumour      T_Cell     0.104992603 6.530095e-23</span></span>
-<span><span class="co">#&gt; 5383  STAT1     Tumour      T_Cell     0.140308439 2.374834e-22</span></span></code></pre></div>
+<span><span class="co">#&gt; 2053   GLUL     Tumour Endothelial     -0.39965573 0.000000e+00</span></span>
+<span><span class="co">#&gt; 6100   SPP1 Macrophage      Tumour     -0.06630620 0.000000e+00</span></span>
+<span><span class="co">#&gt; 5351    MX1     Tumour      T_Cell      0.23157932 7.979372e-53</span></span>
+<span><span class="co">#&gt; 5317 IFITM1     Tumour      T_Cell      0.18729859 4.405081e-33</span></span>
+<span><span class="co">#&gt; 6373   GLUL     Tumour      Tumour      0.01628370 2.387829e-23</span></span>
+<span><span class="co">#&gt; 5226    B2M     Tumour      T_Cell      0.10499260 6.530095e-23</span></span>
+<span><span class="co">#&gt; 5383  STAT1     Tumour      T_Cell      0.14030844 2.374834e-22</span></span>
+<span><span class="co">#&gt; 6401 IGFBP7     Tumour      Tumour      0.01674059 6.350817e-22</span></span></code></pre></div>
 <p>Among the strongest is <em>SPP1</em> in macrophages next to tumour
 cells:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -330,35 +311,30 @@ cells:</p>
 <span><span class="co">#&gt; 6100 SPP1 Macrophage    Tumour ResponderPD:Tumour -0.06738867 0.006192822</span></span>
 <span><span class="co">#&gt;      estimate_shrunk   sd_shrunk lfsr</span></span>
 <span><span class="co">#&gt; 6100      -0.0663062 0.006056031    0</span></span></code></pre></div>
-<p>The <code>Tumour</code> row is the response shared by both arms; the
-<code>ResponderPD:Tumour</code> row is how much that response differs in
-progressive disease. It is negative, so macrophage <em>SPP1</em> rises
-less steeply with tumour proximity in patients whose disease progressed.
-This is the melanoma result reported in the accompanying paper,
-recovered here from the shipped data.</p>
+<p><code>Tumour</code> is the response shared by both arms;
+<code>ResponderPD:Tumour</code> is how much it differs in progressive
+disease. Negative, so macrophage <em>SPP1</em> rises less steeply with
+tumour proximity when disease progressed. This is the paper’s melanoma
+result.</p>
 <p>The counts behind it, split by arm:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotProximity.html">plotProximity</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">spe</span>, <span class="st">"SPP1"</span>, <span class="st">"Macrophage"</span>, <span class="st">"Tumour"</span>,</span>
 <span>              breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span>, <span class="fl">20</span>, <span class="fl">30</span>, <span class="fl">40</span>, <span class="cn">Inf</span><span class="op">)</span>, condition <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="condition_files/figure-html/proximity-1.png" class="r-plt" alt="" width="630"></p>
-<p><code><a href="../reference/plotResponseCurve.html">plotResponseCurve()</a></code> puts the model on top of the data:
-the solid lines are binned means and standard errors, the dashed lines
-the PACE slopes read from the fit rather than smoothed from the
-points.</p>
+<p><code><a href="../reference/plotResponseCurve.html">plotResponseCurve()</a></code> puts the model over the data: solid
+lines are binned means and standard errors, dashed lines the PACE slopes
+read from the fit.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotResponseCurve.html">plotResponseCurve</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">spe</span>, <span class="st">"SPP1"</span>, <span class="st">"Macrophage"</span>, <span class="st">"Tumour"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="condition_files/figure-html/curve-1.png" class="r-plt" alt="" width="630"></p>
-<p>The two dashed lines diverge, which is the interaction. Note the x
-axis is the model’s own covariate, the Gaussian kernel density centred
-within each section, so a slope drawn against it is on the scale it was
-estimated on.</p>
-<p><code><a href="../reference/plotResponseMap.html">plotResponseMap()</a></code> gives the spatial view for one
-exemplar section per arm: tumour density with macrophages coloured by
-<em>SPP1</em> above, expression against density below. Pass
-<code>images</code> to choose the sections; the default takes the one
-with the most focal cells in each arm.</p>
+<p>The dashed lines diverge; that divergence is the interaction. The x
+axis is the model’s own covariate, so the slopes are drawn on the scale
+they were estimated on.</p>
+<p><code><a href="../reference/plotResponseMap.html">plotResponseMap()</a></code> gives the spatial view, using the two
+sections shown in the paper:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotResponseMap.html">plotResponseMap</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">spe</span>, <span class="st">"SPP1"</span>, <span class="st">"Macrophage"</span>, <span class="st">"Tumour"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotResponseMap.html">plotResponseMap</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">spe</span>, <span class="st">"SPP1"</span>, <span class="st">"Macrophage"</span>, <span class="st">"Tumour"</span>,</span>
+<span>                images <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>nonPD <span class="op">=</span> <span class="st">"32157_18"</span>, PD <span class="op">=</span> <span class="st">"32156_17"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="condition_files/figure-html/map-1.png" class="r-plt" alt="" width="810"></p>
 </div>
 <div class="section level2">
@@ -368,7 +344,7 @@ with the most focal cells in each arm.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
-<span><span class="co">#&gt; Running under: Ubuntu 24.04.4 LTS</span></span>
+<span><span class="co">#&gt; Running under: Ubuntu 24.04.5 LTS</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Matrix products: default</span></span>
 <span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
