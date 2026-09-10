@@ -664,11 +664,15 @@ plotResponseCurve <- function(object, spe, gene, focal, neighbour,
   d <- .pace_response_data(object, spe, gene, focal, neighbour)
   d <- d[is.finite(d$density) & is.finite(d$expr), ]
 
-  ## The reference arm is the first factor level, matching how the model codes
-  ## the condition; the other arm carries the interaction.
-  arms   <- levels(d$arm)
-  slopes <- .pace_arm_slopes(object, gene, focal, neighbour)
-  slope_by_arm <- stats::setNames(c(slopes[["ref"]], slopes[["alt"]]), arms)
+  ## The model's reference is the first factor level; the other arm carries the
+  ## interaction. Slopes are matched by name, then the case arm is shown first.
+  ref_arm  <- levels(d$arm)[1]
+  case_arm <- setdiff(levels(d$arm), ref_arm)[1]
+  slopes   <- .pace_arm_slopes(object, gene, focal, neighbour)
+  slope_by_arm <- stats::setNames(c(slopes[["ref"]], slopes[["alt"]]),
+                                  c(ref_arm, case_arm))
+  d$arm <- factor(as.character(d$arm), levels = c(case_arm, ref_arm))
+  arms  <- levels(d$arm)
 
   brks <- unique(stats::quantile(d$density, seq(0, 1, length.out = n_bins + 1),
                                  na.rm = TRUE))
@@ -680,23 +684,19 @@ plotResponseCurve <- function(object, spe, gene, focal, neighbour,
                      n = dplyr::n(), .groups = "drop") |>
     dplyr::filter(.data$n >= min_bin_n)
 
-  ## Each arm's slope is drawn across that arm's own density range; extending it
-  ## over the whole panel would be extrapolation into cells that do not exist.
+  x_range <- c(0, max(d$density))
   centro <- d |>
     dplyr::group_by(.data$arm) |>
     dplyr::summarise(dx = mean(.data$density), ey = mean(.data$expr),
-                     lo = stats::quantile(.data$density, 0.01),
-                     hi = stats::quantile(.data$density, 0.99), .groups = "drop")
+                     .groups = "drop")
   pace_lines <- do.call(rbind, lapply(seq_len(nrow(centro)), function(i) {
-    a  <- as.character(centro$arm[i])
-    xs <- c(centro$lo[i], centro$hi[i])
-    data.frame(arm = centro$arm[i], x = xs,
-               y = centro$ey[i] + slope_by_arm[[a]] * (xs - centro$dx[i]))
+    a <- as.character(centro$arm[i])
+    data.frame(arm = centro$arm[i], x = x_range,
+               y = centro$ey[i] + slope_by_arm[[a]] * (x_range - centro$dx[i]))
   }))
-  x_range <- range(c(binned$x, pace_lines$x))
 
   cols <- colours
-  if (is.null(names(cols))) names(cols) <- arms[seq_along(cols)]
+  if (is.null(names(cols))) names(cols) <- c(ref_arm, case_arm)
 
   ggplot() +
     geom_ribbon(data = binned,
@@ -714,7 +714,8 @@ plotResponseCurve <- function(object, spe, gene, focal, neighbour,
     coord_cartesian(xlim = x_range, ylim = c(0, max(binned$mean_e + binned$se) * 1.05)) +
     labs(title = sprintf("%s in %s vs %s-neighbour density", gene, focal, neighbour),
          subtitle = sprintf("Solid = binned means +/- SE; dashed = PACE slope (%s)",
-                            paste(sprintf("%s %+.3f", arms, slope_by_arm),
+                            paste(sprintf("%s %+.3f", arms,
+                                          slope_by_arm[arms]),
                                   collapse = ", ")),
          x = sprintf("%s-neighbour density (Gaussian kernel)", neighbour),
          y = sprintf("%s expression (CP10K, log1p)", gene)) +
@@ -760,11 +761,18 @@ plotResponseMap <- function(object, spe, gene, focal, neighbour, images = NULL,
 
   ## One exemplar image per arm: by default the one with the most focal cells,
   ## since a map of a handful of cells shows nothing.
+  ref_arm  <- levels(fd$arm)[1]
+  case_arm <- setdiff(levels(fd$arm), ref_arm)[1]
   if (is.null(images)) {
     images <- vapply(split(fd, fd$arm), function(a) {
       tb <- sort(table(a$image), decreasing = TRUE); names(tb)[1]
     }, character(1))
   }
+  ## Case arm on the left, as in the manuscript figure.
+  ord <- c(case_arm, ref_arm)
+  ord <- ord[ord %in% names(images)]
+  if (length(ord) == length(images)) images <- images[ord]
+  arm_cols <- stats::setNames(c("#C0392B", "#3B6FB6"), c(case_arm, ref_arm))
 
   ## Shared scales across arms, or the two panels cannot be compared. Ranged on
   ## the sections actually drawn, not the whole cohort, which would leave most
@@ -833,7 +841,7 @@ plotResponseMap <- function(object, spe, gene, focal, neighbour, images = NULL,
     co <- summary(f)$coefficients
     ann <- sprintf("slope = %+.3f\nn = %d", co[2, 1], nrow(fc))
     scatters[[i]] <- ggplot(fc, aes(.data$density, .data$expr)) +
-      geom_point(colour = "#1f77b4", alpha = 0.5, size = 1.1) +
+      geom_point(colour = arm_cols[[arm]], alpha = 0.5, size = 1.1) +
       geom_smooth(method = "lm", formula = y ~ x, colour = "black",
                   fill = "grey60", alpha = 0.3) +
       annotate("label", x = x_limits[1], y = expr_limits[2], hjust = 0, vjust = 1,
