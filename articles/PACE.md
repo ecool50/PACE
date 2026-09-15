@@ -110,63 +110,63 @@ fit <- paceFit(spe,
                dispersion    = "nb1",
                verbose       = FALSE)
 #>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
+#>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.10 seconds.
+#>  - Model fitting took 0.06 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.02 seconds.
+#>  - Likelihood calculations took 0.01 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.03 seconds.
+#>  - Model fitting took 0.02 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
+#>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.15 seconds.
+#>  - Model fitting took 0.08 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
+#>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.23 seconds.
+#>  - Model fitting took 0.12 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.00 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.03 seconds.
+#>  - Model fitting took 0.02 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.10 seconds.
+#>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Model fitting took 0.07 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 430 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
+#>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 0.13 seconds.
+#>  - Model fitting took 0.07 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.16 seconds.
+#>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.17 seconds.
+#>  - Model fitting took 0.10 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
+#>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.38 seconds.
+#>  - Model fitting took 0.20 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.15 seconds.
+#>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.60 seconds.
+#>  - Model fitting took 0.32 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 fit
@@ -189,7 +189,7 @@ downstream layers (shrinkage, decomposition, drivers) without refitting:
 fit <- paceModel(spe, celltype_col = "cellType")   |>  # fit the mixed model
        paceShrink()                                |>  # shrink neighbour slopes
        paceDecompose(spe)                          |>  # variance decomposition
-       paceDrivers()                                   # per-pair driver scores
+       paceDrivers(spe)                                # per-pair driver scores
 ```
 
 The fit-construction primitives expose the neighbourhood and
@@ -239,10 +239,10 @@ looks like.
 
 cc <- cellContamination(fit)
 head(cc, 3)
-#>   cell   celltype        rho contamFraction
-#> 1  442     Tumour 0.11504406    0.000000000
-#> 2  444     B_Cell 0.00282706    0.001557513
-#> 3  446 Macrophage 0.58779262    0.123800291
+#>   cell   celltype         rho contamFraction
+#> 1  442     Tumour 0.115043986    0.000000000
+#> 2  444     B_Cell 0.002827059    0.001557512
+#> 3  446 Macrophage 0.587792613    0.123800289
 round(tapply(cc$contamFraction, cc$celltype, median), 3)
 #>         B_Cell Dendritic_Cell    Endothelial     Macrophage  Myoepithelial 
 #>          0.091          0.083          0.018          0.073          0.038 
@@ -341,8 +341,8 @@ neighbourSlopes(fit) |>
          gene %in% c("MRC1", "APOC1")) |>
   select(gene, estimate_shrunk, lfsr)
 #>    gene estimate_shrunk         lfsr
-#> 1 APOC1       0.1301689 1.077054e-17
-#> 2  MRC1      -0.1494760 1.443290e-15
+#> 1 APOC1       0.1301689 1.077057e-17
+#> 2  MRC1      -0.1494761 1.554312e-15
 ```
 
 ## Visualising the proximity effect
@@ -387,8 +387,11 @@ round(as.numeric(object.size(fit)) / 1e6, 1)   # MB
 and a whole section runs to several hundred megabytes. They do not have
 to be kept.
 [`paceDecompose()`](https://ecool50.github.io/PACE/reference/paceDecompose.md)
-rebuilds them from the fit and the `SpatialExperiment`, exactly, so a
-fit can be saved without them and still be re-decomposed:
+and
+[`paceDrivers()`](https://ecool50.github.io/PACE/reference/paceDrivers.md)
+rebuild them from the fit and the `SpatialExperiment`, exactly, so a fit
+can be saved without them and still be re-decomposed and re-scored (pass
+`spe` to both):
 
 ``` r
 

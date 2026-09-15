@@ -49,7 +49,7 @@ have run first.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">paceDrivers</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'PACEFit'</span></span>
-<span><span class="fu">paceDrivers</span><span class="op">(</span><span class="va">object</span>, pairs <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">paceDrivers</span><span class="op">(</span><span class="va">object</span>, spe <span class="op">=</span> <span class="cn">NULL</span>, pairs <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -64,6 +64,11 @@ have run first.</p>
 <dd><p>Unused.</p></dd>
 
 
+<dt id="arg-spe">spe<a class="anchor" aria-label="anchor" href="#arg-spe"></a></dt>
+<dd><p>The <a href="https://rdrr.io/pkg/SpatialExperiment/man/SpatialExperiment.html" class="external-link">SpatialExperiment::SpatialExperiment</a> that was fitted. Needed
+only when the fit does not store its fitted means.</p></dd>
+
+
 <dt id="arg-pairs">pairs<a class="anchor" aria-label="anchor" href="#arg-pairs"></a></dt>
 <dd><p>Optional list of focal-neighbour pairs to score; <code>NULL</code> scores
 all pairs.</p></dd>
@@ -73,14 +78,47 @@ all pairs.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>The <code>PACEFit</code> with the driver tables added.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The driver scores read the fitted means. A fit saved without its <code>n x G</code>
+matrices is rebuilt exactly from the fit and <code>spe</code>, as in <code><a href="paceDecompose.html">paceDecompose()</a></code>,
+so pass <code>spe</code> for such a fit.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"pace_fit_example.rds"</span>, package <span class="op">=</span> <span class="st">"PACE"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">paceDrivers</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>topDrivers could not be computed: 'x' must be an array of at least two dimensions</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">spe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"bc_xenium_subset.rds"</span>, package <span class="op">=</span> <span class="st">"PACE"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"pace_fit_example.rds"</span>, package <span class="op">=</span> <span class="st">"PACE"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">paceDrivers</span><span class="op">(</span><span class="va">fit</span>, <span class="va">spe</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="topDrivers.html">topDrivers</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "B_Cell_Dendritic_Cell"        "B_Cell_Endothelial"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "B_Cell_Macrophage"            "B_Cell_Myoepithelial"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "B_Cell_Stromal"               "B_Cell_T_Cell"               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "B_Cell_Tumour"                "Dendritic_Cell_B_Cell"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "Dendritic_Cell_Endothelial"   "Dendritic_Cell_Macrophage"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "Dendritic_Cell_Myoepithelial" "Dendritic_Cell_Stromal"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "Dendritic_Cell_T_Cell"        "Dendritic_Cell_Tumour"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15] "Endothelial_B_Cell"           "Endothelial_Dendritic_Cell"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17] "Endothelial_Macrophage"       "Endothelial_Myoepithelial"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "Endothelial_Stromal"          "Endothelial_T_Cell"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "Endothelial_Tumour"           "Macrophage_B_Cell"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [23] "Macrophage_Dendritic_Cell"    "Macrophage_Endothelial"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [25] "Macrophage_Myoepithelial"     "Macrophage_Stromal"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [27] "Macrophage_T_Cell"            "Macrophage_Tumour"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [29] "Myoepithelial_B_Cell"         "Myoepithelial_Dendritic_Cell"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [31] "Myoepithelial_Endothelial"    "Myoepithelial_Macrophage"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [33] "Myoepithelial_Stromal"        "Myoepithelial_T_Cell"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [35] "Myoepithelial_Tumour"         "Stromal_B_Cell"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [37] "Stromal_Dendritic_Cell"       "Stromal_Endothelial"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [39] "Stromal_Macrophage"           "Stromal_Myoepithelial"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [41] "Stromal_T_Cell"               "Stromal_Tumour"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [43] "T_Cell_B_Cell"                "T_Cell_Dendritic_Cell"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [45] "T_Cell_Endothelial"           "T_Cell_Macrophage"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [47] "T_Cell_Myoepithelial"         "T_Cell_Stromal"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [49] "T_Cell_Tumour"                "Tumour_B_Cell"               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [51] "Tumour_Dendritic_Cell"        "Tumour_Endothelial"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [53] "Tumour_Macrophage"            "Tumour_Myoepithelial"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [55] "Tumour_Stromal"               "Tumour_T_Cell"               </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
