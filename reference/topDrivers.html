@@ -63,7 +63,19 @@ focal-neighbour spatial relationship.</p>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list of per-pair driver tables.</p>
+    <p>A named list with one entry per focal-neighbour pair, each a list
+with <code>scores</code> (the driver table), <code>status</code>, <code>expected_false_sign</code> and
+<code>false_sign_rate</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Each pair's genes are called at lfsr &lt; 0.05. The lfsr is the posterior
+probability that a call has the wrong sign, so its sum over a pair's calls,
+<code>expected_false_sign</code>, is the expected number of those calls with the wrong
+sign, and <code>false_sign_rate</code> is that count as a fraction of the calls
+(Stephens 2017). Read a pair's call count against it: many ordered pairs are
+tested, and a pair with three calls and an expected 1.5 wrong is weak
+evidence. Both are only as well calibrated as the lfsr itself.</p>
     </div>
 
     <div class="section level2">

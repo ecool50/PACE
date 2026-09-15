@@ -78,7 +78,7 @@ fit
 #> cell types (8): B_Cell, Dendritic_Cell, Endothelial, Macrophage, Myoepithelial, Stromal, T_Cell, Tumour
 #> kernels: h_bio = 30 um, h_tech = 5 um | contamination: percell_hc; dispersion: nb1
 #> pipeline: model -> shrink -> decompose -> drivers
-#>   neighbour slopes: 17792 rows (61 at lfsr < 0.05)
+#>   neighbour slopes: 17792 rows (61 at lfsr < 0.05, 0.3 expected to have the wrong sign)
 neighbourSlopes(fit)
 #>           gene          focal      neighbour           term      estimate
 #> 1       ABCC11         B_Cell         B_Cell         B_Cell -1.968907e-05
