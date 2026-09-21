@@ -84,63 +84,63 @@ fit <- paceFit(spe,
                dispersion       = "nb1",
                verbose          = FALSE)
 #>  - Computing 180 x 298 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
+#>  - Likelihood calculations took 0.03 seconds.
 #>  - Fitting model with 298 mixture components.
-#>  - Model fitting took 0.13 seconds.
+#>  - Model fitting took 0.12 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 375 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
+#>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.25 seconds.
+#>  - Model fitting took 0.24 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 180 x 579 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
+#>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.49 seconds.
+#>  - Model fitting took 0.46 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 364 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
+#>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.21 seconds.
+#>  - Model fitting took 0.18 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 243 likelihood matrix.
 #>  - Likelihood calculations took 0.03 seconds.
 #>  - Fitting model with 243 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Model fitting took 0.11 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 375 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
+#>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.28 seconds.
+#>  - Model fitting took 0.25 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 364 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
+#>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.10 seconds.
+#>  - Model fitting took 0.09 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 562 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
+#>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 562 mixture components.
-#>  - Model fitting took 0.15 seconds.
+#>  - Model fitting took 0.13 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 265 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
+#>  - Likelihood calculations took 0.03 seconds.
 #>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.21 seconds.
+#>  - Model fitting took 0.19 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 409 likelihood matrix.
-#>  - Likelihood calculations took 0.06 seconds.
+#>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 409 mixture components.
-#>  - Model fitting took 0.57 seconds.
+#>  - Model fitting took 0.51 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 fit
@@ -246,14 +246,14 @@ nrow(resp)
 resp[order(resp$lfsr), c("gene", "focal", "neighbour", "estimate_shrunk", "lfsr")] |>
   head(8)
 #>        gene      focal   neighbour estimate_shrunk         lfsr
-#> 2053   GLUL     Tumour Endothelial     -0.39965573 0.000000e+00
-#> 6100   SPP1 Macrophage      Tumour     -0.06630620 0.000000e+00
-#> 5351    MX1     Tumour      T_Cell      0.23157932 7.979372e-53
-#> 5317 IFITM1     Tumour      T_Cell      0.18729859 4.405081e-33
-#> 6373   GLUL     Tumour      Tumour      0.01628370 2.387829e-23
-#> 5226    B2M     Tumour      T_Cell      0.10499260 6.530095e-23
-#> 5383  STAT1     Tumour      T_Cell      0.14030844 2.374834e-22
-#> 6401 IGFBP7     Tumour      Tumour      0.01674059 6.350817e-22
+#> 2053   GLUL     Tumour Endothelial    -0.399655732 0.000000e+00
+#> 6100   SPP1 Macrophage      Tumour    -0.066306203 0.000000e+00
+#> 6448  RPL37     Tumour      Tumour    -0.006615142 0.000000e+00
+#> 5351    MX1     Tumour      T_Cell     0.231579325 7.979372e-53
+#> 5317 IFITM1     Tumour      T_Cell     0.187298587 4.405081e-33
+#> 6373   GLUL     Tumour      Tumour     0.016283697 2.387829e-23
+#> 5226    B2M     Tumour      T_Cell     0.104992603 6.530095e-23
+#> 5383  STAT1     Tumour      T_Cell     0.140308439 2.374834e-22
 ```
 
 Among the strongest is *SPP1* in macrophages next to tumour cells:
@@ -339,7 +339,7 @@ sessionInfo()
 #>  [3] SpatialExperiment_1.22.0    SingleCellExperiment_1.34.0
 #>  [5] SummarizedExperiment_1.42.0 Biobase_2.72.0             
 #>  [7] GenomicRanges_1.64.0        Seqinfo_1.2.0              
-#>  [9] IRanges_2.46.0              S4Vectors_0.50.2           
+#>  [9] IRanges_2.46.0              S4Vectors_0.50.3           
 #> [11] BiocGenerics_0.58.1         generics_0.1.4             
 #> [13] MatrixGenerics_1.24.0       matrixStats_1.5.0          
 #> [15] PACE_0.99.1                 BiocStyle_2.40.0           
@@ -369,6 +369,6 @@ sessionInfo()
 #> [64] mashr_0.2.79        textshaping_1.0.5   evaluate_1.0.5     
 #> [67] lattice_0.22-9      SQUAREM_2026.1      ashr_2.2-63        
 #> [70] bslib_0.12.0        Rcpp_1.1.2          nlme_3.1-169       
-#> [73] SparseArray_1.12.2  mgcv_1.9-4          xfun_0.60          
+#> [73] SparseArray_1.12.2  mgcv_1.9-4          xfun_0.61          
 #> [76] fs_2.1.0            pkgconfig_2.0.3
 ```
