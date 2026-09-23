@@ -61,7 +61,22 @@ multivariate adaptive shrinkage, populating <code><a href="neighbourSlopes.html"
 <dd><p>Further arguments passed to the shrinkage step, notably
 <code>null_correlation</code> (default <code>TRUE</code>: estimate the correlation between focal
 cell types under the null and pass it to mash as <code>V</code>; <code>FALSE</code> treats them
-as independent) and <code>data_driven</code>.</p></dd>
+as independent), <code>data_driven</code>, and <code>shrink_threads</code>.</p>
+<p><code>shrink_threads</code> (default 4) is how many R processes shrink the neighbour
+slices at once. The slices are independent and carry about 90% of the work,
+so this is where the time goes: on the full breast cancer cohort it takes
+the shrinkage from 55.4 to 21.1 seconds, and the called slopes agree with
+the serial path to 8.3e-13 with identical calls and no sign flips.</p>
+<p>It is not, however, the serial computation. With <code>data_driven = TRUE</code>
+the parallel path cannot reproduce the serial one: <code>cov_pca()</code> draws its
+starting vectors from the RNG, and a serial run consumes that stream slice
+by slice. Above 1 each slice is seeded with its own index, so the parallel
+result is reproducible run to run but differs from the serial one – by
+~1e-12 at cohort scale, but by up to ~1e-6 on small slices, where there is
+less data to swamp the difference. Set <code>shrink_threads = 1</code> when you need
+the serial stream exactly, which is what the package's own fixture tests
+do. With <code>data_driven = FALSE</code> nothing draws from the stream and the two
+are identical.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -81,76 +96,66 @@ message.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"pace_fit_example.rds"</span>, package <span class="op">=</span> <span class="st">"PACE"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">paceShrink</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 313 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.07 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 313 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.08 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] B_Cell: 278 genes shrunk; gene-focal calls (lfsr&lt;0.05) = 0, expected false sign = 0.0</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] term 'Dendritic_Cell': fewer than two varying conditions, using independence</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 92 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.02 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 92 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.03 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] Dendritic_Cell: 278 genes shrunk; gene-focal calls (lfsr&lt;0.05) = 0, expected false sign = 0.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 404 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.09 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 404 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.12 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] Endothelial: 278 genes shrunk; gene-focal calls (lfsr&lt;0.05) = 2, expected false sign = 0.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 417 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.09 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 417 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.17 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] Macrophage: 278 genes shrunk; gene-focal calls (lfsr&lt;0.05) = 5, expected false sign = 0.0</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] term 'Myoepithelial': fewer than two varying conditions, using independence</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 92 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.00 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 92 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.03 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] Myoepithelial: 278 genes shrunk; gene-focal calls (lfsr&lt;0.05) = 0, expected false sign = 0.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 391 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.09 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 391 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.10 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] Stromal: 278 genes shrunk; gene-focal calls (lfsr&lt;0.05) = 3, expected false sign = 0.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 430 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.09 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 430 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.13 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 628 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.14 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 628 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.16 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] T_Cell: 278 genes shrunk; gene-focal calls (lfsr&lt;0.05) = 21, expected false sign = 0.1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 404 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.09 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 404 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.28 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.01 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing 278 x 590 likelihood matrix.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.12 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Fitting model with 590 mixture components.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.48 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.01 seconds.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   [mashr] Tumour: 278 genes shrunk; gene-focal calls (lfsr&lt;0.05) = 30, expected false sign = 0.1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing 278 x 92 likelihood matrix.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.05 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Fitting model with 92 mixture components.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.41 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.01 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing 278 x 404 likelihood matrix.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.23 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Fitting model with 404 mixture components.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Model fitting took 2.23 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.01 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing 278 x 417 likelihood matrix.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.23 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Fitting model with 417 mixture components.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Model fitting took 2.24 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.01 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing 278 x 92 likelihood matrix.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.01 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Fitting model with 92 mixture components.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.56 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing 278 x 313 likelihood matrix.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.14 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Fitting model with 313 mixture components.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Model fitting took 5.82 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing 278 x 391 likelihood matrix.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.34 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Fitting model with 391 mixture components.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Model fitting took 1.48 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.01 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing 278 x 430 likelihood matrix.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.25 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Fitting model with 430 mixture components.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Model fitting took 1.23 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.01 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing 278 x 628 likelihood matrix.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.18 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Fitting model with 628 mixture components.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.26 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.00 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing 278 x 404 likelihood matrix.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.23 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Fitting model with 404 mixture components.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Model fitting took 3.00 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.01 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing 278 x 590 likelihood matrix.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Likelihood calculations took 0.16 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Fitting model with 590 mixture components.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Model fitting took 0.57 seconds.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computing posterior matrices.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Computation allocated took 0.01 seconds.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="neighbourSlopes.html">neighbourSlopes</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     gene  focal neighbour   term      estimate   std.error estimate_shrunk</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 ABCC11 B_Cell    B_Cell B_Cell -1.968907e-05 0.001376136               0</span>

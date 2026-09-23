@@ -33,8 +33,8 @@ paceDrivers(object, spe = NULL, pairs = NULL, ...)
 
   The
   [SpatialExperiment::SpatialExperiment](https://rdrr.io/pkg/SpatialExperiment/man/SpatialExperiment.html)
-  that was fitted. Needed only when the fit does not store its fitted
-  means.
+  that was fitted. Needed only for an older fit that stores neither its
+  fitted means nor their per-cell-type statistics.
 
 - pairs:
 
@@ -47,10 +47,11 @@ The `PACEFit` with the driver tables added.
 
 ## Details
 
-The driver scores read the fitted means. A fit saved without its `n x G`
-matrices is rebuilt exactly from the fit and `spe`, as in
+The driver scores read each cell type's mean fitted mean, which the fit
+stores. For an older fit saved without its fitted means or those
+statistics they are rebuilt exactly from the fit and `spe`, as in
 [`paceDecompose()`](https://ecool50.github.io/PACE/reference/paceDecompose.md),
-so pass `spe` for such a fit.
+a block of genes at a time; pass `spe` for such a fit.
 
 ## Examples
 

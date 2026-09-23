@@ -22,6 +22,8 @@
   Fit a PACE model to a SpatialExperiment
 - [`paceModel()`](https://ecool50.github.io/PACE/reference/paceModel.md)
   : Fit the PACE model
+- [`paceModelGaussian()`](https://ecool50.github.io/PACE/reference/paceModelGaussian.md)
+  : Fit the PACE model to continuous intensities
 - [`paceShrink()`](https://ecool50.github.io/PACE/reference/paceShrink.md)
   : Shrink the neighbour slopes
 - [`pairVariance()`](https://ecool50.github.io/PACE/reference/pairVariance.md)

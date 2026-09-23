@@ -63,72 +63,66 @@ spe <- readRDS(system.file("extdata", "mel_cosmx_subset.rds", package = "PACE"))
 fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
                image_col = "image", kernel_per_image = TRUE,
                image_re = "intercept", verbose = FALSE)
+#>  - Computing 180 x 364 likelihood matrix.
+#>  - Likelihood calculations took 0.10 seconds.
+#>  - Fitting model with 364 mixture components.
+#>  - Model fitting took 0.50 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 298 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
+#>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 298 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Model fitting took 0.38 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
-#>   [mashr] ResponderPD:B_Cell: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 0, expected false sign = 0.0
-#>  - Computing 180 x 375 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
-#>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.23 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 579 likelihood matrix.
-#>  - Likelihood calculations took 0.06 seconds.
-#>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.41 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>   [mashr] ResponderPD:Endothelial: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 24, expected false sign = 0.3
-#>  - Computing 180 x 364 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
-#>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.18 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>   [mashr] ResponderPD:Fibroblast: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 1, expected false sign = 0.0
 #>  - Computing 180 x 243 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
+#>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 243 mixture components.
-#>  - Model fitting took 0.11 seconds.
+#>  - Model fitting took 1.40 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 375 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
+#>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.25 seconds.
+#>  - Model fitting took 0.63 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
-#>   [mashr] ResponderPD:Macrophage: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 13, expected false sign = 0.1
 #>  - Computing 180 x 364 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
+#>  - Likelihood calculations took 0.17 seconds.
 #>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.08 seconds.
+#>  - Model fitting took 1.17 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 562 likelihood matrix.
-#>  - Likelihood calculations took 0.06 seconds.
+#>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 562 mixture components.
-#>  - Model fitting took 0.13 seconds.
+#>  - Model fitting took 0.64 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
-#>   [mashr] ResponderPD:T_Cell: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 13, expected false sign = 0.1
+#>  - Computing 180 x 375 likelihood matrix.
+#>  - Likelihood calculations took 0.10 seconds.
+#>  - Fitting model with 375 mixture components.
+#>  - Model fitting took 5.94 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.01 seconds.
+#>  - Computing 180 x 579 likelihood matrix.
+#>  - Likelihood calculations took 0.16 seconds.
+#>  - Fitting model with 579 mixture components.
+#>  - Model fitting took 1.60 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 180 x 265 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
+#>  - Likelihood calculations took 0.14 seconds.
 #>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.19 seconds.
+#>  - Model fitting took 1.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 409 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
+#>  - Likelihood calculations took 0.13 seconds.
 #>  - Fitting model with 409 mixture components.
-#>  - Model fitting took 0.51 seconds.
+#>  - Model fitting took 1.49 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
-#>   [mashr] ResponderPD:Tumour: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 25, expected false sign = 0.2
 plotResponseCurve(fit, spe, "SPP1", "Macrophage", "Tumour")
 
 # }

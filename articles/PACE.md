@@ -109,66 +109,6 @@ fit <- paceFit(spe,
                contamination = "percell_hc",   # per-cell contamination correction
                dispersion    = "nb1",
                verbose       = FALSE)
-#>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.07 seconds.
-#>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.12 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.02 seconds.
-#>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.03 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.09 seconds.
-#>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.12 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.09 seconds.
-#>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.19 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
-#>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.00 seconds.
-#>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.02 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
-#>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 0.10 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 430 likelihood matrix.
-#>  - Likelihood calculations took 0.09 seconds.
-#>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 0.12 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.13 seconds.
-#>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.14 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
-#>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.09 seconds.
-#>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.30 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
-#>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.13 seconds.
-#>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.44 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
 fit
 #> class: PACEFit
 #> cell types (8): B_Cell, Dendritic_Cell, Endothelial, Macrophage, Myoepithelial, Stromal, T_Cell, Tumour
@@ -342,7 +282,7 @@ neighbourSlopes(fit) |>
   select(gene, estimate_shrunk, lfsr)
 #>    gene estimate_shrunk         lfsr
 #> 1 APOC1       0.1301689 1.077054e-17
-#> 2  MRC1      -0.1494760 1.554312e-15
+#> 2  MRC1      -0.1494760 1.443290e-15
 ```
 
 ## Visualising the proximity effect
@@ -381,7 +321,7 @@ crop is
 ``` r
 
 round(as.numeric(object.size(fit)) / 1e6, 1)   # MB
-#> [1] 59.8
+#> [1] 7.2
 ```
 
 and a whole section runs to several hundred megabytes. They do not have
@@ -389,9 +329,11 @@ to be kept.
 [`paceDecompose()`](https://ecool50.github.io/PACE/reference/paceDecompose.md)
 and
 [`paceDrivers()`](https://ecool50.github.io/PACE/reference/paceDrivers.md)
-rebuild them from the fit and the `SpatialExperiment`, exactly, so a fit
-can be saved without them and still be re-decomposed and re-scored (pass
-`spe` to both):
+read only per-cell-type summaries of the fitted means, which the fit
+also stores, so a fit saved without the matrices can still be
+re-decomposed (from the counts in `spe`) and re-scored. (For an older
+fit saved without those summaries, pass `spe` to both, and they are
+rebuilt exactly from the fit and the counts.)
 
 ``` r
 
@@ -399,7 +341,7 @@ fit_small <- fit
 for (nm in c("mu", "technical_offset_mat", "bleed_offset_mat"))
   fit_small@fit[[nm]] <- NULL
 round(as.numeric(object.size(fit_small)) / 1e6, 1)   # MB
-#> [1] 7.1
+#> [1] 7.2
 ```
 
 ``` r

@@ -56,7 +56,7 @@ The ambient-field object (sparse weight matrix and image index).
 ``` r
 spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
 af <- ambientField(spe, celltype_col = "cellType")
-#>     [W identity check] max|W%*%Y - dense E_tech| over 5 genes = 4.441e-16
+#>     [W identity check] max|W%*%Y - dense E_tech| over 5 genes = 8.882e-16
 names(af)
 #> [1] "W"         "image_idx" "n_images" 
 ```
