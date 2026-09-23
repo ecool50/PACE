@@ -63,64 +63,64 @@ with a message.
 ``` r
 fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
 fit <- paceShrink(fit)
-#>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.12 seconds.
-#>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.57 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.07 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
+#>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.80 seconds.
+#>  - Model fitting took 0.59 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 404 likelihood matrix.
+#>  - Likelihood calculations took 0.24 seconds.
+#>  - Fitting model with 404 mixture components.
+#>  - Model fitting took 1.65 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.79 seconds.
+#>  - Computing 278 x 313 likelihood matrix.
+#>  - Likelihood calculations took 0.16 seconds.
+#>  - Fitting model with 313 mixture components.
+#>  - Model fitting took 2.86 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.21 seconds.
+#>  - Computing 278 x 417 likelihood matrix.
+#>  - Likelihood calculations took 0.25 seconds.
+#>  - Fitting model with 417 mixture components.
+#>  - Model fitting took 2.61 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.78 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.01 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.50 seconds.
+#>  - Model fitting took 1.63 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.13 seconds.
-#>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 3.46 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.02 seconds.
-#>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.15 seconds.
-#>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 5.38 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.02 seconds.
 #>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.16 seconds.
+#>  - Likelihood calculations took 0.26 seconds.
 #>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 1.57 seconds.
+#>  - Model fitting took 0.75 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.69 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 430 likelihood matrix.
-#>  - Likelihood calculations took 0.17 seconds.
+#>  - Likelihood calculations took 0.28 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 1.26 seconds.
+#>  - Model fitting took 1.19 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
+#>  - Computation allocated took 0.02 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.23 seconds.
+#>  - Likelihood calculations took 0.39 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 1.42 seconds.
+#>  - Model fitting took 1.99 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
+#>  - Computation allocated took 0.06 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.14 seconds.
+#>  - Likelihood calculations took 0.26 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 5.82 seconds.
+#>  - Model fitting took 5.74 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.12 seconds.
+#>  - Likelihood calculations took 0.17 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.52 seconds.
+#>  - Model fitting took 0.81 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 head(neighbourSlopes(fit))
