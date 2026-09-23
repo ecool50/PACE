@@ -282,7 +282,7 @@ neighbourSlopes(fit) |>
   select(gene, estimate_shrunk, lfsr)
 #>    gene estimate_shrunk         lfsr
 #> 1 APOC1       0.1301689 1.077054e-17
-#> 2  MRC1      -0.1494760 1.443290e-15
+#> 2  MRC1      -0.1494760 1.554312e-15
 ```
 
 ## Visualising the proximity effect
