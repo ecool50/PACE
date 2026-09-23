@@ -88,8 +88,9 @@ two-dimensional spatial coordinates.</p></dd>
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Further arguments passed to the streaming fitter (<code>n_iter</code>,
-<code>threads</code>, <code>drop_sparse_neff</code>, <code>within_image</code>, <code>edge_correct</code>,
-<code>data_informed_tau</code>, <code>tau_shrinkage</code>, ...).</p></dd>
+<code>threads</code>, <code>chunk_size</code>, <code>drop_sparse_neff</code>, <code>within_image</code>,
+<code>edge_correct</code>, <code>data_informed_tau</code>, <code>tau_shrinkage</code>, and the memory and
+approximation settings described below).</p></dd>
 
 
 <dt id="arg-celltype-col">celltype_col<a class="anchor" aria-label="anchor" href="#arg-celltype-col"></a></dt>
@@ -152,6 +153,47 @@ caller chose.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <a href="PACEFit-class.html">PACEFit</a> with the fitted model (reporting layers empty).</p>
     </div>
+    <div class="section level2">
+    <h2 id="memory-and-approximation-settings">Memory and approximation settings<a class="anchor" aria-label="anchor" href="#memory-and-approximation-settings"></a></h2>
+
+
+
+<p>Three pass-through arguments change how much memory a fit needs, or trade
+exactness for time. Two of them are approximations that are ON by default.</p>
+<dl><dt><code>ambient_mode</code></dt>
+<dd><p><code>"cache"</code> (default) or <code>"stream"</code>. The contamination
+model needs an ambient field per cell and gene; <code>"cache"</code> materialises
+that n by G product, <code>"stream"</code> recomputes each chunk's columns from the
+weights and the counts. The numbers are identical. On a 1.2M cell,
+5,001 gene panel the cached product alone is over 5 GB, so <code>"stream"</code> is
+what makes a full transcriptome panel fit in memory at all.</p></dd>
+
+
+<dt><code>alpha_warmup</code></dt>
+<dd><p>Default <code>6</code>. The per-gene dispersion MLE is re-fitted
+only on the first <code>alpha_warmup</code> iterations and on the last one; in
+between, alpha is frozen at its warmed-up value. Alpha typically settles
+within five iterations while the MLE is a large share of each iteration's
+cost, so this is on by default. <strong>It is an approximation</strong>: pass <code>Inf</code> to
+re-fit the dispersion on every iteration. Lowering it below the default
+does move results – on the breast cancer cohort <code>4</code> changes the number
+of calls at <code>lfsr &lt; 0.05</code>.</p></dd>
+
+
+<dt><code>alpha_max_n</code></dt>
+<dd><p>Default <code>Inf</code>, meaning the dispersion MLE sees every
+cell. A finite value caps it at an even, deterministic subsample; the
+estimator, the Brent search and its tolerance are unchanged. The
+dispersion is one scalar per gene and its standard error falls as
+<code>1/sqrt(n)</code>, so most cells add little. <strong>Validate any cap on your own
+cohort before trusting it.</strong> A cap of 50,000 reproduced two cohorts of
+roughly 10^5 cells exactly, and on a 1.2M cell panel – where the same
+cap is a far smaller fraction of the data – it left the number of calls
+unchanged while swapping the identity of 72 of them. The binding
+quantity is not the absolute subsample.</p></dd>
+
+
+</dl></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
