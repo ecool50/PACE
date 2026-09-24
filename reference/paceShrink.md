@@ -63,64 +63,64 @@ with a message.
 ``` r
 fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
 fit <- paceShrink(fit)
-#>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
-#>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.09 seconds.
+#>  - Computing 278 x 313 likelihood matrix.
+#>  - Likelihood calculations took 0.17 seconds.
+#>  - Fitting model with 313 mixture components.
+#>  - Model fitting took 0.77 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.18 seconds.
+#>  - Likelihood calculations took 0.17 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 1.20 seconds.
+#>  - Model fitting took 1.26 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
+#>  - Computing 278 x 92 likelihood matrix.
+#>  - Likelihood calculations took 0.04 seconds.
+#>  - Fitting model with 92 mixture components.
+#>  - Model fitting took 1.90 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.01 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.05 seconds.
+#>  - Model fitting took 1.09 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.14 seconds.
-#>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 3.60 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.18 seconds.
+#>  - Likelihood calculations took 0.21 seconds.
 #>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 2.20 seconds.
+#>  - Model fitting took 1.19 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.17 seconds.
+#>  - Likelihood calculations took 0.23 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 5.90 seconds.
+#>  - Model fitting took 6.38 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.09 seconds.
+#>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 430 likelihood matrix.
-#>  - Likelihood calculations took 0.20 seconds.
+#>  - Likelihood calculations took 0.25 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 1.61 seconds.
+#>  - Model fitting took 0.68 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.05 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.28 seconds.
+#>  - Likelihood calculations took 0.24 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 1.28 seconds.
+#>  - Model fitting took 0.38 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.19 seconds.
+#>  - Likelihood calculations took 0.24 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 5.90 seconds.
+#>  - Model fitting took 1.95 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.12 seconds.
+#>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.55 seconds.
+#>  - Model fitting took 0.63 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 head(neighbourSlopes(fit))

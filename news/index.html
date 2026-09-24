@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PACE</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,14 @@
       <small>Source: <a href="https://github.com/ecool50/PACE/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.2" id="pace-0992">PACE 0.99.2<a class="anchor" aria-label="anchor" href="#pace-0992"></a></h2>
+<p>Portability fixes found by Bioconductor’s multi-platform builders. No change to any reported quantity: breast cancer holds at 1,637 calls, melanoma at 46 with SPP1 Macrophage&lt;-Tumour at -0.066840.</p>
+<ul><li><p>Fused multiply-add is now suppressed by a compiler flag rather than by pragmas. <code>#pragma GCC optimize("fp-contract=off")</code> is a documented debugging aid that does not reliably override GCC’s default, and <code>gene_solve.cpp</code> – the solver – never included the header at all, so contraction was live there even on macOS. <code>./configure</code> probes the compiler and writes <code>-ffp-contract=off</code> into <code>src/Makevars</code>, leaving it empty where the flag is rejected. This took all six platforms from failing to x86_64 passing.</p></li>
+<li><p>Comparisons between the compiled core and the R it replaces are made at a tolerance rather than bit for bit where the quantity is a REDUCTION – the kernels, the ambient field, the linear predictor’s Z sum. A reduction’s accumulation order is the compiler’s to choose, and AVX and NEON choose differently; aarch64 failed at 1e-15 where x86_64 passed. Shapes, names and which entries are zero must still match exactly.</p></li>
+<li><p>The frozen fixtures – the IRLS digests and the pinned dispersion values – run on the machine that froze them and skip elsewhere. They compare against stored constants, and <code>exp</code>, <code>log</code> and <code>lgamma</code> are not bit-identical across libm implementations, so no compiler setting can make them portable.</p></li>
+<li><p>The shrinkage tests pin <code>shrink_threads = 1</code>. The default is 4, and on a platform without <code>fork()</code> the shrinkage says so in a message that arrived before the one the tests assert on, failing every Windows build.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.99.1" id="pace-0991">PACE 0.99.1<a class="anchor" aria-label="anchor" href="#pace-0991"></a></h2>
 <p>Correctness fixes from an internal audit of the fitting engine. All of these produced wrong numbers with no error raised. The analyses in the accompanying manuscript were produced with the pre-fix engine and were checked to be unaffected.</p>
