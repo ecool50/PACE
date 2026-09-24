@@ -241,10 +241,10 @@ looks like.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cellContamination.html">cellContamination</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cc</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   cell   celltype        rho contamFraction</span></span>
-<span><span class="co">#&gt; 1  442     Tumour 0.11504406    0.000000000</span></span>
-<span><span class="co">#&gt; 2  444     B_Cell 0.00282706    0.001557513</span></span>
-<span><span class="co">#&gt; 3  446 Macrophage 0.58779262    0.123800291</span></span>
+<span><span class="co">#&gt;   cell   celltype         rho contamFraction</span></span>
+<span><span class="co">#&gt; 1  442     Tumour 0.115043986    0.000000000</span></span>
+<span><span class="co">#&gt; 2  444     B_Cell 0.002827059    0.001557512</span></span>
+<span><span class="co">#&gt; 3  446 Macrophage 0.587792613    0.123800289</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tapply.html" class="external-link">tapply</a></span><span class="op">(</span><span class="va">cc</span><span class="op">$</span><span class="va">contamFraction</span>, <span class="va">cc</span><span class="op">$</span><span class="va">celltype</span>, <span class="va">median</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         B_Cell Dendritic_Cell    Endothelial     Macrophage  Myoepithelial </span></span>
 <span><span class="co">#&gt;          0.091          0.083          0.018          0.073          0.038 </span></span>
@@ -321,8 +321,8 @@ reduced near tumour, and the lipid-associated marker
 <span>         <span class="va">gene</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"MRC1"</span>, <span class="st">"APOC1"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">gene</span>, <span class="va">estimate_shrunk</span>, <span class="va">lfsr</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    gene estimate_shrunk         lfsr</span></span>
-<span><span class="co">#&gt; 1 APOC1       0.1301689 1.077054e-17</span></span>
-<span><span class="co">#&gt; 2  MRC1      -0.1494760 1.554312e-15</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 APOC1       0.1301689 1.077057e-17</span></span>
+<span><span class="co">#&gt; 2  MRC1      -0.1494761 1.443290e-15</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="visualising-the-proximity-effect">Visualising the proximity effect<a class="anchor" aria-label="anchor" href="#visualising-the-proximity-effect"></a>
