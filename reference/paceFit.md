@@ -51,71 +51,71 @@ fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 1.14 seconds.
+#>  - Model fitting took 0.93 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.20 seconds.
+#>  - Likelihood calculations took 0.17 seconds.
 #>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.77 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.05 seconds.
-#>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.01 seconds.
-#>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.23 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.28 seconds.
-#>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 7.98 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.04 seconds.
-#>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.29 seconds.
-#>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 6.66 seconds.
+#>  - Model fitting took 0.29 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.29 seconds.
+#>  - Likelihood calculations took 0.22 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 10.68 seconds.
+#>  - Model fitting took 3.25 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.03 seconds.
+#>  - Computation allocated took 0.01 seconds.
+#>  - Computing 278 x 92 likelihood matrix.
+#>  - Likelihood calculations took 0.01 seconds.
+#>  - Fitting model with 92 mixture components.
+#>  - Model fitting took 0.56 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 404 likelihood matrix.
+#>  - Likelihood calculations took 0.22 seconds.
+#>  - Fitting model with 404 mixture components.
+#>  - Model fitting took 7.37 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 391 likelihood matrix.
+#>  - Likelihood calculations took 0.21 seconds.
+#>  - Fitting model with 391 mixture components.
+#>  - Model fitting took 5.29 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 430 likelihood matrix.
-#>  - Likelihood calculations took 0.27 seconds.
+#>  - Likelihood calculations took 0.23 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 3.03 seconds.
+#>  - Model fitting took 0.55 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.40 seconds.
+#>  - Likelihood calculations took 0.35 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.74 seconds.
+#>  - Model fitting took 0.64 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
+#>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.27 seconds.
+#>  - Likelihood calculations took 0.21 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 2.91 seconds.
+#>  - Model fitting took 4.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.17 seconds.
+#>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.75 seconds.
+#>  - Model fitting took 0.61 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 head(neighbourSlopes(fit))
 #>     gene  focal neighbour   term      estimate   std.error estimate_shrunk
 #> 1 ABCC11 B_Cell    B_Cell B_Cell -1.968907e-05 0.001376136               0
-#> 2  ACTA2 B_Cell    B_Cell B_Cell -9.976956e-05 0.004245639               0
+#> 2  ACTA2 B_Cell    B_Cell B_Cell -9.976959e-05 0.004245639               0
 #> 3  ACTG2 B_Cell    B_Cell B_Cell  1.418293e-03 0.005170493               0
 #> 4  ADAM9 B_Cell    B_Cell B_Cell  3.277669e-05 0.003072945               0
-#> 5 ADGRE5 B_Cell    B_Cell B_Cell  8.125365e-04 0.005304314               0
-#> 6  ADH1B B_Cell    B_Cell B_Cell -3.142850e-05 0.002131910               0
+#> 5 ADGRE5 B_Cell    B_Cell B_Cell  8.125366e-04 0.005304314               0
+#> 6  ADH1B B_Cell    B_Cell B_Cell -3.142857e-05 0.002131910               0
 #>   sd_shrunk lfsr
 #> 1         0    1
 #> 2         0    1

@@ -61,7 +61,7 @@
                         <h4 data-toc-skip class="author">Elijah
 Willie</h4>
             
-            <h4 data-toc-skip class="date">2026-09-23</h4>
+            <h4 data-toc-skip class="date">2026-09-24</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ecool50/PACE/blob/main/vignettes/condition.Rmd" class="external-link"><code>vignettes/condition.Rmd</code></a></small>
       <div class="d-none name"><code>condition.Rmd</code></div>
@@ -235,14 +235,14 @@ genes. The <code>ResponderPD:</code> terms differ between arms:</p>
 <span><span class="va">resp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">resp</span><span class="op">$</span><span class="va">lfsr</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gene"</span>, <span class="st">"focal"</span>, <span class="st">"neighbour"</span>, <span class="st">"estimate_shrunk"</span>, <span class="st">"lfsr"</span><span class="op">)</span><span class="op">]</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">8</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        gene      focal   neighbour estimate_shrunk         lfsr</span></span>
-<span><span class="co">#&gt; 2053   GLUL     Tumour Endothelial    -0.399655732 0.000000e+00</span></span>
-<span><span class="co">#&gt; 6100   SPP1 Macrophage      Tumour    -0.066306203 0.000000e+00</span></span>
-<span><span class="co">#&gt; 6448  RPL37     Tumour      Tumour    -0.006615142 0.000000e+00</span></span>
-<span><span class="co">#&gt; 5351    MX1     Tumour      T_Cell     0.231579325 7.979372e-53</span></span>
-<span><span class="co">#&gt; 5317 IFITM1     Tumour      T_Cell     0.187298587 4.405081e-33</span></span>
-<span><span class="co">#&gt; 6373   GLUL     Tumour      Tumour     0.016283697 2.387829e-23</span></span>
-<span><span class="co">#&gt; 5226    B2M     Tumour      T_Cell     0.104992603 6.530095e-23</span></span>
-<span><span class="co">#&gt; 5383  STAT1     Tumour      T_Cell     0.140308439 2.374834e-22</span></span></code></pre></div>
+<span><span class="co">#&gt; 2053   GLUL     Tumour Endothelial     -0.39965573 0.000000e+00</span></span>
+<span><span class="co">#&gt; 6100   SPP1 Macrophage      Tumour     -0.06630620 0.000000e+00</span></span>
+<span><span class="co">#&gt; 5351    MX1     Tumour      T_Cell      0.23157932 7.979372e-53</span></span>
+<span><span class="co">#&gt; 5317 IFITM1     Tumour      T_Cell      0.18729859 4.405081e-33</span></span>
+<span><span class="co">#&gt; 6373   GLUL     Tumour      Tumour      0.01628370 2.387829e-23</span></span>
+<span><span class="co">#&gt; 5226    B2M     Tumour      T_Cell      0.10499260 6.530095e-23</span></span>
+<span><span class="co">#&gt; 5383  STAT1     Tumour      T_Cell      0.14030844 2.374834e-22</span></span>
+<span><span class="co">#&gt; 6401 IGFBP7     Tumour      Tumour      0.01674059 6.350817e-22</span></span></code></pre></div>
 <p>Among the strongest is <em>SPP1</em> in macrophages next to tumour
 cells:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">

@@ -179,10 +179,10 @@ looks like.
 
 cc <- cellContamination(fit)
 head(cc, 3)
-#>   cell   celltype         rho contamFraction
-#> 1  442     Tumour 0.115043986    0.000000000
-#> 2  444     B_Cell 0.002827059    0.001557512
-#> 3  446 Macrophage 0.587792613    0.123800289
+#>   cell   celltype        rho contamFraction
+#> 1  442     Tumour 0.11504406    0.000000000
+#> 2  444     B_Cell 0.00282706    0.001557513
+#> 3  446 Macrophage 0.58779262    0.123800291
 round(tapply(cc$contamFraction, cc$celltype, median), 3)
 #>         B_Cell Dendritic_Cell    Endothelial     Macrophage  Myoepithelial 
 #>          0.091          0.083          0.018          0.073          0.038 
@@ -281,8 +281,8 @@ neighbourSlopes(fit) |>
          gene %in% c("MRC1", "APOC1")) |>
   select(gene, estimate_shrunk, lfsr)
 #>    gene estimate_shrunk         lfsr
-#> 1 APOC1       0.1301689 1.077057e-17
-#> 2  MRC1      -0.1494761 1.443290e-15
+#> 1 APOC1       0.1301689 1.077054e-17
+#> 2  MRC1      -0.1494760 1.554312e-15
 ```
 
 ## Visualising the proximity effect
