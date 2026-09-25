@@ -49,39 +49,39 @@ spe <- readRDS(system.file("extdata", "bc_xenium_subset.rds", package = "PACE"))
 # \donttest{
 fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
+#>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.67 seconds.
+#>  - Model fitting took 0.74 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.18 seconds.
-#>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 1.61 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.15 seconds.
+#>  - Likelihood calculations took 0.17 seconds.
 #>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 1.75 seconds.
+#>  - Model fitting took 0.49 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.01 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.21 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.22 seconds.
-#>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 5.24 seconds.
+#>  - Model fitting took 0.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.26 seconds.
+#>  - Likelihood calculations took 0.22 seconds.
 #>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 1.03 seconds.
+#>  - Model fitting took 0.91 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.01 seconds.
+#>  - Computing 278 x 417 likelihood matrix.
+#>  - Likelihood calculations took 0.20 seconds.
+#>  - Fitting model with 417 mixture components.
+#>  - Model fitting took 5.32 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.01 seconds.
+#>  - Computing 278 x 404 likelihood matrix.
+#>  - Likelihood calculations took 0.22 seconds.
+#>  - Fitting model with 404 mixture components.
+#>  - Model fitting took 6.76 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 430 likelihood matrix.
@@ -91,19 +91,19 @@ fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.31 seconds.
+#>  - Likelihood calculations took 0.32 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.55 seconds.
+#>  - Model fitting took 0.59 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.22 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 3.12 seconds.
+#>  - Model fitting took 3.18 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.17 seconds.
+#>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 590 mixture components.
 #>  - Model fitting took 0.61 seconds.
 #>  - Computing posterior matrices.

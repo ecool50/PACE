@@ -395,7 +395,7 @@ sessionInfo()
 #>  [9] Seqinfo_1.2.0               IRanges_2.46.0             
 #> [11] S4Vectors_0.50.3            BiocGenerics_0.58.1        
 #> [13] generics_0.1.4              MatrixGenerics_1.24.0      
-#> [15] matrixStats_1.5.0           PACE_0.99.2                
+#> [15] matrixStats_1.5.0           PACE_0.99.3                
 #> [17] BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
