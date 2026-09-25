@@ -83,6 +83,66 @@ fit <- paceFit(spe,
                image_re         = "intercept",
                dispersion       = "nb1",
                verbose          = FALSE)
+#>  - Computing 180 x 298 likelihood matrix.
+#>  - Likelihood calculations took 0.04 seconds.
+#>  - Fitting model with 298 mixture components.
+#>  - Model fitting took 0.13 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 375 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 375 mixture components.
+#>  - Model fitting took 0.27 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 579 likelihood matrix.
+#>  - Likelihood calculations took 0.08 seconds.
+#>  - Fitting model with 579 mixture components.
+#>  - Model fitting took 0.55 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 364 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 364 mixture components.
+#>  - Model fitting took 0.21 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 243 likelihood matrix.
+#>  - Likelihood calculations took 0.03 seconds.
+#>  - Fitting model with 243 mixture components.
+#>  - Model fitting took 0.12 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 375 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 375 mixture components.
+#>  - Model fitting took 0.28 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 364 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 364 mixture components.
+#>  - Model fitting took 0.09 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 562 likelihood matrix.
+#>  - Likelihood calculations took 0.08 seconds.
+#>  - Fitting model with 562 mixture components.
+#>  - Model fitting took 0.14 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 265 likelihood matrix.
+#>  - Likelihood calculations took 0.04 seconds.
+#>  - Fitting model with 265 mixture components.
+#>  - Model fitting took 0.21 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 409 likelihood matrix.
+#>  - Likelihood calculations took 0.06 seconds.
+#>  - Fitting model with 409 mixture components.
+#>  - Model fitting took 0.57 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
 fit
 #> class: PACEFit
 #> cell types (6): B_Cell, Endothelial, Fibroblast, Macrophage, T_Cell, Tumour
@@ -186,14 +246,14 @@ nrow(resp)
 resp[order(resp$lfsr), c("gene", "focal", "neighbour", "estimate_shrunk", "lfsr")] |>
   head(8)
 #>        gene      focal   neighbour estimate_shrunk         lfsr
-#> 2053   GLUL     Tumour Endothelial    -0.399655732 0.000000e+00
-#> 6100   SPP1 Macrophage      Tumour    -0.066306203 0.000000e+00
-#> 6448  RPL37     Tumour      Tumour    -0.006615142 0.000000e+00
-#> 5351    MX1     Tumour      T_Cell     0.231579325 7.979372e-53
-#> 5317 IFITM1     Tumour      T_Cell     0.187298587 4.405081e-33
-#> 6373   GLUL     Tumour      Tumour     0.016283697 2.387829e-23
-#> 5226    B2M     Tumour      T_Cell     0.104992603 6.530095e-23
-#> 5383  STAT1     Tumour      T_Cell     0.140308439 2.374834e-22
+#> 2053   GLUL     Tumour Endothelial     -0.39965573 0.000000e+00
+#> 6100   SPP1 Macrophage      Tumour     -0.06630620 0.000000e+00
+#> 5351    MX1     Tumour      T_Cell      0.23157932 7.979372e-53
+#> 5317 IFITM1     Tumour      T_Cell      0.18729859 4.405081e-33
+#> 6373   GLUL     Tumour      Tumour      0.01628370 2.387829e-23
+#> 5226    B2M     Tumour      T_Cell      0.10499260 6.530095e-23
+#> 5383  STAT1     Tumour      T_Cell      0.14030844 2.374834e-22
+#> 6401 IGFBP7     Tumour      Tumour      0.01674059 6.350817e-22
 ```
 
 Among the strongest is *SPP1* in macrophages next to tumour cells:
@@ -282,7 +342,7 @@ sessionInfo()
 #>  [9] IRanges_2.46.0              S4Vectors_0.50.3           
 #> [11] BiocGenerics_0.58.1         generics_0.1.4             
 #> [13] MatrixGenerics_1.24.0       matrixStats_1.5.0          
-#> [15] PACE_0.99.3                 BiocStyle_2.40.0           
+#> [15] PACE_0.99.4                 BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] tidyselect_1.2.1    viridisLite_0.4.3   farver_2.1.2       
@@ -292,23 +352,22 @@ sessionInfo()
 #> [13] sass_0.4.10         tools_4.6.1         utf8_1.2.6         
 #> [16] yaml_2.3.12         knitr_1.52          S4Arrays_1.12.0    
 #> [19] labeling_0.4.3      DelayedArray_0.38.2 plyr_1.8.9         
-#> [22] RColorBrewer_1.1-3  abind_1.4-8         BiocParallel_1.46.0
-#> [25] withr_3.0.3         purrr_1.2.2         desc_1.4.3         
-#> [28] grid_4.6.1          scales_1.4.0        MASS_7.3-65        
-#> [31] cli_3.6.6           mvtnorm_1.4-2       rmarkdown_2.32     
-#> [34] ragg_1.5.2          otel_0.2.0          rjson_0.2.23       
-#> [37] cachem_1.1.0        splines_4.6.1       assertthat_0.2.1   
-#> [40] parallel_4.6.1      BiocManager_1.30.27 XVector_0.52.0     
-#> [43] vctrs_0.7.3         Matrix_1.7-5        jsonlite_2.0.0     
-#> [46] bookdown_0.48       patchwork_1.3.2     mixsqp_0.3-54      
-#> [49] irlba_2.3.7         systemfonts_1.3.2   magick_2.9.1       
-#> [52] jquerylib_0.1.4     tidyr_1.3.2         glue_1.8.1         
-#> [55] pkgdown_2.2.1       codetools_0.2-20    gtable_0.3.6       
-#> [58] rmeta_3.0           tibble_3.3.1        pillar_1.11.1      
-#> [61] htmltools_0.5.9     truncnorm_1.0-9     R6_2.6.1           
-#> [64] mashr_0.2.79        textshaping_1.0.5   evaluate_1.0.5     
-#> [67] lattice_0.22-9      SQUAREM_2026.1      ashr_2.2-63        
-#> [70] bslib_0.12.0        Rcpp_1.1.2          nlme_3.1-169       
-#> [73] SparseArray_1.12.2  mgcv_1.9-4          xfun_0.61          
-#> [76] fs_2.1.0            pkgconfig_2.0.3
+#> [22] RColorBrewer_1.1-3  abind_1.4-8         withr_3.0.3        
+#> [25] purrr_1.2.2         desc_1.4.3          grid_4.6.1         
+#> [28] scales_1.4.0        MASS_7.3-65         cli_3.6.6          
+#> [31] mvtnorm_1.4-2       rmarkdown_2.32      ragg_1.5.2         
+#> [34] otel_0.2.0          rjson_0.2.23        cachem_1.1.0       
+#> [37] splines_4.6.1       assertthat_0.2.1    BiocManager_1.30.27
+#> [40] XVector_0.52.0      vctrs_0.7.3         Matrix_1.7-5       
+#> [43] jsonlite_2.0.0      bookdown_0.48       patchwork_1.3.2    
+#> [46] mixsqp_0.3-54       irlba_2.3.7         systemfonts_1.3.2  
+#> [49] magick_2.9.1        jquerylib_0.1.4     tidyr_1.3.2        
+#> [52] glue_1.8.1          pkgdown_2.2.1       gtable_0.3.6       
+#> [55] rmeta_3.0           tibble_3.3.1        pillar_1.11.1      
+#> [58] htmltools_0.5.9     truncnorm_1.0-9     R6_2.6.1           
+#> [61] mashr_0.2.79        textshaping_1.0.5   evaluate_1.0.5     
+#> [64] lattice_0.22-9      SQUAREM_2026.1      ashr_2.2-63        
+#> [67] bslib_0.12.0        Rcpp_1.1.2          nlme_3.1-169       
+#> [70] SparseArray_1.12.2  mgcv_1.9-4          xfun_0.61          
+#> [73] fs_2.1.0            pkgconfig_2.0.3
 ```

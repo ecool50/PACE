@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PACE</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,16 @@
       <small>Source: <a href="https://github.com/ecool50/PACE/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.4" id="pace-0994">PACE 0.99.4<a class="anchor" aria-label="anchor" href="#pace-0994"></a></h2>
+<p>The remaining multi-platform failures were four unrelated bugs, not one. No change to any reported quantity: breast cancer holds at 1,637 calls, melanoma at 46 with SPP1 Macrophage&lt;-Tumour at -0.066840, and both gates print numbers identical to the previous build.</p>
+<ul><li><p>The two ambient modes are bit-identical again on every platform. Cache mode took its product from R’s <code>%*%</code> while streamed mode used the package’s own <code>sparse_product_csc</code>: two implementations of the same sparse product, only one of them in a translation unit this package sets flags on, so their agreement was a coincidence between two libraries rather than a property of this code – and it held only on x86-64, whose baseline ISA has no fused multiply-add. Both modes now call the core’s product, so they differ only in chunking, which is exact because a sparse product is column-independent. The readout rebuild in <code>.pace_mu_block()</code> was a third site on the same path and is switched over too.</p></li>
+<li><p>Windows no longer dies silently during the tests. Six <code>static thread_local</code> non-POD objects lived inside worker bodies; they destruct at every thread exit, this thread pool spawns and joins fresh threads on every call, and destroying thread-local objects inside a loaded library that often is a known way to lose a process on MinGW-w64. The scratch is now owned by the caller, one slot per worker, through a worker-indexed <code>parallel_for</code> overload.</p></li>
+<li><p><code>run_isolated()</code> in the tests passed the child’s library path through <code>system2(env = )</code>, which Windows does not support for <code>Rscript</code>. It now writes <code><a href="https://rdrr.io/r/base/libPaths.html" class="external-link">.libPaths()</a></code> into the generated script.</p></li>
+<li><p>The webR build links with <code>--shared-memory</code>, which is refused unless every object was compiled with atomics. <code>-pthread</code> was in <code>PKG_LIBS</code> but not <code>PKG_CXXFLAGS</code>; <code>./configure</code> now probes it for the compile line as well.</p></li>
+<li><p><code>shrink_threads</code> defaults to 1. The parallel shrink raised a BiocParallel reducer error on one supported R version that could not be reproduced on any other, and serial is the stream the package’s fixtures were made with. Raise it when a large cohort’s shrinkage is the bottleneck.</p></li>
+<li><p>The test suite names the running file and test on stderr. R installs its SIGSEGV handler on Unix-alikes only, and <code>R CMD check</code> keeps the last few lines of block-buffered stdout, so a Windows crash previously pointed at a test that had already finished. stderr is unbuffered and survives the kill.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.99.3" id="pace-0993">PACE 0.99.3<a class="anchor" aria-label="anchor" href="#pace-0993"></a></h2>
 <ul><li>The portability tolerance from 0.99.2 was set at 1e-12, which is below the noise floor of the quantity it gates: these are sums over ~7,900 cells, and n * eps is 1.7e-12. aarch64 failed at 2.8e-12. Raised to 1e-10, the gate the rest of the suite already uses.</li>

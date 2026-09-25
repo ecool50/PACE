@@ -109,6 +109,66 @@ fit <- paceFit(spe,
                contamination = "percell_hc",   # per-cell contamination correction
                dispersion    = "nb1",
                verbose       = FALSE)
+#>  - Computing 278 x 313 likelihood matrix.
+#>  - Likelihood calculations took 0.09 seconds.
+#>  - Fitting model with 313 mixture components.
+#>  - Model fitting took 0.10 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 92 likelihood matrix.
+#>  - Likelihood calculations took 0.02 seconds.
+#>  - Fitting model with 92 mixture components.
+#>  - Model fitting took 0.03 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 404 likelihood matrix.
+#>  - Likelihood calculations took 0.11 seconds.
+#>  - Fitting model with 404 mixture components.
+#>  - Model fitting took 0.14 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 417 likelihood matrix.
+#>  - Likelihood calculations took 0.11 seconds.
+#>  - Fitting model with 417 mixture components.
+#>  - Model fitting took 0.22 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 92 likelihood matrix.
+#>  - Likelihood calculations took 0.00 seconds.
+#>  - Fitting model with 92 mixture components.
+#>  - Model fitting took 0.03 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 391 likelihood matrix.
+#>  - Likelihood calculations took 0.11 seconds.
+#>  - Fitting model with 391 mixture components.
+#>  - Model fitting took 0.12 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 430 likelihood matrix.
+#>  - Likelihood calculations took 0.12 seconds.
+#>  - Fitting model with 430 mixture components.
+#>  - Model fitting took 0.14 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 628 likelihood matrix.
+#>  - Likelihood calculations took 0.18 seconds.
+#>  - Fitting model with 628 mixture components.
+#>  - Model fitting took 0.22 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 404 likelihood matrix.
+#>  - Likelihood calculations took 0.11 seconds.
+#>  - Fitting model with 404 mixture components.
+#>  - Model fitting took 0.33 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.01 seconds.
+#>  - Computing 278 x 590 likelihood matrix.
+#>  - Likelihood calculations took 0.16 seconds.
+#>  - Fitting model with 590 mixture components.
+#>  - Model fitting took 0.56 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.01 seconds.
 fit
 #> class: PACEFit
 #> cell types (8): B_Cell, Dendritic_Cell, Endothelial, Macrophage, Myoepithelial, Stromal, T_Cell, Tumour
@@ -179,10 +239,10 @@ looks like.
 
 cc <- cellContamination(fit)
 head(cc, 3)
-#>   cell   celltype         rho contamFraction
-#> 1  442     Tumour 0.115043986    0.000000000
-#> 2  444     B_Cell 0.002827059    0.001557512
-#> 3  446 Macrophage 0.587792613    0.123800289
+#>   cell   celltype        rho contamFraction
+#> 1  442     Tumour 0.11504406    0.000000000
+#> 2  444     B_Cell 0.00282706    0.001557513
+#> 3  446 Macrophage 0.58779262    0.123800291
 round(tapply(cc$contamFraction, cc$celltype, median), 3)
 #>         B_Cell Dendritic_Cell    Endothelial     Macrophage  Myoepithelial 
 #>          0.091          0.083          0.018          0.073          0.038 
@@ -281,8 +341,8 @@ neighbourSlopes(fit) |>
          gene %in% c("MRC1", "APOC1")) |>
   select(gene, estimate_shrunk, lfsr)
 #>    gene estimate_shrunk         lfsr
-#> 1 APOC1       0.1301689 1.077057e-17
-#> 2  MRC1      -0.1494761 1.443290e-15
+#> 1 APOC1       0.1301689 1.077054e-17
+#> 2  MRC1      -0.1494760 1.443290e-15
 ```
 
 ## Visualising the proximity effect
@@ -395,33 +455,32 @@ sessionInfo()
 #>  [9] Seqinfo_1.2.0               IRanges_2.46.0             
 #> [11] S4Vectors_0.50.3            BiocGenerics_0.58.1        
 #> [13] generics_0.1.4              MatrixGenerics_1.24.0      
-#> [15] matrixStats_1.5.0           PACE_0.99.3                
+#> [15] matrixStats_1.5.0           PACE_0.99.4                
 #> [17] BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] tidyselect_1.2.1    viridisLite_0.4.3   farver_2.1.2       
-#>  [4] S7_0.2.2            fastmap_1.2.0       digest_0.6.39      
-#>  [7] lifecycle_1.0.5     invgamma_1.2        magrittr_2.0.5     
-#> [10] dbscan_1.2.6        compiler_4.6.1      rlang_1.3.0        
-#> [13] sass_0.4.10         tools_4.6.1         utf8_1.2.6         
-#> [16] yaml_2.3.12         knitr_1.52          S4Arrays_1.12.0    
-#> [19] labeling_0.4.3      DelayedArray_0.38.2 plyr_1.8.9         
-#> [22] RColorBrewer_1.1-3  abind_1.4-8         BiocParallel_1.46.0
-#> [25] withr_3.0.3         purrr_1.2.2         desc_1.4.3         
-#> [28] grid_4.6.1          scales_1.4.0        cli_3.6.6          
-#> [31] mvtnorm_1.4-2       rmarkdown_2.32      ragg_1.5.2         
-#> [34] otel_0.2.0          rjson_0.2.23        cachem_1.1.0       
-#> [37] stringr_1.6.0       assertthat_0.2.1    parallel_4.6.1     
-#> [40] BiocManager_1.30.27 XVector_0.52.0      vctrs_0.7.3        
-#> [43] Matrix_1.7-5        jsonlite_2.0.0      bookdown_0.48      
-#> [46] patchwork_1.3.2     mixsqp_0.3-54       irlba_2.3.7        
-#> [49] systemfonts_1.3.2   magick_2.9.1        jquerylib_0.1.4    
-#> [52] glue_1.8.1          pkgdown_2.2.1       codetools_0.2-20   
-#> [55] stringi_1.8.9       gtable_0.3.6        rmeta_3.0          
-#> [58] tibble_3.3.1        pillar_1.11.1       htmltools_0.5.9    
-#> [61] truncnorm_1.0-9     R6_2.6.1            mashr_0.2.79       
-#> [64] textshaping_1.0.5   evaluate_1.0.5      lattice_0.22-9     
-#> [67] SQUAREM_2026.1      ashr_2.2-63         bslib_0.12.0       
-#> [70] Rcpp_1.1.2          SparseArray_1.12.2  xfun_0.61          
-#> [73] fs_2.1.0            pkgconfig_2.0.3
+#>  [1] gtable_0.3.6        rjson_0.2.23        xfun_0.61          
+#>  [4] bslib_0.12.0        lattice_0.22-9      vctrs_0.7.3        
+#>  [7] tools_4.6.1         tibble_3.3.1        pkgconfig_2.0.3    
+#> [10] Matrix_1.7-5        SQUAREM_2026.1      RColorBrewer_1.1-3 
+#> [13] S7_0.2.2            desc_1.4.3          assertthat_0.2.1   
+#> [16] lifecycle_1.0.5     truncnorm_1.0-9     stringr_1.6.0      
+#> [19] compiler_4.6.1      farver_2.1.2        textshaping_1.0.5  
+#> [22] htmltools_0.5.9     sass_0.4.10         yaml_2.3.12        
+#> [25] pillar_1.11.1       pkgdown_2.2.1       jquerylib_0.1.4    
+#> [28] rmeta_3.0           cachem_1.1.0        DelayedArray_0.38.2
+#> [31] dbscan_1.2.6        magick_2.9.1        abind_1.4-8        
+#> [34] tidyselect_1.2.1    digest_0.6.39       stringi_1.8.9      
+#> [37] mvtnorm_1.4-2       purrr_1.2.2         bookdown_0.48      
+#> [40] ashr_2.2-63         labeling_0.4.3      fastmap_1.2.0      
+#> [43] grid_4.6.1          cli_3.6.6           invgamma_1.2       
+#> [46] SparseArray_1.12.2  magrittr_2.0.5      patchwork_1.3.2    
+#> [49] S4Arrays_1.12.0     utf8_1.2.6          withr_3.0.3        
+#> [52] scales_1.4.0        rmarkdown_2.32      XVector_0.52.0     
+#> [55] otel_0.2.0          ragg_1.5.2          evaluate_1.0.5     
+#> [58] knitr_1.52          viridisLite_0.4.3   irlba_2.3.7        
+#> [61] rlang_1.3.0         Rcpp_1.1.2          mixsqp_0.3-54      
+#> [64] glue_1.8.1          BiocManager_1.30.27 jsonlite_2.0.0     
+#> [67] plyr_1.8.9          mashr_0.2.79        R6_2.6.1           
+#> [70] systemfonts_1.3.2   fs_2.1.0
 ```

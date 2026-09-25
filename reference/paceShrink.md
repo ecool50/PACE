@@ -28,7 +28,7 @@ paceShrink(object, ...)
   focal cell types under the null and pass it to mash as `V`; `FALSE`
   treats them as independent), `data_driven`, and `shrink_threads`.
 
-  `shrink_threads` (default 4) is how many R processes shrink the
+  `shrink_threads` (default 1) is how many R processes shrink the
   neighbour slices at once. The slices are independent and carry about
   90% of the work, so this is where the time goes: on the full breast
   cancer cohort it takes the shrinkage from 55.4 to 21.1 seconds, and
@@ -41,10 +41,13 @@ paceShrink(object, ...)
   stream slice by slice. Above 1 each slice is seeded with its own
   index, so the parallel result is reproducible run to run but differs
   from the serial one – by ~1e-12 at cohort scale, but by up to ~1e-6 on
-  small slices, where there is less data to swamp the difference. Set
-  `shrink_threads = 1` when you need the serial stream exactly, which is
-  what the package's own fixture tests do. With `data_driven = FALSE`
-  nothing draws from the stream and the two are identical.
+  small slices, where there is less data to swamp the difference. Serial
+  is the default because it is the stream the package's fixtures were
+  made with, and because the parallel path raised a BiocParallel reducer
+  error on one supported R version that could not be reproduced on any
+  other. Raise it when a large cohort's shrinkage is the bottleneck.
+  With `data_driven = FALSE` nothing draws from the stream and the two
+  are identical.
 
 ## Value
 
@@ -64,65 +67,75 @@ with a message.
 fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
 fit <- paceShrink(fit)
 #>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.20 seconds.
+#>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.24 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.19 seconds.
-#>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
-#>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 1.38 seconds.
+#>  - Model fitting took 0.09 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
+#>   [mashr] B_Cell: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 0, expected false sign = 0.0
+#>   [mashr] term 'Dendritic_Cell': fewer than two varying conditions, using independence
+#>  - Computing 278 x 92 likelihood matrix.
+#>  - Likelihood calculations took 0.02 seconds.
+#>  - Fitting model with 92 mixture components.
+#>  - Model fitting took 0.03 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>   [mashr] Dendritic_Cell: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 0, expected false sign = 0.0
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.28 seconds.
+#>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.72 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.30 seconds.
-#>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.01 seconds.
-#>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.07 seconds.
+#>  - Model fitting took 0.14 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.30 seconds.
-#>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 0.81 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.84 seconds.
+#>   [mashr] Endothelial: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 2, expected false sign = 0.0
 #>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.27 seconds.
+#>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 10.28 seconds.
+#>  - Model fitting took 0.22 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.04 seconds.
+#>  - Computation allocated took 0.00 seconds.
+#>   [mashr] Macrophage: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 5, expected false sign = 0.0
+#>   [mashr] term 'Myoepithelial': fewer than two varying conditions, using independence
+#>  - Computing 278 x 92 likelihood matrix.
+#>  - Likelihood calculations took 0.00 seconds.
+#>  - Fitting model with 92 mixture components.
+#>  - Model fitting took 0.03 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>   [mashr] Myoepithelial: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 0, expected false sign = 0.0
+#>  - Computing 278 x 391 likelihood matrix.
+#>  - Likelihood calculations took 0.11 seconds.
+#>  - Fitting model with 391 mixture components.
+#>  - Model fitting took 0.12 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>   [mashr] Stromal: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 3, expected false sign = 0.0
 #>  - Computing 278 x 430 likelihood matrix.
-#>  - Likelihood calculations took 0.30 seconds.
+#>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 1.34 seconds.
+#>  - Model fitting took 0.13 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.06 seconds.
+#>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.40 seconds.
+#>  - Likelihood calculations took 0.18 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 2.13 seconds.
+#>  - Model fitting took 0.18 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.06 seconds.
+#>  - Computation allocated took 0.00 seconds.
+#>   [mashr] T_Cell: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 21, expected false sign = 0.1
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.25 seconds.
+#>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 5.30 seconds.
+#>  - Model fitting took 0.34 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.17 seconds.
+#>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.78 seconds.
+#>  - Model fitting took 0.54 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
+#>   [mashr] Tumour: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 30, expected false sign = 0.1
 head(neighbourSlopes(fit))
 #>     gene  focal neighbour   term      estimate   std.error estimate_shrunk
 #> 1 ABCC11 B_Cell    B_Cell B_Cell -1.968907e-05 0.001376136               0
