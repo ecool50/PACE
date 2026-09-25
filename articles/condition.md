@@ -186,14 +186,14 @@ nrow(resp)
 resp[order(resp$lfsr), c("gene", "focal", "neighbour", "estimate_shrunk", "lfsr")] |>
   head(8)
 #>        gene      focal   neighbour estimate_shrunk         lfsr
-#> 2053   GLUL     Tumour Endothelial     -0.39965573 0.000000e+00
-#> 6100   SPP1 Macrophage      Tumour     -0.06630620 0.000000e+00
-#> 5351    MX1     Tumour      T_Cell      0.23157932 7.979372e-53
-#> 5317 IFITM1     Tumour      T_Cell      0.18729859 4.405081e-33
-#> 6373   GLUL     Tumour      Tumour      0.01628370 2.387829e-23
-#> 5226    B2M     Tumour      T_Cell      0.10499260 6.530095e-23
-#> 5383  STAT1     Tumour      T_Cell      0.14030844 2.374834e-22
-#> 6401 IGFBP7     Tumour      Tumour      0.01674059 6.350817e-22
+#> 2053   GLUL     Tumour Endothelial    -0.399655732 0.000000e+00
+#> 6100   SPP1 Macrophage      Tumour    -0.066306203 0.000000e+00
+#> 6448  RPL37     Tumour      Tumour    -0.006615142 0.000000e+00
+#> 5351    MX1     Tumour      T_Cell     0.231579325 7.979372e-53
+#> 5317 IFITM1     Tumour      T_Cell     0.187298587 4.405081e-33
+#> 6373   GLUL     Tumour      Tumour     0.016283697 2.387829e-23
+#> 5226    B2M     Tumour      T_Cell     0.104992603 6.530095e-23
+#> 5383  STAT1     Tumour      T_Cell     0.140308439 2.374834e-22
 ```
 
 Among the strongest is *SPP1* in macrophages next to tumour cells:
