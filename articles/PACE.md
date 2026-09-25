@@ -124,13 +124,13 @@ fit <- paceFit(spe,
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.14 seconds.
+#>  - Model fitting took 0.15 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
+#>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.22 seconds.
+#>  - Model fitting took 0.23 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
@@ -154,19 +154,19 @@ fit <- paceFit(spe,
 #>  - Computing 278 x 628 likelihood matrix.
 #>  - Likelihood calculations took 0.18 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.22 seconds.
+#>  - Model fitting took 0.23 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.33 seconds.
+#>  - Model fitting took 0.34 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
 #>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.56 seconds.
+#>  - Model fitting took 0.57 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 fit
@@ -455,7 +455,7 @@ sessionInfo()
 #>  [9] Seqinfo_1.2.0               IRanges_2.46.0             
 #> [11] S4Vectors_0.50.3            BiocGenerics_0.58.1        
 #> [13] generics_0.1.4              MatrixGenerics_1.24.0      
-#> [15] matrixStats_1.5.0           PACE_0.99.4                
+#> [15] matrixStats_1.5.0           PACE_0.99.5                
 #> [17] BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):

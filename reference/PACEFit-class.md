@@ -25,6 +25,16 @@ show(object)
 
   A PACEFit object.
 
+## Value
+
+The `PACEFit` class itself is a container and is not returned by a
+function documented here; construct one with
+[`paceFit()`](https://ecool50.github.io/PACE/reference/paceFit.md). The
+`show` method is called for its side effect of printing a one-screen
+summary of the fit – cell types, kernel bandwidths, contamination and
+dispersion settings, the condition term if there is one, and which
+pipeline stages have run – and returns `NULL` invisibly.
+
 ## Slots
 
 - `fit`:

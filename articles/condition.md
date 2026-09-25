@@ -92,7 +92,7 @@ fit <- paceFit(spe,
 #>  - Computing 180 x 375 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.27 seconds.
+#>  - Model fitting took 0.28 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 579 likelihood matrix.
@@ -116,19 +116,19 @@ fit <- paceFit(spe,
 #>  - Computing 180 x 375 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.28 seconds.
+#>  - Model fitting took 0.29 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 364 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.09 seconds.
+#>  - Model fitting took 0.10 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 562 likelihood matrix.
 #>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 562 mixture components.
-#>  - Model fitting took 0.14 seconds.
+#>  - Model fitting took 0.15 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 265 likelihood matrix.
@@ -140,7 +140,7 @@ fit <- paceFit(spe,
 #>  - Computing 180 x 409 likelihood matrix.
 #>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 409 mixture components.
-#>  - Model fitting took 0.57 seconds.
+#>  - Model fitting took 0.58 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 fit
@@ -342,7 +342,7 @@ sessionInfo()
 #>  [9] IRanges_2.46.0              S4Vectors_0.50.3           
 #> [11] BiocGenerics_0.58.1         generics_0.1.4             
 #> [13] MatrixGenerics_1.24.0       matrixStats_1.5.0          
-#> [15] PACE_0.99.4                 BiocStyle_2.40.0           
+#> [15] PACE_0.99.5                 BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] tidyselect_1.2.1    viridisLite_0.4.3   farver_2.1.2       

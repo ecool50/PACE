@@ -69,7 +69,7 @@ fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
 #>  - Computing 180 x 298 likelihood matrix.
 #>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 298 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Model fitting took 0.13 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] ResponderPD:B_Cell: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 0, expected false sign = 0.0
@@ -82,7 +82,7 @@ fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
 #>  - Computing 180 x 579 likelihood matrix.
 #>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.55 seconds.
+#>  - Model fitting took 0.56 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] ResponderPD:Endothelial: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 24, expected false sign = 0.3
@@ -102,7 +102,7 @@ fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
 #>  - Computing 180 x 375 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.28 seconds.
+#>  - Model fitting took 0.29 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] ResponderPD:Macrophage: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 13, expected false sign = 0.1
@@ -115,7 +115,7 @@ fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
 #>  - Computing 180 x 562 likelihood matrix.
 #>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 562 mixture components.
-#>  - Model fitting took 0.14 seconds.
+#>  - Model fitting took 0.15 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] ResponderPD:T_Cell: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 13, expected false sign = 0.1
@@ -128,7 +128,7 @@ fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
 #>  - Computing 180 x 409 likelihood matrix.
 #>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 409 mixture components.
-#>  - Model fitting took 0.57 seconds.
+#>  - Model fitting took 0.58 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] ResponderPD:Tumour: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 25, expected false sign = 0.2

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PACE</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,11 @@
       <small>Source: <a href="https://github.com/ecool50/PACE/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.5" id="pace-0995">PACE 0.99.5<a class="anchor" aria-label="anchor" href="#pace-0995"></a></h2>
+<ul><li>
+<code>man/PACEFit-class.Rd</code> had no <code>\value</code> section, which BiocCheck 1.49 reports as a WARNING. It was the one warning left on Bioconductor’s builder and it did not appear locally, because BiocCheck 1.44 does not run that check – a version gap, not a platform difference. The <code>show</code> method now documents that it is called for its printing side effect and returns <code>NULL</code> invisibly. Verified against BiocCheck 1.49.31: the warning reproduces with the section removed and is silent with it present. No code change.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.99.4" id="pace-0994">PACE 0.99.4<a class="anchor" aria-label="anchor" href="#pace-0994"></a></h2>
 <p>The remaining multi-platform failures were four unrelated bugs, not one. No change to any reported quantity: breast cancer holds at 1,637 calls, melanoma at 46 with SPP1 Macrophage&lt;-Tumour at -0.066840, and both gates print numbers identical to the previous build.</p>
