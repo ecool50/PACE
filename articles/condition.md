@@ -98,7 +98,7 @@ fit <- paceFit(spe,
 #>  - Computing 180 x 579 likelihood matrix.
 #>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.55 seconds.
+#>  - Model fitting took 0.54 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 364 likelihood matrix.
@@ -275,9 +275,12 @@ gives a pair as a figure: the genes ranked by driver score on the left,
 their per-gene decomposition on the right. On a fit with a condition the
 score is built from the `resp_term` interaction, so this ranks genes by
 how much the proximity effect **differs between arms**, not by the
-effect they share. Taking tumour cells next to T cells, the ranking is
-MHC class I and interferon: *B2M*, *HLA-B*, *HLA-C*, *HLA-E*, *STAT1*,
-*MX1*, *IFITM1* and *IFITM3*.
+effect they share. Taking tumour cells next to T cells, *CRYAB*, *MZT2A*
+and *S100B* lead, and nine of the thirteen genes called are MHC class I
+or interferon: *B2M*, *HLA-B*, *HLA-C*, *HLA-E*, *STAT1*, *MX1*,
+*IFITM1*, *IFITM3* and *IFI27*. Those nine all have positive
+interactions, so their response to T cell proximity is steeper in the
+progressive arm.
 
 ``` r
 
@@ -293,8 +296,30 @@ to it than a ranking of the shared effect would be. That matters here,
 because *B2M* and *HLA-B* are expressed by T cells themselves and the
 right panel shows spillover as their largest block; it is the
 differencing, not the size of that block, that makes the ranking
-readable. To rank the *shared* effect instead, fit without the condition
-term, which puts the shrinkage on the baseline slopes.
+readable. To rank the *shared* effect instead, re-run
+[`paceShrink()`](https://ecool50.github.io/PACE/reference/paceShrink.md)
+with the responder term switched off, which puts the shrinkage on the
+baseline slopes. No new model fit is needed.
+
+[`topDrivers()`](https://ecool50.github.io/PACE/reference/topDrivers.md)
+returns the same ranking as a table, with the score and the parts it is
+built from:
+
+``` r
+
+topDrivers(fit)[["Tumour_T_Cell"]]$scores |>
+  select(rank, gene, MCSD, b_clean, spec, focal_mean, lfsr) |>
+  head(8)
+#>   rank   gene        MCSD     b_clean      spec focal_mean         lfsr
+#> 1    1  CRYAB 0.012423231 -0.12157232 0.7873320  1.3559677 3.640576e-04
+#> 2    2  MZT2A 0.009467803 -0.03143655 0.6203181 24.8972085 2.551249e-03
+#> 3    3  S100B 0.009295063 -0.06493689 0.7937279  3.4988559 2.237826e-02
+#> 4    4    B2M 0.007748198  0.10499260 0.3437164  5.9495304 6.530095e-23
+#> 5    5  HLA.B 0.007548406  0.09946964 0.4063803  4.6196474 6.936858e-09
+#> 6    6 IFITM1 0.006929811  0.18729859 0.4021399  1.2215128 4.405081e-33
+#> 7    7  HLA.C 0.005827441  0.08250295 0.4333179  4.5595894 7.394678e-07
+#> 8    8    MX1 0.005289734  0.23157932 0.3824699  0.6742792 7.979372e-53
+```
 
 The table is also filtered at `lfsr < 0.05`, so a sparse figure means
 few genes cleared that threshold rather than few genes being involved.
@@ -387,7 +412,7 @@ sessionInfo()
 #>  [9] IRanges_2.46.0              S4Vectors_0.50.3           
 #> [11] BiocGenerics_0.58.1         generics_0.1.4             
 #> [13] MatrixGenerics_1.24.0       matrixStats_1.5.0          
-#> [15] PACE_0.99.8                 BiocStyle_2.40.0           
+#> [15] PACE_0.99.9                 BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] tidyselect_1.2.1    viridisLite_0.4.3   farver_2.1.2       

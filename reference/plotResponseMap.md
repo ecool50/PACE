@@ -82,7 +82,7 @@ fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
 #>  - Computing 180 x 579 likelihood matrix.
 #>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.56 seconds.
+#>  - Model fitting took 0.54 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] ResponderPD:Endothelial: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 24, expected false sign = 0.3
@@ -102,14 +102,14 @@ fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
 #>  - Computing 180 x 375 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.29 seconds.
+#>  - Model fitting took 0.28 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] ResponderPD:Macrophage: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 13, expected false sign = 0.1
 #>  - Computing 180 x 364 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.10 seconds.
+#>  - Model fitting took 0.09 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 562 likelihood matrix.
@@ -122,13 +122,13 @@ fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
 #>  - Computing 180 x 265 likelihood matrix.
 #>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.22 seconds.
+#>  - Model fitting took 0.21 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 409 likelihood matrix.
 #>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 409 mixture components.
-#>  - Model fitting took 0.58 seconds.
+#>  - Model fitting took 0.56 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] ResponderPD:Tumour: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 25, expected false sign = 0.2
