@@ -84,63 +84,63 @@ fit <- paceFit(spe,
                dispersion       = "nb1",
                verbose          = FALSE)
 #>  - Computing 180 x 298 likelihood matrix.
-#>  - Likelihood calculations took 0.02 seconds.
+#>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 298 mixture components.
-#>  - Model fitting took 0.07 seconds.
+#>  - Model fitting took 0.13 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 375 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
+#>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.14 seconds.
+#>  - Model fitting took 0.27 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 579 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
+#>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.29 seconds.
+#>  - Model fitting took 0.55 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 364 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
+#>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Model fitting took 0.21 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 243 likelihood matrix.
-#>  - Likelihood calculations took 0.02 seconds.
+#>  - Likelihood calculations took 0.03 seconds.
 #>  - Fitting model with 243 mixture components.
-#>  - Model fitting took 0.09 seconds.
+#>  - Model fitting took 0.12 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 375 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
+#>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.17 seconds.
+#>  - Model fitting took 0.28 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 364 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
-#>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.05 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 562 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
-#>  - Fitting model with 562 mixture components.
+#>  - Fitting model with 364 mixture components.
 #>  - Model fitting took 0.09 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 562 likelihood matrix.
+#>  - Likelihood calculations took 0.08 seconds.
+#>  - Fitting model with 562 mixture components.
+#>  - Model fitting took 0.14 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 265 likelihood matrix.
-#>  - Likelihood calculations took 0.02 seconds.
+#>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.11 seconds.
+#>  - Model fitting took 0.21 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 409 likelihood matrix.
-#>  - Likelihood calculations took 0.03 seconds.
+#>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 409 mixture components.
-#>  - Model fitting took 0.34 seconds.
+#>  - Model fitting took 0.57 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 fit
@@ -260,26 +260,24 @@ nrow(resp)
 resp[order(resp$lfsr), c("gene", "focal", "neighbour", "estimate_shrunk", "lfsr")] |>
   head(8)
 #>        gene      focal   neighbour estimate_shrunk         lfsr
-#> 2053   GLUL     Tumour Endothelial    -0.399655732 0.000000e+00
-#> 6100   SPP1 Macrophage      Tumour    -0.066306203 0.000000e+00
-#> 6448  RPL37     Tumour      Tumour    -0.006615142 0.000000e+00
-#> 5351    MX1     Tumour      T_Cell     0.231579325 7.979372e-53
-#> 5317 IFITM1     Tumour      T_Cell     0.187298587 4.405081e-33
-#> 6373   GLUL     Tumour      Tumour     0.016283697 2.387829e-23
-#> 5226    B2M     Tumour      T_Cell     0.104992603 6.530095e-23
-#> 5383  STAT1     Tumour      T_Cell     0.140308439 2.374834e-22
+#> 2053   GLUL     Tumour Endothelial     -0.39965573 0.000000e+00
+#> 6100   SPP1 Macrophage      Tumour     -0.06630620 0.000000e+00
+#> 5351    MX1     Tumour      T_Cell      0.23157932 7.979372e-53
+#> 5317 IFITM1     Tumour      T_Cell      0.18729859 4.405081e-33
+#> 6373   GLUL     Tumour      Tumour      0.01628370 2.387829e-23
+#> 5226    B2M     Tumour      T_Cell      0.10499260 6.530095e-23
+#> 5383  STAT1     Tumour      T_Cell      0.14030844 2.374834e-22
+#> 6401 IGFBP7     Tumour      Tumour      0.01674059 6.350817e-22
 ```
 
 [`plotDrivers()`](https://ecool50.github.io/PACE/reference/plotDrivers.md)
 gives a pair as a figure: the genes ranked by driver score on the left,
-their per-gene decomposition on the right. Taking tumour cells next to T
-cells, the top drivers include *B2M* and *HLA-B*, both MHC class I. The
-right panel is worth reading before interpreting them: spillover is
-their largest block, and both are highly expressed by T cells
-themselves, so contamination from the neighbour and a genuine response
-in the tumour cell predict the same direction. This is the case the
-decomposition exists to make visible, and it is why a driver rank alone
-is a starting point rather than a result.
+their per-gene decomposition on the right. On a fit with a condition the
+score is built from the `resp_term` interaction, so this ranks genes by
+how much the proximity effect **differs between arms**, not by the
+effect they share. Taking tumour cells next to T cells, the ranking is
+MHC class I and interferon: *B2M*, *HLA-B*, *HLA-C*, *HLA-E*, *STAT1*,
+*MX1*, *IFITM1* and *IFITM3*.
 
 ``` r
 
@@ -288,16 +286,20 @@ plotDrivers(fit, "Tumour", "T_Cell")
 
 ![](condition_files/figure-html/drivers-1.png)
 
-Two things to keep in mind when reading this on a condition fit. The
-ranking scores the *shared* spatial effect rather than the responder
-difference, so it answers which genes carry the relationship, not which
-genes differ between arms;
-[`neighbourSlopes()`](https://ecool50.github.io/PACE/reference/neighbourSlopes.md)
-above is what answers the latter. And the table behind it is already
-filtered at `lfsr < 0.05`, so a sparse figure means few genes cleared
-that threshold rather than few genes being involved. On this reduced
-panel `Macrophage <- Tumour` has only one such gene, which is why the
-pair shown here is a different one.
+Two things follow from the score being the interaction. A difference
+between arms subtracts anything common to both, and contamination from
+the neighbour is largely common to both, so this ranking is less exposed
+to it than a ranking of the shared effect would be. That matters here,
+because *B2M* and *HLA-B* are expressed by T cells themselves and the
+right panel shows spillover as their largest block; it is the
+differencing, not the size of that block, that makes the ranking
+readable. To rank the *shared* effect instead, fit without the condition
+term, which puts the shrinkage on the baseline slopes.
+
+The table is also filtered at `lfsr < 0.05`, so a sparse figure means
+few genes cleared that threshold rather than few genes being involved.
+On this reduced panel `Macrophage <- Tumour` has only one, which is why
+the pair shown here is a different one.
 
 Among the strongest is *SPP1* in macrophages next to tumour cells:
 
@@ -385,7 +387,7 @@ sessionInfo()
 #>  [9] IRanges_2.46.0              S4Vectors_0.50.3           
 #> [11] BiocGenerics_0.58.1         generics_0.1.4             
 #> [13] MatrixGenerics_1.24.0       matrixStats_1.5.0          
-#> [15] PACE_0.99.7                 BiocStyle_2.40.0           
+#> [15] PACE_0.99.8                 BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] tidyselect_1.2.1    viridisLite_0.4.3   farver_2.1.2       
