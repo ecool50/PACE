@@ -64,7 +64,7 @@ fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Dendritic_Cell: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 0, expected false sign = 0.0
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.07 seconds.
+#>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 404 mixture components.
 #>  - Model fitting took 0.08 seconds.
 #>  - Computing posterior matrices.
@@ -106,15 +106,15 @@ fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] T_Cell: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 21, expected false sign = 0.1
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.07 seconds.
+#>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.20 seconds.
+#>  - Model fitting took 0.19 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
 #>  - Likelihood calculations took 0.10 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.31 seconds.
+#>  - Model fitting took 0.30 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>   [mashr] Tumour: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 30, expected false sign = 0.1

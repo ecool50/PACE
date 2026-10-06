@@ -79,14 +79,14 @@ fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
 #>  - Computing 180 x 579 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.30 seconds.
+#>  - Model fitting took 0.28 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] ResponderPD:Endothelial: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 24, expected false sign = 0.3
 #>  - Computing 180 x 364 likelihood matrix.
 #>  - Likelihood calculations took 0.03 seconds.
 #>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Model fitting took 0.11 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] ResponderPD:Fibroblast: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 1, expected false sign = 0.0
@@ -119,13 +119,13 @@ fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
 #>  - Computing 180 x 265 likelihood matrix.
 #>  - Likelihood calculations took 0.02 seconds.
 #>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.13 seconds.
+#>  - Model fitting took 0.12 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 409 likelihood matrix.
 #>  - Likelihood calculations took 0.03 seconds.
 #>  - Fitting model with 409 mixture components.
-#>  - Model fitting took 0.34 seconds.
+#>  - Model fitting took 0.32 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] ResponderPD:Tumour: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 25, expected false sign = 0.2

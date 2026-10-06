@@ -9,7 +9,7 @@ focal-neighbour spatial relationship."><meta property="og:image" content="https:
 
     <a class="navbar-brand me-2" href="../index.html">PACE</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,6 +76,14 @@ sign, and <code>false_sign_rate</code> is that count as a fraction of the calls
 (Stephens 2017). Read a pair's call count against it: many ordered pairs are
 tested, and a pair with three calls and an expected 1.5 wrong is weak
 evidence. Both are only as well calibrated as the lfsr itself.</p>
+<p>On a fit with a condition, the table carries two different slopes and they
+are not a raw-and-shrunken pair of the same quantity. <code>b_clean</code> and <code>lfsr</code>
+are the condition-interaction term, the one the shrinkage was applied to, and
+the driver score <code>MCSD</code> is built from <code>b_clean</code>. <code>u_raw</code> is the <em>baseline</em>
+slope, the unshrunken BLUP for the neighbour on its own, and it is there
+because the variance split needs it: <code>V_S</code> comes from <code>u_raw</code> and <code>V_RxS</code>
+from <code>b_clean</code>. On a fit without a condition there is no interaction to
+separate, so <code>u_raw</code> is absent and <code>b_clean</code> is the only slope.</p>
     </div>
 
     <div class="section level2">
