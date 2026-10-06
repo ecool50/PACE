@@ -110,63 +110,63 @@ fit <- paceFit(spe,
                dispersion    = "nb1",
                verbose       = FALSE)
 #>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.09 seconds.
+#>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.10 seconds.
+#>  - Model fitting took 0.05 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.02 seconds.
+#>  - Likelihood calculations took 0.01 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.03 seconds.
+#>  - Model fitting took 0.02 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
+#>  - Likelihood calculations took 0.07 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.15 seconds.
+#>  - Model fitting took 0.08 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.12 seconds.
+#>  - Likelihood calculations took 0.07 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.23 seconds.
+#>  - Model fitting took 0.13 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.00 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.03 seconds.
+#>  - Model fitting took 0.02 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
+#>  - Likelihood calculations took 0.07 seconds.
 #>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Model fitting took 0.07 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 430 likelihood matrix.
-#>  - Likelihood calculations took 0.12 seconds.
+#>  - Likelihood calculations took 0.07 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 0.14 seconds.
+#>  - Model fitting took 0.08 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.18 seconds.
+#>  - Likelihood calculations took 0.10 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.23 seconds.
+#>  - Model fitting took 0.10 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
+#>  - Likelihood calculations took 0.07 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.34 seconds.
+#>  - Model fitting took 0.21 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.16 seconds.
+#>  - Likelihood calculations took 0.10 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.57 seconds.
+#>  - Model fitting took 0.32 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 fit
@@ -239,10 +239,10 @@ looks like.
 
 cc <- cellContamination(fit)
 head(cc, 3)
-#>   cell   celltype        rho contamFraction
-#> 1  442     Tumour 0.11504406    0.000000000
-#> 2  444     B_Cell 0.00282706    0.001557513
-#> 3  446 Macrophage 0.58779262    0.123800291
+#>   cell   celltype         rho contamFraction
+#> 1  442     Tumour 0.115043986    0.000000000
+#> 2  444     B_Cell 0.002827059    0.001557512
+#> 3  446 Macrophage 0.587792613    0.123800289
 round(tapply(cc$contamFraction, cc$celltype, median), 3)
 #>         B_Cell Dendritic_Cell    Endothelial     Macrophage  Myoepithelial 
 #>          0.091          0.083          0.018          0.073          0.038 
@@ -318,12 +318,12 @@ baseline spatial one.
 ## Macrophage–tumour drivers
 
 [`plotDrivers()`](https://ecool50.github.io/PACE/reference/plotDrivers.md)
-ranks the genes mediating a relationship by a driver score (MCSD,
-combining the shrunken slope, its cell-type specificity, and its
-expression level), alongside their per-gene single-frame decomposition.
-For the macrophage-tumour pair, the top drivers are the tissue-resident
-marker **MRC1** (CD206), reduced near tumour, and the lipid-associated
-marker **APOC1**, elevated near tumour.
+ranks the genes mediating a relationship by a driver score (combining
+the shrunken slope, its cell-type specificity, and its expression
+level), alongside their per-gene single-frame decomposition. For the
+macrophage-tumour pair, the top drivers are the tissue-resident marker
+**MRC1** (CD206), reduced near tumour, and the lipid-associated marker
+**APOC1**, elevated near tumour.
 
 ``` r
 
@@ -341,8 +341,8 @@ neighbourSlopes(fit) |>
          gene %in% c("MRC1", "APOC1")) |>
   select(gene, estimate_shrunk, lfsr)
 #>    gene estimate_shrunk         lfsr
-#> 1 APOC1       0.1301689 1.077054e-17
-#> 2  MRC1      -0.1494760 1.443290e-15
+#> 1 APOC1       0.1301689 1.077057e-17
+#> 2  MRC1      -0.1494761 1.443290e-15
 ```
 
 ## Visualising the proximity effect
@@ -455,7 +455,7 @@ sessionInfo()
 #>  [9] Seqinfo_1.2.0               IRanges_2.46.0             
 #> [11] S4Vectors_0.50.3            BiocGenerics_0.58.1        
 #> [13] generics_0.1.4              MatrixGenerics_1.24.0      
-#> [15] matrixStats_1.5.0           PACE_0.99.5                
+#> [15] matrixStats_1.5.0           PACE_0.99.6                
 #> [17] BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
@@ -474,8 +474,8 @@ sessionInfo()
 #> [37] mvtnorm_1.4-2       purrr_1.2.2         bookdown_0.48      
 #> [40] ashr_2.2-63         labeling_0.4.3      fastmap_1.2.0      
 #> [43] grid_4.6.1          cli_3.6.6           invgamma_1.2       
-#> [46] SparseArray_1.12.2  magrittr_2.0.5      patchwork_1.3.2    
-#> [49] S4Arrays_1.12.0     utf8_1.2.6          withr_3.0.3        
+#> [46] SparseArray_1.12.3  magrittr_2.0.5      patchwork_1.3.2    
+#> [49] S4Arrays_1.12.1     utf8_1.2.6          withr_3.0.3        
 #> [52] scales_1.4.0        rmarkdown_2.32      XVector_0.52.0     
 #> [55] otel_0.2.0          ragg_1.5.2          evaluate_1.0.5     
 #> [58] knitr_1.52          viridisLite_0.4.3   irlba_2.3.7        

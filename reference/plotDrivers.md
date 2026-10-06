@@ -1,8 +1,9 @@
 # Per-pair driver composite
 
 Reproduces the manuscript per-pair driver figure: the top genes ranked
-by driver score (MCSD) for a focal-neighbour pair, alongside their
-per-gene single-frame variance decomposition.
+by their driver score for a focal-neighbour pair, alongside their
+per-gene single-frame variance decomposition. The score is carried in
+the `MCSD` column of `topDrivers(object)` for backwards compatibility.
 
 ## Usage
 

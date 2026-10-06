@@ -84,63 +84,63 @@ fit <- paceFit(spe,
                dispersion       = "nb1",
                verbose          = FALSE)
 #>  - Computing 180 x 298 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
-#>  - Fitting model with 298 mixture components.
-#>  - Model fitting took 0.13 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 375 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
-#>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.28 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 579 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
-#>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.55 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 364 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
-#>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.21 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 243 likelihood matrix.
 #>  - Likelihood calculations took 0.03 seconds.
-#>  - Fitting model with 243 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Fitting model with 298 mixture components.
+#>  - Model fitting took 0.07 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 375 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
+#>  - Likelihood calculations took 0.03 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.29 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 364 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
-#>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.10 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 180 x 562 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
-#>  - Fitting model with 562 mixture components.
 #>  - Model fitting took 0.15 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 579 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 579 mixture components.
+#>  - Model fitting took 0.30 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 364 likelihood matrix.
+#>  - Likelihood calculations took 0.03 seconds.
+#>  - Fitting model with 364 mixture components.
+#>  - Model fitting took 0.12 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 243 likelihood matrix.
+#>  - Likelihood calculations took 0.02 seconds.
+#>  - Fitting model with 243 mixture components.
+#>  - Model fitting took 0.07 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 375 likelihood matrix.
+#>  - Likelihood calculations took 0.03 seconds.
+#>  - Fitting model with 375 mixture components.
+#>  - Model fitting took 0.18 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 364 likelihood matrix.
+#>  - Likelihood calculations took 0.03 seconds.
+#>  - Fitting model with 364 mixture components.
+#>  - Model fitting took 0.05 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 180 x 562 likelihood matrix.
+#>  - Likelihood calculations took 0.05 seconds.
+#>  - Fitting model with 562 mixture components.
+#>  - Model fitting took 0.09 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 265 likelihood matrix.
-#>  - Likelihood calculations took 0.04 seconds.
+#>  - Likelihood calculations took 0.02 seconds.
 #>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.21 seconds.
+#>  - Model fitting took 0.12 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 409 likelihood matrix.
-#>  - Likelihood calculations took 0.06 seconds.
+#>  - Likelihood calculations took 0.03 seconds.
 #>  - Fitting model with 409 mixture components.
-#>  - Model fitting took 0.58 seconds.
+#>  - Model fitting took 0.34 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 fit
@@ -192,6 +192,20 @@ varianceDecomposition(fit) |>
 The responder block is much the smaller: most of a cell’s response to
 its neighbours is common to both arms. Contamination exceeds both, and
 is largest in the sparse immune populations.
+
+[`plotDecomposition()`](https://ecool50.github.io/PACE/reference/plotDecomposition.md)
+shows the same thing. On a fit with a condition it adds a “Responder
+spatial state” block beside the shared spatial one, so the two are
+directly comparable; on a fit without one that block is simply absent.
+The right panel zooms in on the small components, which are otherwise
+invisible next to cell-type identity.
+
+``` r
+
+plotDecomposition(fit)
+```
+
+![](condition_files/figure-html/decomp-plot-1.png)
 
 ## Which pairs carry the condition difference
 
@@ -246,15 +260,44 @@ nrow(resp)
 resp[order(resp$lfsr), c("gene", "focal", "neighbour", "estimate_shrunk", "lfsr")] |>
   head(8)
 #>        gene      focal   neighbour estimate_shrunk         lfsr
-#> 2053   GLUL     Tumour Endothelial     -0.39965573 0.000000e+00
-#> 6100   SPP1 Macrophage      Tumour     -0.06630620 0.000000e+00
-#> 5351    MX1     Tumour      T_Cell      0.23157932 7.979372e-53
-#> 5317 IFITM1     Tumour      T_Cell      0.18729859 4.405081e-33
-#> 6373   GLUL     Tumour      Tumour      0.01628370 2.387829e-23
-#> 5226    B2M     Tumour      T_Cell      0.10499260 6.530095e-23
-#> 5383  STAT1     Tumour      T_Cell      0.14030844 2.374834e-22
-#> 6401 IGFBP7     Tumour      Tumour      0.01674059 6.350817e-22
+#> 2053   GLUL     Tumour Endothelial    -0.399655732 0.000000e+00
+#> 6100   SPP1 Macrophage      Tumour    -0.066306203 0.000000e+00
+#> 6448  RPL37     Tumour      Tumour    -0.006615142 0.000000e+00
+#> 5351    MX1     Tumour      T_Cell     0.231579325 7.979372e-53
+#> 5317 IFITM1     Tumour      T_Cell     0.187298587 4.405081e-33
+#> 6373   GLUL     Tumour      Tumour     0.016283697 2.387829e-23
+#> 5226    B2M     Tumour      T_Cell     0.104992603 6.530095e-23
+#> 5383  STAT1     Tumour      T_Cell     0.140308439 2.374834e-22
 ```
+
+[`plotDrivers()`](https://ecool50.github.io/PACE/reference/plotDrivers.md)
+gives a pair as a figure: the genes ranked by driver score on the left,
+their per-gene decomposition on the right. Taking tumour cells next to T
+cells, the top drivers include *B2M* and *HLA-B*, both MHC class I. The
+right panel is worth reading before interpreting them: spillover is
+their largest block, and both are highly expressed by T cells
+themselves, so contamination from the neighbour and a genuine response
+in the tumour cell predict the same direction. This is the case the
+decomposition exists to make visible, and it is why a driver rank alone
+is a starting point rather than a result.
+
+``` r
+
+plotDrivers(fit, "Tumour", "T_Cell")
+```
+
+![](condition_files/figure-html/drivers-1.png)
+
+Two things to keep in mind when reading this on a condition fit. The
+ranking scores the *shared* spatial effect rather than the responder
+difference, so it answers which genes carry the relationship, not which
+genes differ between arms;
+[`neighbourSlopes()`](https://ecool50.github.io/PACE/reference/neighbourSlopes.md)
+above is what answers the latter. And the table behind it is already
+filtered at `lfsr < 0.05`, so a sparse figure means few genes cleared
+that threshold rather than few genes being involved. On this reduced
+panel `Macrophage <- Tumour` has only one such gene, which is why the
+pair shown here is a different one.
 
 Among the strongest is *SPP1* in macrophages next to tumour cells:
 
@@ -342,7 +385,7 @@ sessionInfo()
 #>  [9] IRanges_2.46.0              S4Vectors_0.50.3           
 #> [11] BiocGenerics_0.58.1         generics_0.1.4             
 #> [13] MatrixGenerics_1.24.0       matrixStats_1.5.0          
-#> [15] PACE_0.99.5                 BiocStyle_2.40.0           
+#> [15] PACE_0.99.6                 BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] tidyselect_1.2.1    viridisLite_0.4.3   farver_2.1.2       
@@ -350,24 +393,25 @@ sessionInfo()
 #>  [7] lifecycle_1.0.5     invgamma_1.2        magrittr_2.0.5     
 #> [10] dbscan_1.2.6        compiler_4.6.1      rlang_1.3.0        
 #> [13] sass_0.4.10         tools_4.6.1         utf8_1.2.6         
-#> [16] yaml_2.3.12         knitr_1.52          S4Arrays_1.12.0    
+#> [16] yaml_2.3.12         knitr_1.52          S4Arrays_1.12.1    
 #> [19] labeling_0.4.3      DelayedArray_0.38.2 plyr_1.8.9         
 #> [22] RColorBrewer_1.1-3  abind_1.4-8         withr_3.0.3        
 #> [25] purrr_1.2.2         desc_1.4.3          grid_4.6.1         
 #> [28] scales_1.4.0        MASS_7.3-65         cli_3.6.6          
 #> [31] mvtnorm_1.4-2       rmarkdown_2.32      ragg_1.5.2         
 #> [34] otel_0.2.0          rjson_0.2.23        cachem_1.1.0       
-#> [37] splines_4.6.1       assertthat_0.2.1    BiocManager_1.30.27
-#> [40] XVector_0.52.0      vctrs_0.7.3         Matrix_1.7-5       
-#> [43] jsonlite_2.0.0      bookdown_0.48       patchwork_1.3.2    
-#> [46] mixsqp_0.3-54       irlba_2.3.7         systemfonts_1.3.2  
-#> [49] magick_2.9.1        jquerylib_0.1.4     tidyr_1.3.2        
-#> [52] glue_1.8.1          pkgdown_2.2.1       gtable_0.3.6       
-#> [55] rmeta_3.0           tibble_3.3.1        pillar_1.11.1      
-#> [58] htmltools_0.5.9     truncnorm_1.0-9     R6_2.6.1           
-#> [61] mashr_0.2.79        textshaping_1.0.5   evaluate_1.0.5     
-#> [64] lattice_0.22-9      SQUAREM_2026.1      ashr_2.2-63        
-#> [67] bslib_0.12.0        Rcpp_1.1.2          nlme_3.1-169       
-#> [70] SparseArray_1.12.2  mgcv_1.9-4          xfun_0.61          
-#> [73] fs_2.1.0            pkgconfig_2.0.3
+#> [37] stringr_1.6.0       splines_4.6.1       assertthat_0.2.1   
+#> [40] BiocManager_1.30.27 XVector_0.52.0      vctrs_0.7.3        
+#> [43] Matrix_1.7-5        jsonlite_2.0.0      bookdown_0.48      
+#> [46] patchwork_1.3.2     mixsqp_0.3-54       irlba_2.3.7        
+#> [49] systemfonts_1.3.2   magick_2.9.1        jquerylib_0.1.4    
+#> [52] tidyr_1.3.2         glue_1.8.1          pkgdown_2.2.1      
+#> [55] stringi_1.8.9       gtable_0.3.6        rmeta_3.0          
+#> [58] tibble_3.3.1        pillar_1.11.1       htmltools_0.5.9    
+#> [61] truncnorm_1.0-9     R6_2.6.1            mashr_0.2.79       
+#> [64] textshaping_1.0.5   evaluate_1.0.5      lattice_0.22-9     
+#> [67] SQUAREM_2026.1      ashr_2.2-63         bslib_0.12.0       
+#> [70] Rcpp_1.1.2          nlme_3.1-169        SparseArray_1.12.3 
+#> [73] mgcv_1.9-4          xfun_0.61           fs_2.1.0           
+#> [76] pkgconfig_2.0.3
 ```
