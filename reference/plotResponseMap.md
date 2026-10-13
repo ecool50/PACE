@@ -76,15 +76,15 @@ fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
 #>  - Computing 180 x 375 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.38 seconds.
+#>  - Model fitting took 0.39 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 579 likelihood matrix.
 #>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.68 seconds.
+#>  - Model fitting took 0.67 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>   [mashr] ResponderPD:Endothelial: 180 genes shrunk; gene-focal calls (lfsr<0.05) = 24, expected false sign = 0.3
 #>  - Computing 180 x 364 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
@@ -96,7 +96,7 @@ fit <- paceFit(spe, celltype_col = "cellType", condition_col = "Responder",
 #>  - Computing 180 x 243 likelihood matrix.
 #>  - Likelihood calculations took 0.03 seconds.
 #>  - Fitting model with 243 mixture components.
-#>  - Model fitting took 0.23 seconds.
+#>  - Model fitting took 0.22 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 375 likelihood matrix.
