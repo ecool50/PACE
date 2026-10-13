@@ -3,7 +3,7 @@
 Reproduces the manuscript per-pair driver figure: the top genes ranked
 by their driver score for a focal-neighbour pair, alongside their
 per-gene single-frame variance decomposition. The score is carried in
-the `MCSD` column of `topDrivers(object)` for backwards compatibility.
+the `driver_score` column of `topDrivers(object)`.
 
 ## Usage
 
@@ -13,7 +13,7 @@ plotDrivers(
   focal,
   neighbour,
   n_top = 5,
-  panels = c("both", "mcsd", "gene")
+  panels = c("both", "score", "gene")
 )
 ```
 
@@ -34,7 +34,7 @@ plotDrivers(
 
 - panels:
 
-  One of `"both"`, `"mcsd"`, or `"gene"`.
+  One of `"both"`, `"score"`, or `"gene"`.
 
 ## Value
 

@@ -23,7 +23,7 @@ reported as contam_frac in the solver's fitting trace."><meta property="og:image
 
     <a class="navbar-brand me-2" href="../index.html">PACE</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -115,12 +115,12 @@ correct; <code>rho</code> alone does not.</p>
 <span class="r-in"><span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu">cellContamination</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cc</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   cell   celltype         rho contamFraction</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  442     Tumour 0.115044201    0.000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  442     Tumour 0.115044202    0.000000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2  444     B_Cell 0.002827062    0.001557514</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3  446 Macrophage 0.587792638    0.123800294</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  449     Tumour 0.115044201    0.000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  449     Tumour 0.115044202    0.000000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5  451 Macrophage 0.089269111    0.102356337</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  455     Tumour 0.115044201    0.000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  455     Tumour 0.115044202    0.000000000</span>
 <span class="r-in"><span><span class="co"># Contamination is highest where cells sit against a different type.</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/tapply.html" class="external-link">tapply</a></span><span class="op">(</span><span class="va">cc</span><span class="op">$</span><span class="va">contamFraction</span>, <span class="va">cc</span><span class="op">$</span><span class="va">celltype</span>, <span class="va">median</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         B_Cell Dendritic_Cell    Endothelial     Macrophage  Myoepithelial </span>

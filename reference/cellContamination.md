@@ -66,12 +66,12 @@ fit <- readRDS(system.file("extdata", "pace_fit_example.rds", package = "PACE"))
 cc <- cellContamination(fit)
 head(cc)
 #>   cell   celltype         rho contamFraction
-#> 1  442     Tumour 0.115044201    0.000000000
+#> 1  442     Tumour 0.115044202    0.000000000
 #> 2  444     B_Cell 0.002827062    0.001557514
 #> 3  446 Macrophage 0.587792638    0.123800294
-#> 4  449     Tumour 0.115044201    0.000000000
+#> 4  449     Tumour 0.115044202    0.000000000
 #> 5  451 Macrophage 0.089269111    0.102356337
-#> 6  455     Tumour 0.115044201    0.000000000
+#> 6  455     Tumour 0.115044202    0.000000000
 # Contamination is highest where cells sit against a different type.
 tapply(cc$contamFraction, cc$celltype, median)
 #>         B_Cell Dendritic_Cell    Endothelial     Macrophage  Myoepithelial 

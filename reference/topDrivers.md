@@ -42,12 +42,12 @@ is weak evidence. Both are only as well calibrated as the lfsr itself.
 On a fit with a condition, the table carries two different slopes and
 they are not a raw-and-shrunken pair of the same quantity. `b_clean` and
 `lfsr` are the condition-interaction term, the one the shrinkage was
-applied to, and the driver score `MCSD` is built from `b_clean`. `u_raw`
-is the *baseline* slope, the unshrunken BLUP for the neighbour on its
-own, and it is there because the variance split needs it: `V_S` comes
-from `u_raw` and `V_RxS` from `b_clean`. On a fit without a condition
-there is no interaction to separate, so `u_raw` is absent and `b_clean`
-is the only slope.
+applied to, and the driver score is built from `b_clean`. `u_raw` is the
+*baseline* slope, the unshrunken BLUP for the neighbour on its own, and
+it is there because the variance split needs it: `V_S` comes from
+`u_raw` and `V_RxS` from `b_clean`. On a fit without a condition there
+is no interaction to separate, so `u_raw` is absent and `b_clean` is the
+only slope.
 
 ## Examples
 

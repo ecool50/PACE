@@ -112,61 +112,61 @@ fit <- paceFit(spe,
 #>  - Computing 278 x 313 likelihood matrix.
 #>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.10 seconds.
+#>  - Model fitting took 0.23 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.02 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.03 seconds.
+#>  - Model fitting took 0.06 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.15 seconds.
+#>  - Model fitting took 0.30 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
+#>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.23 seconds.
+#>  - Model fitting took 0.47 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.00 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.03 seconds.
+#>  - Model fitting took 0.05 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 391 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 0.11 seconds.
+#>  - Model fitting took 0.26 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 430 likelihood matrix.
 #>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 0.14 seconds.
+#>  - Model fitting took 0.27 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
 #>  - Likelihood calculations took 0.18 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.22 seconds.
+#>  - Model fitting took 0.90 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.33 seconds.
+#>  - Model fitting took 0.58 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
 #>  - Likelihood calculations took 0.16 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.56 seconds.
+#>  - Model fitting took 0.84 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 fit
@@ -455,7 +455,7 @@ sessionInfo()
 #>  [9] Seqinfo_1.2.0               IRanges_2.46.0             
 #> [11] S4Vectors_0.50.3            BiocGenerics_0.58.1        
 #> [13] generics_0.1.4              MatrixGenerics_1.24.0      
-#> [15] matrixStats_1.5.0           PACE_0.99.9                
+#> [15] matrixStats_1.5.0           PACE_0.99.10               
 #> [17] BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
@@ -469,7 +469,7 @@ sessionInfo()
 #> [22] htmltools_0.5.9     sass_0.4.10         yaml_2.3.12        
 #> [25] pillar_1.11.1       pkgdown_2.2.1       jquerylib_0.1.4    
 #> [28] rmeta_3.0           cachem_1.1.0        DelayedArray_0.38.2
-#> [31] dbscan_1.2.6        magick_2.9.1        abind_1.4-8        
+#> [31] dbscan_1.2.7        magick_2.9.1        abind_1.4-8        
 #> [34] tidyselect_1.2.1    digest_0.6.39       stringi_1.8.9      
 #> [37] mvtnorm_1.4-2       purrr_1.2.2         bookdown_0.48      
 #> [40] ashr_2.2-63         labeling_0.4.3      fastmap_1.2.0      
@@ -478,7 +478,7 @@ sessionInfo()
 #> [49] S4Arrays_1.12.1     utf8_1.2.6          withr_3.0.3        
 #> [52] scales_1.4.0        rmarkdown_2.32      XVector_0.52.0     
 #> [55] otel_0.2.0          ragg_1.5.2          evaluate_1.0.5     
-#> [58] knitr_1.52          viridisLite_0.4.3   irlba_2.3.7        
+#> [58] knitr_1.52          viridisLite_0.4.3   irlba_2.4.1        
 #> [61] rlang_1.3.0         Rcpp_1.1.2          mixsqp_0.3-54      
 #> [64] glue_1.8.1          BiocManager_1.30.27 jsonlite_2.0.0     
 #> [67] plyr_1.8.9          mashr_0.2.79        R6_2.6.1           

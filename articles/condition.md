@@ -86,61 +86,61 @@ fit <- paceFit(spe,
 #>  - Computing 180 x 298 likelihood matrix.
 #>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 298 mixture components.
-#>  - Model fitting took 0.13 seconds.
+#>  - Model fitting took 0.24 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 375 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.27 seconds.
+#>  - Model fitting took 0.39 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 579 likelihood matrix.
 #>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 579 mixture components.
-#>  - Model fitting took 0.54 seconds.
+#>  - Model fitting took 0.69 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 364 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.21 seconds.
+#>  - Model fitting took 0.32 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 243 likelihood matrix.
 #>  - Likelihood calculations took 0.03 seconds.
 #>  - Fitting model with 243 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Model fitting took 0.23 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 375 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 375 mixture components.
-#>  - Model fitting took 0.28 seconds.
+#>  - Model fitting took 0.40 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 364 likelihood matrix.
 #>  - Likelihood calculations took 0.05 seconds.
 #>  - Fitting model with 364 mixture components.
-#>  - Model fitting took 0.09 seconds.
+#>  - Model fitting took 0.21 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 562 likelihood matrix.
 #>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 562 mixture components.
-#>  - Model fitting took 0.14 seconds.
+#>  - Model fitting took 0.28 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 265 likelihood matrix.
 #>  - Likelihood calculations took 0.04 seconds.
 #>  - Fitting model with 265 mixture components.
-#>  - Model fitting took 0.21 seconds.
+#>  - Model fitting took 0.32 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 180 x 409 likelihood matrix.
 #>  - Likelihood calculations took 0.06 seconds.
 #>  - Fitting model with 409 mixture components.
-#>  - Model fitting took 0.57 seconds.
+#>  - Model fitting took 0.70 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 fit
@@ -308,17 +308,17 @@ built from:
 ``` r
 
 topDrivers(fit)[["Tumour_T_Cell"]]$scores |>
-  select(rank, gene, MCSD, b_clean, spec, focal_mean, lfsr) |>
+  select(rank, gene, driver_score, b_clean, spec, focal_mean, lfsr) |>
   head(8)
-#>   rank   gene        MCSD     b_clean      spec focal_mean         lfsr
-#> 1    1  CRYAB 0.012423231 -0.12157232 0.7873320  1.3559677 3.640576e-04
-#> 2    2  MZT2A 0.009467803 -0.03143655 0.6203181 24.8972085 2.551249e-03
-#> 3    3  S100B 0.009295063 -0.06493689 0.7937279  3.4988559 2.237826e-02
-#> 4    4    B2M 0.007748198  0.10499260 0.3437164  5.9495304 6.530095e-23
-#> 5    5  HLA.B 0.007548406  0.09946964 0.4063803  4.6196474 6.936858e-09
-#> 6    6 IFITM1 0.006929811  0.18729859 0.4021399  1.2215128 4.405081e-33
-#> 7    7  HLA.C 0.005827441  0.08250295 0.4333179  4.5595894 7.394678e-07
-#> 8    8    MX1 0.005289734  0.23157932 0.3824699  0.6742792 7.979372e-53
+#>   rank   gene driver_score     b_clean      spec focal_mean         lfsr
+#> 1    1  CRYAB  0.012423231 -0.12157232 0.7873320  1.3559677 3.640576e-04
+#> 2    2  MZT2A  0.009467803 -0.03143655 0.6203181 24.8972085 2.551249e-03
+#> 3    3  S100B  0.009295063 -0.06493689 0.7937279  3.4988559 2.237826e-02
+#> 4    4    B2M  0.007748198  0.10499260 0.3437164  5.9495304 6.530095e-23
+#> 5    5  HLA.B  0.007548406  0.09946964 0.4063803  4.6196474 6.936858e-09
+#> 6    6 IFITM1  0.006929811  0.18729859 0.4021399  1.2215128 4.405081e-33
+#> 7    7  HLA.C  0.005827441  0.08250295 0.4333179  4.5595894 7.394678e-07
+#> 8    8    MX1  0.005289734  0.23157932 0.3824699  0.6742792 7.979372e-53
 ```
 
 The table is also filtered at `lfsr < 0.05`, so a sparse figure means
@@ -412,13 +412,13 @@ sessionInfo()
 #>  [9] IRanges_2.46.0              S4Vectors_0.50.3           
 #> [11] BiocGenerics_0.58.1         generics_0.1.4             
 #> [13] MatrixGenerics_1.24.0       matrixStats_1.5.0          
-#> [15] PACE_0.99.9                 BiocStyle_2.40.0           
+#> [15] PACE_0.99.10                BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] tidyselect_1.2.1    viridisLite_0.4.3   farver_2.1.2       
 #>  [4] S7_0.2.2            fastmap_1.2.0       digest_0.6.39      
 #>  [7] lifecycle_1.0.5     invgamma_1.2        magrittr_2.0.5     
-#> [10] dbscan_1.2.6        compiler_4.6.1      rlang_1.3.0        
+#> [10] dbscan_1.2.7        compiler_4.6.1      rlang_1.3.0        
 #> [13] sass_0.4.10         tools_4.6.1         utf8_1.2.6         
 #> [16] yaml_2.3.12         knitr_1.52          S4Arrays_1.12.1    
 #> [19] labeling_0.4.3      DelayedArray_0.38.2 plyr_1.8.9         
@@ -430,7 +430,7 @@ sessionInfo()
 #> [37] stringr_1.6.0       splines_4.6.1       assertthat_0.2.1   
 #> [40] BiocManager_1.30.27 XVector_0.52.0      vctrs_0.7.3        
 #> [43] Matrix_1.7-5        jsonlite_2.0.0      bookdown_0.48      
-#> [46] patchwork_1.3.2     mixsqp_0.3-54       irlba_2.3.7        
+#> [46] patchwork_1.3.2     mixsqp_0.3-54       irlba_2.4.1        
 #> [49] systemfonts_1.3.2   magick_2.9.1        jquerylib_0.1.4    
 #> [52] tidyr_1.3.2         glue_1.8.1          pkgdown_2.2.1      
 #> [55] stringi_1.8.9       gtable_0.3.6        rmeta_3.0          
