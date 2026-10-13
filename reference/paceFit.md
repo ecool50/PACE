@@ -59,21 +59,21 @@ fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.02 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.05 seconds.
+#>  - Model fitting took 0.06 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Dendritic_Cell: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 0, expected false sign = 0.0
 #>  - Computing 278 x 404 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.29 seconds.
+#>  - Model fitting took 0.28 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Endothelial: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 2, expected false sign = 0.0
 #>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
+#>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.47 seconds.
+#>  - Model fitting took 0.46 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Macrophage: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 5, expected false sign = 0.0
@@ -88,7 +88,7 @@ fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computing 278 x 391 likelihood matrix.
 #>  - Likelihood calculations took 0.11 seconds.
 #>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 0.29 seconds.
+#>  - Model fitting took 0.25 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Stromal: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 3, expected false sign = 0.0
@@ -99,9 +99,9 @@ fit <- paceFit(spe, celltype_col = "cellType", verbose = FALSE)
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.18 seconds.
+#>  - Likelihood calculations took 0.17 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.38 seconds.
+#>  - Model fitting took 0.39 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] T_Cell: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 21, expected false sign = 0.1
