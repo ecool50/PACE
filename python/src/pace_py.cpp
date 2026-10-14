@@ -15,7 +15,9 @@
 
 #include "decomposition.hpp"
 #include "neighbourhood.hpp"
+#include "hyperparameters.hpp"
 #include "irls_driver.hpp"
+#include "preprocess.hpp"
 #include "random_design.hpp"
 #include "special.hpp"
 #include "mash.hpp"
@@ -537,6 +539,105 @@ py::dict fit_irls(const ColumnMajor& x_fixed, std::int64_t p, const py::dict& z_
   return result;
 }
 
+// ---------------------------------------------------------------------------
+// The preprocessing stages between the kernels and the fit.
+// ---------------------------------------------------------------------------
+
+// Zero any (focal, neighbour) pair whose effective sample size falls below
+// `min_effective`: a slope estimated from almost no contrast is noise. Modifies
+// a copy, so the caller's kernel is untouched.
+py::dict drop_sparse_kernel(const ColumnMajor& kernel, const IntColumn& cell_type,
+                            double min_effective) {
+  if (kernel.ndim() != 2) throw std::runtime_error("kernel must be n_cells x n_types");
+  const std::int64_t n = kernel.shape(0), n_types = kernel.shape(1);
+  if (cell_type.size() != n) throw std::runtime_error("cell_type must have one entry per cell");
+
+  ColumnMajor out({n, n_types});
+  std::copy(kernel.data(), kernel.data() + kernel.size(), out.mutable_data());
+  std::int64_t n_dropped = 0;
+  raise_if_failed(pace::drop_sparse_kernel(
+                      pace::Span<double>(out.mutable_data(), out.size()), n, n_types,
+                      pace::Span<const int>(cell_type.data(), n), min_effective, &n_dropped),
+                  "drop sparse kernel");
+  py::dict result;
+  result["kernel"] = out;
+  result["n_dropped"] = n_dropped;
+  return result;
+}
+
+// Subtract each (image, cell type) group's mean from every kernel column, so a
+// slope is estimated on within-group deviation rather than on composition.
+ColumnMajor centre_within_groups(const ColumnMajor& kernel, const IntColumn& image,
+                                 const IntColumn& cell_type, int n_images, int n_types) {
+  if (kernel.ndim() != 2) throw std::runtime_error("kernel must be n_cells x n_types");
+  const std::int64_t n = kernel.shape(0), k = kernel.shape(1);
+  if (image.size() != n || cell_type.size() != n) {
+    throw std::runtime_error("image and cell_type must have one entry per cell");
+  }
+  ColumnMajor out({n, k});
+  std::copy(kernel.data(), kernel.data() + kernel.size(), out.mutable_data());
+  raise_if_failed(pace::centre_within_groups(
+                      pace::Span<double>(out.mutable_data(), out.size()), n, k,
+                      pace::Span<const int>(image.data(), n),
+                      pace::Span<const int>(cell_type.data(), n), n_images, n_types),
+                  "centre within groups");
+  return out;
+}
+
+// Which genes anchor which cell type: a gene owned by some other type, present
+// enough there, and near-absent here. These are what pin the contamination
+// field, so the fit can tell borrowed signal from real.
+py::dict anchor_mask(const ColumnMajor& core_means, double owner_threshold,
+                     double core_threshold) {
+  if (core_means.ndim() != 2) throw std::runtime_error("core_means must be n_types x n_genes");
+  const std::int64_t n_types = core_means.shape(0), n_genes = core_means.shape(1);
+  ColumnMajor mask({n_types, n_genes});
+  py::array_t<int> n_anchor(n_types);
+  raise_if_failed(pace::anchor_mask(span_of(core_means), n_types, n_genes, owner_threshold,
+                                    core_threshold, out_span_of(mask), out_int_span(n_anchor)),
+                  "anchor mask");
+  py::dict out;
+  out["mask"] = mask;
+  out["n_anchor"] = n_anchor;
+  return out;
+}
+
+// The per-(random effect, gene) prior weights, from how well each gene is
+// detected in the focal type that row belongs to.
+ColumnMajor data_informed_weights(const ColumnMajor& detection_rate,
+                                  const IntColumn& focal_of_row,
+                                  const ColumnMajor& scale_of_row) {
+  if (detection_rate.ndim() != 2) {
+    throw std::runtime_error("detection_rate must be n_focals x n_genes");
+  }
+  const std::int64_t n_focals = detection_rate.shape(0), n_genes = detection_rate.shape(1);
+  const std::int64_t q = focal_of_row.size();
+  if (scale_of_row.size() != q) {
+    throw std::runtime_error("scale_of_row must have one entry per random-effect row");
+  }
+  ColumnMajor weights({q, n_genes});
+  raise_if_failed(pace::data_informed_weights(span_of(detection_rate), n_focals, n_genes,
+                                              pace::Span<const int>(focal_of_row.data(), q),
+                                              span_of(scale_of_row), q, out_span_of(weights)),
+                  "data informed weights");
+  return weights;
+}
+
+// R's scale() of one column, with the divisor it used, so a caller can tell a
+// column that carries no slope from one that does.
+py::dict standardise(const ColumnMajor& values) {
+  const std::int64_t n = values.size();
+  ColumnMajor out(n);
+  std::copy(values.data(), values.data() + n, out.mutable_data());
+  double sd = 0.0;
+  raise_if_failed(pace::standardise_column(pace::Span<double>(out.mutable_data(), n), n, &sd),
+                  "standardise");
+  py::dict result;
+  result["values"] = out;
+  result["sd"] = sd;
+  return result;
+}
+
 }  // namespace
 
 PYBIND11_MODULE(_core, m) {
@@ -574,4 +675,16 @@ PYBIND11_MODULE(_core, m) {
         py::arg("sample_weight") = ColumnMajor(0), py::arg("n_cells"), py::arg("q_total"), py::arg("n_genes"),
         py::arg("options") = py::dict(),
         "The penalised quasi-likelihood IRLS loop: the fit itself.");
+  m.def("drop_sparse_kernel", &drop_sparse_kernel, py::arg("kernel"), py::arg("cell_type"),
+        py::arg("min_effective"), "Zero pairs with too little effective sample size.");
+  m.def("centre_within_groups", &centre_within_groups, py::arg("kernel"), py::arg("image"),
+        py::arg("cell_type"), py::arg("n_images"), py::arg("n_types"),
+        "Centre each kernel column within every (image, cell type) group.");
+  m.def("anchor_mask", &anchor_mask, py::arg("core_means"), py::arg("owner_threshold"),
+        py::arg("core_threshold"), "Which genes anchor which cell type.");
+  m.def("data_informed_weights", &data_informed_weights, py::arg("detection_rate"),
+        py::arg("focal_of_row"), py::arg("scale_of_row"),
+        "Per-(random effect, gene) prior weights from detection.");
+  m.def("standardise", &standardise, py::arg("values"),
+        "R's scale() of one column, with the divisor it used.");
 }
