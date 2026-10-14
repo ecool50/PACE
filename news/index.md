@@ -1,5 +1,12 @@
 # Changelog
 
+## PACE 0.99.18
+
+- Condition signals build their messages without
+  [`paste()`](https://rdrr.io/r/base/paste.html), and the ridge check
+  handles empty input directly rather than suppressing the warning it
+  would raise.
+
 ## PACE 0.99.17
 
 - New
