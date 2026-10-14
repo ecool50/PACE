@@ -5,6 +5,7 @@ not depend on which language you call it from.
 """
 
 from .fit import PaceFit, fit_anndata, pace_fit
+from .shrink import ShrunkenSlopes, pace_shrink
 from ._core import (
     ambient_field,
     anchor_mask,
@@ -42,5 +43,7 @@ __all__ = [
     "pace_fit",
     "fit_anndata",
     "PaceFit",
+    "pace_shrink",
+    "ShrunkenSlopes",
 ]
 __version__ = "0.0.1"

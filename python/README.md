@@ -58,6 +58,7 @@ EIGEN_INCLUDE_DIR=$(Rscript -e 'cat(system.file("include", package="RcppEigen"))
 | `sparse_product` | sparse-sparse product, in the core's summation order |
 | `pace_fit` | every stage above, in order: counts and coordinates to a fit |
 | `fit_anndata` | the same, reading an `AnnData` |
+| `pace_shrink` | multivariate adaptive shrinkage of the fitted slopes |
 
 `pace_fit()` runs the whole pipeline from counts, coordinates and cell type
 labels, and reproduces `paceModel()` bit for bit: every one of the 20,016
@@ -122,6 +123,39 @@ condition; the three-level case is the one that pins the column order, since
 The ambient field is always materialised, with no equivalent of R's
 `ambient_mode = "stream"`, so a very large cohort needs the memory for the
 whole cells-by-genes product.
+
+## Shrinking the slopes
+
+A fitted slope on its own is mostly noise. `pace_shrink()` pools them the way
+R's `paceShrink()` does: one mash fit per neighbour, with the focal cell types
+as its conditions, over a single gene set shared by every slice so that one
+lfsr cut means the same thing across them.
+
+```python
+slopes = pace.pace_shrink(fit, null_correlation=False)
+slopes.calls()                      # how many effects, and how many wrong signs
+frame = slopes.to_dataframe()       # pandas, imported only if you ask for this
+frame.nsmallest(10, "lfsr")[["gene", "focal", "neighbour", "estimate_shrunk"]]
+```
+
+On the packaged subset this calls the **same gene-focal pairs** as R, not merely
+the same number of them, under both `null_correlation` settings. Three things
+to know:
+
+- The mixture is the compiled core's, which reproduces mashr's canonical
+  covariances but not the data-driven ones, so this is R at
+  `data_driven = FALSE`. On the two canonical cohorts that costs 11 of 1,637
+  breast cancer calls and none of 46 melanoma ones.
+- `null_correlation` defaults to `True`, as R's does. The published breast
+  cancer counts were produced with `False`, so pass `False` to match them.
+- On a condition fit the slopes shrunk are `<resp_term>:<neighbour>`, so what
+  comes back is the **responder layer and not the baseline proximity effect**.
+  That is R's behaviour, and `resp_term` defaults to the condition's last level
+  either way.
+
+R's table arrives in alphabetical gene order, an artifact of its splitting the
+long frame by gene; Python keeps the fit's gene order. Sort if you are comparing
+row by row.
 
 
 `ambient_field()` returns compressed-column arrays rather than a matrix, so
