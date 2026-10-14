@@ -12,9 +12,19 @@
 # CI"). `organization: bioconductor` is what turns BiocCheck on.
 name: Test R-universe
 
+# The Python bindings live in python/, which .Rbuildignore keeps out of the
+# tarball, so a commit there cannot change what this builds. Without this
+# filter every such commit still ran the whole fourteen-platform matrix, which
+# buries the runs that mean something and spends flaky-upload luck for nothing.
+# src/core/ is shared with the bindings and is NOT under python/, so a change
+# that does reach the R package still triggers a build.
 on:
   push:
+    paths-ignore:
+      - 'python/**'
   pull_request:
+    paths-ignore:
+      - 'python/**'
   workflow_dispatch:
 
 jobs:
