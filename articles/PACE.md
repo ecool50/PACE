@@ -151,9 +151,9 @@ staged <- paceModel(spe, celltype_col = "cellType", verbose = FALSE) |>
 #>  - Computing 278 x 417 likelihood matrix.
 #>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.32 seconds.
+#>  - Model fitting took 0.31 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.00 seconds.
 #>  - Fitting model with 92 mixture components.
@@ -167,15 +167,15 @@ staged <- paceModel(spe, celltype_col = "cellType", verbose = FALSE) |>
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 430 likelihood matrix.
-#>  - Likelihood calculations took 0.09 seconds.
+#>  - Likelihood calculations took 0.10 seconds.
 #>  - Fitting model with 430 mixture components.
 #>  - Model fitting took 0.19 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.13 seconds.
+#>  - Likelihood calculations took 0.14 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.28 seconds.
+#>  - Model fitting took 0.27 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
@@ -185,9 +185,9 @@ staged <- paceModel(spe, celltype_col = "cellType", verbose = FALSE) |>
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.12 seconds.
+#>  - Likelihood calculations took 0.13 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.61 seconds.
+#>  - Model fitting took 0.60 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 

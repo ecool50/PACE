@@ -93,7 +93,7 @@ fit <- paceShrink(fit)
 #>  - Fitting model with 417 mixture components.
 #>  - Model fitting took 0.31 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
+#>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Macrophage: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 5, expected false sign = 0.0
 #>   [mashr] term 'Myoepithelial': fewer than two varying conditions, using independence
 #>  - Computing 278 x 92 likelihood matrix.
@@ -104,7 +104,7 @@ fit <- paceShrink(fit)
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Myoepithelial: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 0, expected false sign = 0.0
 #>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
+#>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 391 mixture components.
 #>  - Model fitting took 0.16 seconds.
 #>  - Computing posterior matrices.
@@ -115,9 +115,9 @@ fit <- paceShrink(fit)
 #>  - Fitting model with 430 mixture components.
 #>  - Model fitting took 0.19 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.14 seconds.
+#>  - Likelihood calculations took 0.13 seconds.
 #>  - Fitting model with 628 mixture components.
 #>  - Model fitting took 0.22 seconds.
 #>  - Computing posterior matrices.
@@ -130,9 +130,9 @@ fit <- paceShrink(fit)
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.13 seconds.
+#>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.61 seconds.
+#>  - Model fitting took 0.60 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>   [mashr] Tumour: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 30, expected false sign = 0.1
