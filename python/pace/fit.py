@@ -42,6 +42,15 @@ class PaceFit:
     n_iter: int
     converged: bool
     params: dict[str, Any] = field(default_factory=dict)
+    # What the readouts need to rebuild the fitted means, which the fit does
+    # not store: R keeps the same pieces on `re_meta` and rebuilds mu on
+    # demand rather than carrying an n x G matrix around. All of these are
+    # small -- the designs are sparse and the rest are one value per cell.
+    design: dict[str, Any] | None = None          # Z, the n x q random-effect design
+    ambient_weights: dict[str, Any] | None = None  # W, the cross-type field
+    fixed: np.ndarray | None = None               # the n x p fixed design
+    offset: np.ndarray | None = None              # log library size
+    type_code: np.ndarray | None = None           # each cell's 0-based type
 
     def __repr__(self) -> str:
         return (f"PaceFit({len(self.cell_types)} cell types, {len(self.genes)} genes, "
@@ -445,6 +454,9 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
         alpha=fitted["alpha"], tau=fitted["tau_flat"], rho=fitted["rho"],
         cell_types=types, genes=list(genes), row_names=row_names,
         n_iter=int(fitted["n_iter"]), converged=bool(fitted["converged"]),
+        design={"indptr": design["indptr"], "indices": design["indices"],
+                "data": design["data"], "shape": design["shape"]},
+        ambient_weights=weights_matrix, fixed=fixed, offset=offset, type_code=type_code,
         params=dict(h_bio=h_bio, h_tech=h_tech, eps=eps, min_effective=min_effective,
                     within_image=within_image, kernel_per_image=kernel_per_image,
                     homotypic_fraction=homotypic_fraction,
