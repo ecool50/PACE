@@ -69,7 +69,7 @@ fit <- paceShrink(fit)
 #>  - Computing 278 x 313 likelihood matrix.
 #>  - Likelihood calculations took 0.08 seconds.
 #>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.21 seconds.
+#>  - Model fitting took 0.20 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] B_Cell: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 0, expected false sign = 0.0
@@ -106,7 +106,7 @@ fit <- paceShrink(fit)
 #>  - Computing 278 x 391 likelihood matrix.
 #>  - Likelihood calculations took 0.10 seconds.
 #>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 0.24 seconds.
+#>  - Model fitting took 0.25 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Stromal: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 3, expected false sign = 0.0
