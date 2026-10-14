@@ -301,14 +301,22 @@ pace.plot_proximity(fit, counts, ["MRC1", "APOC1"], "Macrophage", "Tumour")
 pace.plot_shrinkage(slopes)
 ```
 
-Each panel draws one of the R package's figures from the ported table, so the
-conventions come from the data rather than being decided again. Two choices are
-worth knowing. The decomposition's zoom panel is on by default because cell
-type and residual take nearly all the height, leaving the blocks PACE exists to
-estimate as an unreadable sliver. And `plot_proximity` bins by the number of
-neighbouring cells within a radius, as R does, rather than by the fitted
-kernel, which is centred within image and so runs negative.
+Each reproduces the R package's panel, down to its conventions and its hex
+colours, which are not all obvious from the data:
 
-On the packaged crop these reproduce the published figures: MRC1 down and APOC1
-up in macrophages near tumour, B cells next to T cells as the strongest pair,
-and tumour reaching more focal types than any other neighbour.
+- The decomposition **leaves the residual block out**, so the bars stop near
+  40% rather than reaching 100, and orders the focal types by descending
+  spatial share rather than alphabetically.
+- The pair heatmap puts **focal on x and neighbour on y**, so a column sums to
+  one focal type's spatial share.
+- `plot_drivers` takes a `single_frame=` to add R's companion panel, which is
+  the check on the ranking: a top gene whose variance is nearly all cell-type
+  identity is driven by how much the focal expresses it, not by the neighbour.
+- `plot_proximity` bins by the **number of neighbouring cells** within a
+  radius, at R's literal breaks of 0, 2, 4, 6, 8 and up. The fitted kernel is
+  centred within image, so binning on it would give a negative axis.
+
+On the packaged crop they reproduce the published figures cell for cell: MRC1
+down and APOC1 up in macrophages near tumour, B cells beside T cells as the
+strongest pair at 2.73%, and tumour reaching more focal types than any other
+neighbour.

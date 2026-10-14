@@ -53,7 +53,7 @@ print(adata.obs["cell_type"].value_counts().sort_index().to_string(), "\n")
 fit = pace.fit_anndata(adata, "cell_type", n_threads=1)
 print(fit, "\n")
 
-slopes = pace.pace_shrink(fit, null_correlation=False)
+slopes = pace.pace_shrink(fit, null_correlation=True)   # R's default
 print(slopes)
 print("  ", slopes.calls(), "\n")
 
@@ -78,28 +78,20 @@ print(drivers["Macrophage", "Tumour"].to_dataframe()
       .round(4).to_string(index=False))
 
 # --- the figures -----------------------------------------------------------
-figure = plt.figure(figsize=(16.5, 9))
-pace.plot_decomposition(frame, ax=figure.add_subplot(2, 3, 1), zoom=False,
-                        title="Variance by focal type")
-small = figure.add_subplot(2, 3, 2)
-names = [n for n in frame.block_names if n not in ("Cell type %", "Residual %")]
-width = 0.8 / len(names)
-positions = np.arange(len(frame.focal_levels))
-for slot, name in enumerate(names):
-    small.bar(positions + slot * width - 0.4 + width / 2,
-              frame.focal_table[:, frame.block_names.index(name)], width,
-              label=name.replace(" %", ""), color=pace.plots.BLOCK_COLOURS[name])
-small.set_xticks(positions, frame.focal_levels, rotation=45, ha="right")
-small.set_ylabel("% of observed variance")
-small.set_title("the spatial and spillover blocks, rescaled", loc="left")
-small.legend(frameon=False, fontsize=8)
-small.spines[["top", "right"]].set_visible(False)
+full, zoom = pace.plot_decomposition(frame)
+full.figure.tight_layout()
+full.figure.savefig(OUT / "py_decomposition.png", dpi=110)
 
-pace.plot_pair_heatmap(pairs, cell_types=fit.cell_types, ax=figure.add_subplot(2, 3, 3))
-pace.plot_drivers(drivers, "Macrophage", "Tumour", ax=figure.add_subplot(2, 3, 4), n=8)
-pace.plot_proximity(fit, counts, ["MRC1", "APOC1"], "Macrophage", "Tumour",
-                    ax=figure.add_subplot(2, 3, 5))
-pace.plot_shrinkage(slopes, ax=figure.add_subplot(2, 3, 6))
-figure.tight_layout()
-figure.savefig(OUT / "pace_demo.png", dpi=110)
-print("\nwrote", OUT / "pace_demo.png")
+axis = pace.plot_pair_heatmap(pairs, cell_types=fit.cell_types)
+axis.figure.tight_layout()
+axis.figure.savefig(OUT / "py_pairheatmap.png", dpi=110)
+
+left, right = pace.plot_drivers(drivers, "Macrophage", "Tumour", single_frame=frame)
+left.figure.tight_layout()
+left.figure.savefig(OUT / "py_drivers.png", dpi=110)
+
+panels = pace.plot_proximity(fit, counts, ["MRC1", "APOC1"], "Macrophage", "Tumour")
+panels[0].figure.tight_layout()
+panels[0].figure.savefig(OUT / "py_proximity.png", dpi=110)
+
+print("\nwrote", ", ".join(sorted(p.name for p in OUT.glob("py_*.png"))))
