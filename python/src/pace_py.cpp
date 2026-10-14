@@ -178,6 +178,12 @@ py::dict pair_variance_pratt(const ColumnMajor& sigma, const ColumnMajor& u) {
 }
 
 using IntColumn = py::array_t<int, py::array::c_style | py::array::forcecast>;
+// Column-major integers, for the 2-D index matrices the core reads the way R's
+// IntegerMatrix is laid out. IntColumn above is c_style, so handing it a
+// Fortran array repacks the memory and the core then reads the matrix
+// TRANSPOSED -- which for a square one raises nothing at all and simply picks
+// the wrong rows.
+using IntMatrix = py::array_t<int, py::array::f_style | py::array::forcecast>;
 
 // Gaussian biological and exponential technical neighbour kernels, the first
 // stage of a fit. For each cell, the kernel-weighted count of every other cell
@@ -788,7 +794,134 @@ py::dict sparse_product(const py::dict& left, const py::dict& right, int n_threa
   return out;
 }
 
+// The per-(focal, gene) variance decomposition. The arguments are in the same
+// order as pace_variance_decomposition_cpp()'s in R, so the two assemblies can
+// be read side by side. Index vectors are 1-based, as R indexes them, and a
+// non-positive entry means the row is absent.
+py::dict variance_decomposition(
+    const ColumnMajor& ct_means, const IntColumn& group_size, const IntColumn& focal_group,
+    const IntColumn& n_focal, const ColumnMajor& u, const ColumnMajor& se_u,
+    const IntMatrix& slope_rows, std::int64_t n_kernel, const ColumnMajor& kernel_cov,
+    const IntMatrix& responder_rows, std::int64_t n_responder, const IntColumn& responder_keep,
+    const ColumnMajor& responder_cov, const IntColumn& intercept_rows,
+    const ColumnMajor& toff_var, const ColumnMajor& spill_cov, const ColumnMajor& beta_spill,
+    std::int64_t n_spill, const ColumnMajor& mu_mean, const ColumnMajor& alpha, bool nb1,
+    int n_threads) {
+  pace::DecompositionInput input;
+  input.n_genes = ct_means.ndim() == 2 ? ct_means.shape(1) : 0;
+  input.n_groups = static_cast<int>(group_size.size());
+  input.n_focals = static_cast<int>(focal_group.size());
+  input.ct_means = span_of(ct_means);
+  input.group_size = pace::Span<const int>(group_size.data(), group_size.size());
+  input.focal_group = pace::Span<const int>(focal_group.data(), focal_group.size());
+  input.n_focal = pace::Span<const int>(n_focal.data(), n_focal.size());
+  input.u = span_of(u);
+  input.se_u = span_of(se_u);
+  input.q = u.ndim() == 2 ? u.shape(0) : 0;
+  input.n_kernel = n_kernel;
+  input.slope_rows = pace::Span<const int>(slope_rows.data(), slope_rows.size());
+  input.kernel_cov = span_of(kernel_cov);
+  input.n_responder = n_responder;
+  input.responder_rows = pace::Span<const int>(responder_rows.data(), responder_rows.size());
+  input.responder_keep = pace::Span<const int>(responder_keep.data(), responder_keep.size());
+  input.responder_cov = span_of(responder_cov);
+  input.intercept_rows = pace::Span<const int>(intercept_rows.data(), intercept_rows.size());
+  input.toff_var = span_of(toff_var);
+  input.n_spill = n_spill;
+  input.spill_cov = span_of(spill_cov);
+  input.beta_spill = span_of(beta_spill);
+  input.mu_mean = span_of(mu_mean);
+  input.alpha = span_of(alpha);
+  input.nb1 = nb1;
+
+  const std::int64_t rows = static_cast<std::int64_t>(input.n_focals) * input.n_genes;
+  ColumnMajor v_state_baseline(rows), v_state_responder(rows), v_spill(rows), v_disp(rows);
+  ColumnMajor celltype_offset_sq(rows), focal_mean(rows), max_other_mean(rows), spec(rows);
+  ColumnMajor focal_other_ratio(rows), pct_celltype(rows), pct_state(rows);
+  ColumnMajor pct_responder(rows), pct_spill(rows), pct_residual(rows);
+  py::array_t<int> is_contaminated(rows), keep(rows);
+  std::fill(is_contaminated.mutable_data(), is_contaminated.mutable_data() + rows, 0);
+  std::fill(keep.mutable_data(), keep.mutable_data() + rows, 0);
+
+  pace::DecompositionOutput output;
+  output.v_state_baseline = out_span_of(v_state_baseline);
+  output.v_state_responder = out_span_of(v_state_responder);
+  output.v_spill = out_span_of(v_spill);
+  output.v_disp = out_span_of(v_disp);
+  output.celltype_offset_sq = out_span_of(celltype_offset_sq);
+  output.focal_mean = out_span_of(focal_mean);
+  output.max_other_mean = out_span_of(max_other_mean);
+  output.spec = out_span_of(spec);
+  output.focal_other_ratio = out_span_of(focal_other_ratio);
+  output.is_contaminated = pace::Span<int>(is_contaminated.mutable_data(), rows);
+  output.pct_celltype = out_span_of(pct_celltype);
+  output.pct_state = out_span_of(pct_state);
+  output.pct_responder = out_span_of(pct_responder);
+  output.pct_spill = out_span_of(pct_spill);
+  output.pct_residual = out_span_of(pct_residual);
+  output.keep = pace::Span<int>(keep.mutable_data(), rows);
+
+  raise_if_failed(pace::variance_decomposition(input, output, n_threads,
+                                               pace::InterruptCheck()),
+                  "variance decomposition");
+
+  py::dict result;
+  result["v_state_baseline"] = v_state_baseline;
+  result["v_state_responder"] = v_state_responder;
+  result["v_spill"] = v_spill;
+  result["v_disp"] = v_disp;
+  result["celltype_offset_sq"] = celltype_offset_sq;
+  result["focal_mean"] = focal_mean;
+  result["max_other_mean"] = max_other_mean;
+  result["spec"] = spec;
+  result["focal_other_ratio"] = focal_other_ratio;
+  result["is_contaminated"] = is_contaminated;
+  result["pct_celltype"] = pct_celltype;
+  result["pct_state"] = pct_state;
+  result["pct_responder"] = pct_responder;
+  result["pct_spill"] = pct_spill;
+  result["pct_residual"] = pct_residual;
+  result["keep"] = keep;
+  return result;
+}
+
+// The aggregate tables over the rows of one focal: the plain mean of each
+// block's percentage, its specificity-weighted mean, and the pooled share.
+py::dict decomposition_aggregates(const IntColumn& focal_code, int n_focals,
+                                  const ColumnMajor& pct, const ColumnMajor& components,
+                                  const ColumnMajor& spec, const IntColumn& is_contaminated) {
+  const std::int64_t n_rows = focal_code.size();
+  ColumnMajor mean_table({static_cast<std::int64_t>(n_focals), std::int64_t{5}});
+  ColumnMajor specw_table({static_cast<std::int64_t>(n_focals), std::int64_t{5}});
+  ColumnMajor pooled_table({static_cast<std::int64_t>(n_focals), std::int64_t{5}});
+  ColumnMajor total(n_rows), total_ss(static_cast<std::int64_t>(n_focals));
+  py::array_t<int> n_rows_out(n_focals), n_specific(n_focals);
+  std::fill(n_rows_out.mutable_data(), n_rows_out.mutable_data() + n_focals, 0);
+  std::fill(n_specific.mutable_data(), n_specific.mutable_data() + n_focals, 0);
+
+  raise_if_failed(pace::decomposition_aggregates(
+                      pace::Span<const int>(focal_code.data(), n_rows), n_focals, n_rows,
+                      span_of(pct), span_of(components), span_of(spec),
+                      pace::Span<const int>(is_contaminated.data(), is_contaminated.size()),
+                      out_span_of(mean_table), out_span_of(specw_table),
+                      out_span_of(pooled_table), out_span_of(total), out_span_of(total_ss),
+                      pace::Span<int>(n_rows_out.mutable_data(), n_focals),
+                      pace::Span<int>(n_specific.mutable_data(), n_focals)),
+                  "decomposition aggregates");
+
+  py::dict result;
+  result["mean"] = mean_table;
+  result["specw"] = specw_table;
+  result["pooled"] = pooled_table;
+  result["total"] = total;
+  result["total_ss"] = total_ss;
+  result["n_rows"] = n_rows_out;
+  result["n_specific"] = n_specific;
+  return result;
+}
+
 }  // namespace
+
 
 PYBIND11_MODULE(_core, m) {
   m.doc() = "PACE compiled core";
@@ -852,4 +985,16 @@ PYBIND11_MODULE(_core, m) {
   m.def("sparse_product", &sparse_product, py::arg("left"), py::arg("right"),
         py::arg("n_threads") = 1,
         "Sparse matrix product in compressed-column form.");
+  m.def("variance_decomposition", &variance_decomposition,
+        py::arg("ct_means"), py::arg("group_size"), py::arg("focal_group"), py::arg("n_focal"),
+        py::arg("u"), py::arg("se_u"), py::arg("slope_rows"), py::arg("n_kernel"),
+        py::arg("kernel_cov"), py::arg("responder_rows"), py::arg("n_responder"),
+        py::arg("responder_keep"), py::arg("responder_cov"), py::arg("intercept_rows"),
+        py::arg("toff_var"), py::arg("spill_cov"), py::arg("beta_spill"), py::arg("n_spill"),
+        py::arg("mu_mean"), py::arg("alpha"), py::arg("nb1") = true, py::arg("n_threads") = 1,
+        "The per-(focal, gene) variance decomposition.");
+  m.def("decomposition_aggregates", &decomposition_aggregates,
+        py::arg("focal_code"), py::arg("n_focals"), py::arg("pct"), py::arg("components"),
+        py::arg("spec"), py::arg("is_contaminated"),
+        "Per-focal aggregate tables of the decomposition.");
 }

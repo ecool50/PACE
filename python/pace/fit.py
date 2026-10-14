@@ -52,6 +52,8 @@ class PaceFit:
     fixed: np.ndarray | None = None               # the n x p fixed design
     offset: np.ndarray | None = None              # log library size
     type_code: np.ndarray | None = None           # each cell's 0-based type
+    kernel: np.ndarray | None = None              # n x types, the Gaussian kernel
+    condition_code: np.ndarray | None = None      # each cell's level, or None
 
     def __repr__(self) -> str:
         return (f"PaceFit({len(self.cell_types)} cell types, {len(self.genes)} genes, "
@@ -555,6 +557,9 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
         design={"indptr": design["indptr"], "indices": design["indices"],
                 "data": design["data"], "shape": design["shape"]},
         ambient_weights=weights_matrix, fixed=fixed, offset=offset, type_code=type_code,
+        kernel=k_bio,
+        condition_code=None if condition_labels is None else np.ascontiguousarray(
+            [condition_levels.index(v) for v in condition_labels], dtype=np.int32),
         params=dict(h_bio=h_bio, h_tech=h_tech, eps=eps, min_effective=min_effective,
                     within_image=within_image, kernel_per_image=kernel_per_image,
                     homotypic_fraction=homotypic_fraction,

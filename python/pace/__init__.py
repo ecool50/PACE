@@ -7,6 +7,7 @@ not depend on which language you call it from.
 from .fit import PaceFit, fit_anndata, pace_fit
 from .shrink import ShrunkenSlopes, pace_shrink
 from .stats import FitStatistics, fit_statistics, fitted_means
+from .decompose import Decomposition, pace_decompose
 from ._core import (
     ambient_field,
     anchor_mask,
@@ -49,5 +50,7 @@ __all__ = [
     "fit_statistics",
     "fitted_means",
     "FitStatistics",
+    "pace_decompose",
+    "Decomposition",
 ]
 __version__ = "0.0.1"

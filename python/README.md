@@ -59,6 +59,8 @@ EIGEN_INCLUDE_DIR=$(Rscript -e 'cat(system.file("include", package="RcppEigen"))
 | `pace_fit` | every stage above, in order: counts and coordinates to a fit |
 | `fit_anndata` | the same, reading an `AnnData` |
 | `pace_shrink` | multivariate adaptive shrinkage of the fitted slopes |
+| `pace_decompose` | the per-gene, per-cell-type variance decomposition |
+| `fit_statistics` | the per-cell-type summaries the readouts are built on |
 
 `pace_fit()` runs the whole pipeline from counts, coordinates and cell type
 labels, and reproduces `paceModel()` bit for bit: every one of the 20,016
@@ -169,6 +171,30 @@ to know:
 R's table arrives in alphabetical gene order, an artifact of its splitting the
 long frame by gene; Python keeps the fit's gene order. Sort if you are comparing
 row by row.
+
+## Decomposing the variance
+
+`pace_decompose()` splits each gene's fitted variance, for each focal cell
+type, into five blocks: the cell type's own offset, the baseline spatial state
+(the neighbour slopes), the responder spatial state (their interaction with a
+condition), the contamination, and what the dispersion accounts for.
+
+```python
+decomposition = pace.pace_decompose(fit, counts)
+decomposition.aggregates("specw")        # per focal type, specificity-weighted
+decomposition.to_dataframe()             # per (focal, gene)
+```
+
+It matches R's five-block table and all three of its aggregate weightings. The
+fitted means it needs are not stored on a fit -- on a real cohort they are a
+dense cells-by-genes matrix -- so they are rebuilt a gene block at a time, which
+is what R does too; `fit_statistics()` exposes that step if you want it
+separately.
+
+Note that R's user-facing `varianceDecomposition()` returns a *different*
+table, the observed single-frame decomposition, which is not bound here yet.
+This is the five-block table underneath it, reached in R as
+`fit@varianceDecomposition$blocks$gene_focal_5block`.
 
 
 `ambient_field()` returns compressed-column arrays rather than a matrix, so
