@@ -11,6 +11,8 @@
 
 - **Ellis Patrick**. Author.
 
+- **Australian Government Research Training Program**. Funder.
+
 ## Citation
 
 Source:
@@ -18,12 +20,12 @@ Source:
 
 Willie E, Rao S, Ormerod J, Patrick E (2026). *PACE:
 Proximity-Associated Changes in Expression for Spatial Transcriptomics*.
-R package version 0.99.14, <https://github.com/ecool50/PACE>.
+R package version 0.99.15, <https://github.com/ecool50/PACE>.
 
     @Manual{,
       title = {PACE: Proximity-Associated Changes in Expression for Spatial Transcriptomics},
       author = {Elijah Willie and Shreya Rajesh Rao and John Ormerod and Ellis Patrick},
       year = {2026},
-      note = {R package version 0.99.14},
+      note = {R package version 0.99.15},
       url = {https://github.com/ecool50/PACE},
     }
