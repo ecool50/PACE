@@ -31,14 +31,18 @@ def lines(name):
         return [line.strip() for line in handle if line.strip()]
 
 
-@pytest.fixture(scope="module")
-def fit():
+def _raw_inputs():
     dim = vec("raw_y_dim.txt", int)
     counts = csc_matrix(
         (vec("raw_y_x.txt"), vec("raw_y_i.txt", np.int32), vec("raw_y_p.txt", np.int32)),
         shape=(int(dim[0]), int(dim[1])))
-    return pace_fit(counts, vec("raw_x.txt"), vec("raw_y.txt"),
-                    lines("raw_celltype.txt"), n_threads=1)
+    return counts, vec("raw_x.txt"), vec("raw_y.txt"), lines("raw_celltype.txt")
+
+
+@pytest.fixture(scope="module")
+def fit():
+    counts, x, y, cell_type = _raw_inputs()
+    return pace_fit(counts, x, y, cell_type, n_threads=1)
 
 
 def test_the_random_effects_are_bit_identical_to_r(fit):
@@ -152,3 +156,58 @@ def test_an_unknown_label_is_refused(two_image_inputs):
     counts, x, y, cell_type, _ = two_image_inputs
     with pytest.raises(ValueError, match="not in `types`"):
         pace_fit(counts, x, y, cell_type, types=sorted(set(cell_type))[1:])
+
+
+# --- sparse matrices that are not in canonical form ----------------------
+# scipy will hand over a CSC holding duplicate or unsorted entries, and
+# `tocsc()` on one passes it straight through. The core reads stored entries one
+# at a time, so a duplicated (cell, gene) counts twice. Such a matrix can be
+# elementwise identical to a good one, hold none but non-negative integers, and
+# give the same library sizes, so nothing else here would catch it. R is safe
+# only because Matrix refuses the object outright.
+
+def _split_stored_entries(matrix):
+    """The same matrix, with every value >= 2 stored as two entries."""
+    coo = matrix.tocoo()
+    split = coo.data >= 2
+    rows = np.concatenate([coo.row, coo.row[split]])
+    cols = np.concatenate([coo.col, coo.col[split]])
+    data = np.concatenate([np.where(split, coo.data - 1, coo.data), np.ones(split.sum())])
+    order = np.lexsort((rows, cols))
+    indptr = np.searchsorted(cols[order], np.arange(matrix.shape[1] + 1))
+    return csc_matrix((data[order], rows[order], indptr), shape=matrix.shape)
+
+
+def _shuffle_within_columns(matrix):
+    """The same matrix, with each column's row indices out of order."""
+    out = matrix.copy()
+    rng = np.random.default_rng(0)
+    for column in range(out.shape[1]):
+        lo, hi = out.indptr[column], out.indptr[column + 1]
+        order = rng.permutation(hi - lo)
+        out.indices[lo:hi] = out.indices[lo:hi][order]
+        out.data[lo:hi] = out.data[lo:hi][order]
+    out.has_sorted_indices = False
+    out.has_canonical_format = False
+    return out
+
+
+@pytest.mark.parametrize("damage", [_split_stored_entries, _shuffle_within_columns],
+                         ids=["duplicate-entries", "unsorted-indices"])
+def test_a_non_canonical_matrix_gives_the_same_fit(fit, damage):
+    counts, x, y, cell_type = _raw_inputs()
+    broken = damage(counts)
+    assert not broken.has_canonical_format
+    assert np.array_equal(np.asarray(broken.todense()), np.asarray(counts.todense()))
+    refit = pace_fit(broken, x, y, cell_type, n_threads=1)
+    assert np.array_equal(refit.U, fit.U)
+    assert np.array_equal(refit.alpha, fit.alpha)
+
+
+def test_normalising_does_not_touch_the_callers_matrix(fit):
+    counts, x, y, cell_type = _raw_inputs()
+    broken = _split_stored_entries(counts)
+    before = broken.nnz, broken.data.copy()
+    pace_fit(broken, x, y, cell_type, n_threads=1)
+    assert broken.nnz == before[0]
+    assert np.array_equal(broken.data, before[1])

@@ -66,6 +66,17 @@ def _is_missing(value) -> bool:
 def _csc(matrix) -> dict:
     """A scipy CSC matrix as the plain arrays the core takes."""
     m = matrix.tocsc()
+    # tocsc() on something already CSC hands back the same object, so a matrix
+    # carrying duplicate or unsorted entries arrives exactly as it is. The core
+    # walks the stored entries one at a time, so a duplicated (cell, gene) is
+    # read as two observations: a matrix elementwise identical to a good one,
+    # with integer values and the right library sizes, fits 30% wrong. R cannot
+    # reach this, because Matrix refuses such a dgCMatrix outright. Summing the
+    # duplicates is what the format means, so normalise rather than refuse, and
+    # on a copy because sum_duplicates() works in place.
+    if not m.has_canonical_format:
+        m = m.copy()
+        m.sum_duplicates()          # sorts the row indices as part of its work
     # The core indexes sparse matrices with int, and numpy would narrow an
     # int64 index array to int32 silently: a wrapped column pointer reads past
     # the end rather than failing. scipy only widens the indices when it has
@@ -166,6 +177,8 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
     x = np.asfortranarray(np.asarray(x, dtype=np.float64).ravel())
     y = np.asfortranarray(np.asarray(y, dtype=np.float64).ravel())
     n_cells = x.size
+    if n_cells == 0:
+        raise ValueError("there are no cells to fit")
 
     labels = np.asarray(cell_type, dtype=object).ravel()
     # A missing label must not become a cell type. str(nan) is "nan", and if
@@ -372,6 +385,18 @@ def _anndata_counts(adata, layer):
         matrix, source = adata.layers[layer], f'adata.layers["{layer}"]'
     if matrix is None:
         raise ValueError(f"{source} is empty")
+    if getattr(adata, "isbacked", False):
+        raise ValueError(
+            "this AnnData is backed, so the counts are on disk rather than in "
+            "memory. A backed sparse X is not a scipy matrix and would be "
+            "misreported as the wrong shape, and a backed dense X would be read "
+            "in whole without saying so. Call adata.to_memory() first, or pass "
+            "the counts to pace_fit() yourself.")
+    if hasattr(matrix, "compute") and not issparse(matrix):
+        raise ValueError(
+            f"{source} is a lazy array. Materialising it here would hide how "
+            "much memory the fit needs, so call .compute() (or .persist()) "
+            "first and assign the result back.")
 
     if issparse(matrix):
         counts = matrix.tocsc()
@@ -395,9 +420,10 @@ def _anndata_counts(adata, layer):
                 f"{source} is not integer-valued, so it looks normalised or "
                 "log-transformed rather than raw counts, and a negative binomial "
                 "fit of it would be meaningless. Pass the raw counts instead, "
-                'usually layer="counts" or adata.raw. If the values really are '
-                "counts and merely non-integer, call pace_fit() with the arrays "
-                "directly, which does not check.")
+                'usually layer="counts". For counts kept in adata.raw, hand '
+                "pace_fit() adata.raw.X with genes=adata.raw.var_names. If the "
+                "values really are counts and merely non-integer, pace_fit() "
+                "takes the arrays without this check.")
     return counts
 
 
@@ -418,6 +444,11 @@ def _anndata_coordinates(adata, spatial_key):
             "quietly, add a two-column key, for instance "
             f'adata.obsm["spatial_2d"] = adata.obsm["{spatial_key}"][:, :2], and '
             'pass spatial_key="spatial_2d".')
+    if not np.all(np.isfinite(coordinates)):
+        bad = int(np.argmax(~np.isfinite(coordinates).all(axis=1)))
+        raise ValueError(
+            f'adata.obsm["{spatial_key}"] holds non-finite coordinates, first at '
+            f"cell {bad}. The core refuses them too, but without naming the key.")
     return coordinates[:, 0], coordinates[:, 1]
 
 
@@ -456,6 +487,10 @@ def fit_anndata(adata, celltype_key, *, image_key=None, spatial_key="spatial",
     layer
         The layer holding raw counts, or None for `X`. Either way the values
         are checked for being counts, because `X` is often normalised.
+
+        A dense matrix is converted to sparse here, which costs about six times
+        its own size at peak, scipy building a coordinate form on the way. A
+        large cohort is better stored sparse, which costs nothing to read.
     **kwargs
         Passed to `pace_fit()`: `types`, `kernel_per_image`, `h_bio`, `h_tech`
         and the rest. Read its docstring for the two places Python's defaults
@@ -471,15 +506,29 @@ def fit_anndata(adata, celltype_key, *, image_key=None, spatial_key="spatial",
                 f"this does not look like an AnnData: no `{attribute}`. To fit "
                 "plain arrays, call pace_fit() instead.")
 
-    counts = _anndata_counts(adata, layer)
+    # The cheap lookups first: a missing obsm key should not be reported only
+    # after the whole count matrix has been converted.
     x, y = _anndata_coordinates(adata, spatial_key)
     cell_type = _anndata_column(adata, celltype_key, "cell types")
     image = _anndata_column(adata, image_key, "images") if image_key is not None else None
 
+    # Gene names, as strings. Duplicates are refused for the reason R gives
+    # when it refuses them: two different genes would share one row of the
+    # statistics and one row of the output, and nothing downstream could tell
+    # them apart.
+    genes = [str(name) for name in adata.var_names]
+    if len(set(genes)) != len(genes):
+        repeated = sorted({name for name in genes if genes.count(name) > 1})
+        raise ValueError(
+            f"var_names must be unique; {len(repeated)} are repeated "
+            f"(first {repeated[:3]}). adata.var_names_make_unique() fixes it.")
+
+    counts = _anndata_counts(adata, layer)
+    if counts.shape[1] == 0:
+        raise ValueError("there are no genes to fit")
     if counts.shape[0] != x.size:
         raise ValueError(
             f"the counts have {counts.shape[0]} rows and there are {x.size} sets of "
             "coordinates; an AnnData is cells by genes, so these should agree")
 
-    return pace_fit(counts, x, y, cell_type, image=image,
-                    genes=list(adata.var_names), **kwargs)
+    return pace_fit(counts, x, y, cell_type, image=image, genes=genes, **kwargs)

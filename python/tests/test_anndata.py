@@ -159,3 +159,59 @@ def test_an_unknown_layer_is_named(adata):
 def test_pace_fit_points_an_anndata_at_the_right_function(adata):
     with pytest.raises(TypeError, match="fit_anndata"):
         pace.pace_fit(adata, [0.0], [0.0], ["Tumour"])
+
+
+def test_duplicated_gene_names_are_refused(adata):
+    """R refuses these: two genes would share one row of the output."""
+    repeated = adata.copy()
+    names = list(repeated.var_names)
+    names[4] = names[0]
+    repeated.var.index = pd.Index(names)
+    with pytest.raises(ValueError, match="var_names must be unique"):
+        pace.fit_anndata(repeated, "cellType", n_threads=1)
+
+
+def test_non_finite_coordinates_name_the_obsm_key(adata):
+    holed = adata.copy()
+    coordinates = holed.obsm["spatial"].copy()
+    coordinates[13, 1] = np.nan
+    holed.obsm["spatial"] = coordinates
+    with pytest.raises(ValueError, match="non-finite coordinates, first at cell 13"):
+        pace.fit_anndata(holed, "cellType", n_threads=1)
+
+
+def test_a_backed_object_is_named_rather_than_mis_diagnosed(adata, tmp_path):
+    """Backed sparse X is not a scipy matrix, and would look like a shape error."""
+    path = tmp_path / "backed.h5ad"
+    adata.write_h5ad(path)
+    backed = anndata.read_h5ad(path, backed="r")
+    with pytest.raises(ValueError, match="backed"):
+        pace.fit_anndata(backed, "cellType", n_threads=1)
+
+
+def test_gene_names_are_strings_even_when_var_names_are_not(adata):
+    numbered = adata.copy()
+    numbered.var.index = pd.Index(range(numbered.n_vars))
+    fit = pace.fit_anndata(numbered, "cellType", n_threads=1)
+    assert all(isinstance(name, str) for name in fit.genes)
+
+
+def test_a_missing_obsm_key_is_reported_before_the_counts_are_converted(adata):
+    """The cheap lookup should not wait on the expensive conversion."""
+    bare = adata.copy()
+    del bare.obsm["spatial"]
+    bare.X = bare.X.copy()
+    bare.X.data = np.log1p(bare.X.data)       # would also fail the counts check
+    with pytest.raises(KeyError, match="spatial"):
+        pace.fit_anndata(bare, "cellType", n_threads=1)
+
+
+def test_the_counts_arrays_are_not_written_through(adata):
+    """The core is handed adata.X's own index arrays when X is already CSC."""
+    held = adata.copy()
+    held.X = held.X.tocsc()
+    before = (held.X.data.copy(), held.X.indices.copy(), held.X.indptr.copy())
+    pace.fit_anndata(held, "cellType", n_threads=1)
+    assert np.array_equal(held.X.data, before[0])
+    assert np.array_equal(held.X.indices, before[1])
+    assert np.array_equal(held.X.indptr, before[2])

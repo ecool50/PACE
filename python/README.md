@@ -87,6 +87,14 @@ log-normalised values converges and reports slopes that mean nothing, so
 non-integer values are refused rather than fitted. Point `layer` at the raw
 counts, usually `layer="counts"`.
 
+It also normalises a sparse matrix that is not in canonical form. scipy will
+hand over a CSC holding duplicate entries for one `(cell, gene)`, and the
+solver reads stored entries one at a time, so those count twice: such a matrix
+can be elementwise identical to a good one, hold none but non-negative
+integers, give the same library sizes, and still fit 30% wrong. R is safe from
+this only because `Matrix` refuses the object outright. Prefer a sparse `X`:
+a dense one is converted here, at about six times its own size at peak.
+
 Two things to know before comparing a Python fit to an R one row by row:
 
 **Cell type order.** `types=None` sorts the observed labels, which is Python's
