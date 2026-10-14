@@ -7,8 +7,13 @@ R package uses, so the two cannot drift apart.
 ## Install
 
 ```sh
-pip install -e python/
+pip install -e python/            # fitting and every readout
+pip install -e "python/[all]"     # plus AnnData, pandas tables and plotting
 ```
+
+`numpy` and `scipy` are all that fitting needs. `anndata`, `pandas` and
+`matplotlib` are optional extras, imported only when you reach for the thing
+that uses them.
 
 ### macOS: pin the toolchain
 
@@ -63,6 +68,7 @@ EIGEN_INCLUDE_DIR=$(Rscript -e 'cat(system.file("include", package="RcppEigen"))
 | `single_frame_decomposition` | the observed decomposition R reports |
 | `pace_drivers` | per-pair driver tables, ranked |
 | `pair_variance` | each neighbour's share of a focal type's variance |
+| `plot_*` | the figures: decomposition, pair heatmap, drivers, proximity, shrinkage |
 | `fit_statistics` | the per-cell-type summaries the readouts are built on |
 
 `pace_fit()` runs the whole pipeline from counts, coordinates and cell type
@@ -280,3 +286,25 @@ frame  = pace.single_frame_decomposition(fit, counts, blocks)
 drive  = pace.pace_drivers(fit, slopes, blocks, stats)
 pairs  = pace.pair_variance(fit, counts, frame)
 ```
+
+## Figures
+
+```python
+pace.plot_decomposition(frame)                    # full bar + the rescaled zoom
+pace.plot_pair_heatmap(pairs, fit.cell_types)
+pace.plot_drivers(drive, "Macrophage", "Tumour")
+pace.plot_proximity(fit, counts, ["MRC1", "APOC1"], "Macrophage", "Tumour")
+pace.plot_shrinkage(slopes)
+```
+
+Each panel draws one of the R package's figures from the ported table, so the
+conventions come from the data rather than being decided again. Two choices are
+worth knowing. The decomposition's zoom panel is on by default because cell
+type and residual take nearly all the height, leaving the blocks PACE exists to
+estimate as an unreadable sliver. And `plot_proximity` bins by the number of
+neighbouring cells within a radius, as R does, rather than by the fitted
+kernel, which is centred within image and so runs negative.
+
+On the packaged crop these reproduce the published figures: MRC1 down and APOC1
+up in macrophages near tumour, B cells next to T cells as the strongest pair,
+and tumour reaching more focal types than any other neighbour.

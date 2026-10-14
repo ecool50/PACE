@@ -10,6 +10,8 @@ from .stats import FitStatistics, fit_statistics, fitted_means
 from .decompose import (Decomposition, SingleFrameDecomposition, pace_decompose,
                         pair_variance, single_frame_decomposition)
 from .drivers import DriverTables, PairDrivers, pace_drivers
+from .plots import (plot_decomposition, plot_drivers, plot_pair_heatmap,
+                    plot_proximity, plot_shrinkage)
 from ._core import (
     ambient_field,
     anchor_mask,
@@ -60,5 +62,10 @@ __all__ = [
     "pace_drivers",
     "DriverTables",
     "PairDrivers",
+    "plot_decomposition",
+    "plot_pair_heatmap",
+    "plot_drivers",
+    "plot_proximity",
+    "plot_shrinkage",
 ]
 __version__ = "0.0.1"
