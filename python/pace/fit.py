@@ -190,7 +190,8 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
              h_bio=30.0, h_tech=5.0, eps=None, condition=None,
              condition_name="condition", condition_levels=None, min_effective=30.0,
              within_image=True, kernel_per_image=False, homotypic_fraction=0.5,
-             n_iter=32, min_iter=12, chunk_size=128, n_threads=1, verbose=False):
+             ambient_mode="cache", n_iter=32, min_iter=12, chunk_size=128,
+             n_threads=1, verbose=False):
     """Fit PACE to a cells-by-genes count matrix.
 
     Parameters
@@ -223,6 +224,14 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
         view of one section wants the global search. Set it True when the
         images are separate samples. The contamination field is always
         per-image regardless, as it is in R.
+    ambient_mode
+        `"cache"` (default) materialises the whole cells-by-genes ambient
+        product, as R's default does. `"stream"` keeps only the weight matrix
+        and recomputes each chunk's columns from it, which is what lets a full
+        transcriptome panel fit in memory: on a million cells by five thousand
+        genes the cached product alone is several GB. The numbers are the same
+        either way, since cache mode forms its product with the same routine
+        and the two differ only in chunking.
     condition
         One label per cell, or None. Given one, the model gains a condition
         main effect in the fixed design and a condition-by-neighbour
@@ -392,12 +401,13 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
     # The solver reads the ambient PRODUCT, cells by genes, not the weight
     # matrix itself. Formed with the core's product because the summation order
     # is part of the answer; scipy's would differ in the last bits.
-    # NOTE: this materialises the whole n x G product, as R's default
-    # `ambient_mode = "cache"` does. R can also stream it, which is what makes a
-    # full transcriptome panel fit in memory; that mode is not exposed here, so
-    # a cohort of ~1M cells by ~5,000 genes needs several GB for this one array
-    # on top of the counts.
-    field = _core.sparse_product(weights_matrix, counts_csc, n_threads)
+    # Cached, or streamed: see `ambient_mode`. Streaming hands the solver the
+    # weight matrix itself and lets it form each chunk's columns, so the n x G
+    # product is never materialised.
+    if ambient_mode not in ("cache", "stream"):
+        raise ValueError('ambient_mode must be "cache" or "stream"')
+    field = (weights_matrix if ambient_mode == "stream"
+             else _core.sparse_product(weights_matrix, counts_csc, n_threads))
     mask, n_core = _anchors(x, y, counts_csc, type_code, image_code, n_types, n_cells,
                             homotypic_fraction=homotypic_fraction, n_threads=n_threads)
 
@@ -524,7 +534,8 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
         n_mask_rows=n_types, data_informed_weights=weights,
         n_cells=n_cells, q_total=q, n_genes=n_genes,
         options=dict(n_iter=n_iter, min_iter=min_iter, chunk_size=chunk_size,
-                     n_threads=n_threads, verbose=verbose),
+                     n_threads=n_threads, verbose=verbose,
+                     ambient_streamed=ambient_mode == "stream"),
     )
 
     # R raises every one of these as a warning. Dropping them is what made a
@@ -564,6 +575,7 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
             [condition_levels.index(v) for v in condition_labels], dtype=np.int32),
         params=dict(h_bio=h_bio, h_tech=h_tech, eps=eps, min_effective=min_effective,
                     within_image=within_image, kernel_per_image=kernel_per_image,
+                    ambient_mode=ambient_mode,
                     homotypic_fraction=homotypic_fraction,
                     n_images=n_images, n_dropped=n_dropped, n_core_cells=n_core,
                     n_structurally_zero=n_structurally_zero,

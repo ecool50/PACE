@@ -17,6 +17,7 @@ import numpy as np
 import pytest
 from scipy.sparse import csc_matrix
 
+import pace
 from pace.fit import pace_fit
 
 FIX = Path(__file__).parent / "fixtures"
@@ -395,3 +396,44 @@ def test_rows_with_no_data_behind_them_are_counted(fit):
     padded = pace_fit(counts, x, y, cell_type, types=sorted(set(cell_type)) + ["Ghost"],
                       n_threads=1)
     assert padded.params["n_structurally_zero"] == 10
+
+
+# --- streaming the ambient field -----------------------------------------
+
+def test_streaming_the_ambient_field_changes_no_number(fit):
+    """`ambient_mode` is a memory knob, so it must not touch the answer.
+
+    Cache mode forms its product with the same routine the streamed path uses
+    per chunk, so the two differ only in chunking, which is exact.
+    """
+    counts, x, y, cell_type = _raw_inputs()
+    streamed = pace_fit(counts, x, y, cell_type, ambient_mode="stream", n_threads=1)
+    assert np.array_equal(streamed.U, fit.U)
+    assert np.array_equal(streamed.alpha, fit.alpha)
+    assert np.array_equal(streamed.rho, fit.rho)
+
+
+def test_a_streamed_condition_fit_also_agrees():
+    counts, x, y, cell_type = _raw_inputs()
+    shared = dict(condition=lines("cond2_label.txt"), condition_name="Arm",
+                  condition_levels=["PD", "PR"], n_threads=1)
+    assert np.array_equal(pace_fit(counts, x, y, cell_type, ambient_mode="stream", **shared).U,
+                          pace_fit(counts, x, y, cell_type, ambient_mode="cache", **shared).U)
+
+
+def test_the_readouts_work_off_a_streamed_fit():
+    """Streaming must not cost the fit the pieces the readouts rebuild from."""
+    counts, x, y, cell_type = _raw_inputs()
+    streamed = pace_fit(counts, x, y, cell_type, genes=lines("raw_genes.txt"),
+                        ambient_mode="stream", n_threads=1)
+    stats = pace.fit_statistics(streamed, counts)
+    np.testing.assert_allclose(
+        stats.mu_mean,
+        vec("stats_mu_mean.txt").reshape(stats.mu_mean.shape, order="F"),
+        rtol=1e-06, atol=1e-06)
+
+
+def test_an_unknown_ambient_mode_is_refused():
+    counts, x, y, cell_type = _raw_inputs()
+    with pytest.raises(ValueError, match="ambient_mode"):
+        pace_fit(counts, x, y, cell_type, ambient_mode="lazy")

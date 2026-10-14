@@ -462,9 +462,31 @@ py::dict fit_irls(const ColumnMajor& x_fixed, std::int64_t p, const py::dict& z_
   inputs.tau_blocks = &tau_blocks;
   inputs.counts.matrix = y.view;
   inputs.counts.first_gene = 0;
-  inputs.ambient.streamed = false;
-  inputs.ambient.cached.matrix = e_tech.view;
-  inputs.ambient.cached.first_gene = 0;
+  // Cached, or streamed. Cached takes the whole n x G ambient product; streamed
+  // takes W instead and recomputes each chunk's columns from W and the counts,
+  // which is what lets a full transcriptome panel fit in memory. The numbers
+  // are the same either way: cache mode forms its product with the same
+  // sparse_product_csc, so the two differ only in chunking, which is exact.
+  // The scratch lives here, one set for the whole fit, because the core takes
+  // the source by const reference and writes through these pointers.
+  std::vector<int> ambient_scratch_p, ambient_scratch_i;
+  std::vector<double> ambient_scratch_x;
+  pace::CscView ambient_scratch_view;
+  const bool ambient_streamed =
+      options.contains("ambient_streamed") && options["ambient_streamed"].cast<bool>();
+  if (ambient_streamed) {
+    inputs.ambient.streamed = true;
+    inputs.ambient.weights = e_tech.view;
+    inputs.ambient.counts = y.view;
+    inputs.ambient.scratch_column_pointer = &ambient_scratch_p;
+    inputs.ambient.scratch_row_index = &ambient_scratch_i;
+    inputs.ambient.scratch_values = &ambient_scratch_x;
+    inputs.ambient.scratch_view = &ambient_scratch_view;
+  } else {
+    inputs.ambient.streamed = false;
+    inputs.ambient.cached.matrix = e_tech.view;
+    inputs.ambient.cached.first_gene = 0;
+  }
   inputs.offset = span_of(offset);
   // The anchor mask and the data-informed weights are not optional in practice:
   // without the weights every random effect comes back unshrunk.

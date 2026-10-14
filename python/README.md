@@ -144,9 +144,13 @@ honours a factor's. Checked against R on a two-level and a three-level
 condition; the three-level case is the one that pins the column order, since
 `model.matrix()` varies the condition level fastest within each type.
 
-The ambient field is always materialised, with no equivalent of R's
-`ambient_mode = "stream"`, so a very large cohort needs the memory for the
-whole cells-by-genes product.
+**Large cohorts.** `ambient_mode="stream"` keeps only the contamination weight
+matrix and recomputes each chunk's columns from it, instead of materialising
+the whole cells-by-genes ambient product. On a million cells by five thousand
+genes that product alone runs to several GB. It is a memory knob and nothing
+else: on the packaged crop the streamed fit is bit-identical to the cached one,
+coefficients, dispersions and contamination loadings alike, because cache mode
+forms its product with the same routine and the two differ only in chunking.
 
 ## Shrinking the slopes
 
