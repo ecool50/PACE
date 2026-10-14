@@ -34,13 +34,20 @@ See the package vignette for a worked breast cancer example.
 `PACE` requires a C++ compiler (via `Rcpp`/`RcppEigen`) for the
 contamination-correcting solver.
 
-If you would like the most up-to-date features, install the development
-version from GitHub.
+``` r
 
-    # install.packages("BiocManager")
-    BiocManager::install("remotes")
-    remotes::install_github("ecool50/PACE")
-    library(PACE)
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("PACE")
+library(PACE)
+```
+
+For the development version:
+
+``` r
+
+BiocManager::install("ecool50/PACE")
+```
 
 ### Submitting an issue or feature request
 

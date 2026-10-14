@@ -9,8 +9,13 @@ responder interaction terms are included.
 ``` r
 neighbourSlopes(object, ...)
 
+neighbourSlopes(object) <- value
+
 # S4 method for class 'PACEFit'
 neighbourSlopes(object, ...)
+
+# S4 method for class 'PACEFit'
+neighbourSlopes(object) <- value
 ```
 
 ## Arguments
@@ -23,6 +28,10 @@ neighbourSlopes(object, ...)
 - ...:
 
   Unused.
+
+- value:
+
+  A data frame of shrunken proximity coefficients.
 
 ## Value
 

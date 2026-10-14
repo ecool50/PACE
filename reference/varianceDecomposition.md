@@ -11,8 +11,13 @@ underlying link-scale block tables.
 ``` r
 varianceDecomposition(object, ...)
 
+varianceDecomposition(object) <- value
+
 # S4 method for class 'PACEFit'
 varianceDecomposition(object, which = c("perGene", "blocks"), ...)
+
+# S4 method for class 'PACEFit'
+varianceDecomposition(object) <- value
 ```
 
 ## Arguments
@@ -25,6 +30,12 @@ varianceDecomposition(object, which = c("perGene", "blocks"), ...)
 - ...:
 
   Unused.
+
+- value:
+
+  Either the per-gene table, as the getter returns by default, or the
+  whole list with its `perGene` and `blocks` entries. Given a table, the
+  existing `blocks` are kept, so that the setter inverts the getter.
 
 - which:
 

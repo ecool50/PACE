@@ -12,7 +12,12 @@
   : Build the neighbourhood kernels
 - [`cellContamination()`](https://ecool50.github.io/PACE/reference/cellContamination.md)
   : Per-cell contamination
+- [`cellTypes()`](https://ecool50.github.io/PACE/reference/cellTypes.md)
+  : Cell types modelled
+- [`fitState()`](https://ecool50.github.io/PACE/reference/fitState.md) :
+  Raw solver state
 - [`neighbourSlopes()`](https://ecool50.github.io/PACE/reference/neighbourSlopes.md)
+  [`` `neighbourSlopes<-`() ``](https://ecool50.github.io/PACE/reference/neighbourSlopes.md)
   : Shrunken neighbour proximity slopes
 - [`paceDecompose()`](https://ecool50.github.io/PACE/reference/paceDecompose.md)
   : Variance decomposition
@@ -24,6 +29,8 @@
   : Fit the PACE model
 - [`paceModelGaussian()`](https://ecool50.github.io/PACE/reference/paceModelGaussian.md)
   : Fit the PACE model to continuous intensities
+- [`paceParams()`](https://ecool50.github.io/PACE/reference/paceParams.md)
+  : Fitting parameters
 - [`paceShrink()`](https://ecool50.github.io/PACE/reference/paceShrink.md)
   : Shrink the neighbour slopes
 - [`pairVariance()`](https://ecool50.github.io/PACE/reference/pairVariance.md)
@@ -41,6 +48,8 @@
 - [`plotResponseMap()`](https://ecool50.github.io/PACE/reference/plotResponseMap.md)
   : Tissue maps and scatters for one exemplar image per arm
 - [`topDrivers()`](https://ecool50.github.io/PACE/reference/topDrivers.md)
+  [`` `topDrivers<-`() ``](https://ecool50.github.io/PACE/reference/topDrivers.md)
   : Per-pair driver tables
 - [`varianceDecomposition()`](https://ecool50.github.io/PACE/reference/varianceDecomposition.md)
+  [`` `varianceDecomposition<-`() ``](https://ecool50.github.io/PACE/reference/varianceDecomposition.md)
   : Per-gene variance decomposition

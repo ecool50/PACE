@@ -12,6 +12,8 @@
 <url><loc>https://ecool50.github.io/PACE/reference/anchorGenes.html</loc></url>
 <url><loc>https://ecool50.github.io/PACE/reference/buildNeighbourhood.html</loc></url>
 <url><loc>https://ecool50.github.io/PACE/reference/cellContamination.html</loc></url>
+<url><loc>https://ecool50.github.io/PACE/reference/cellTypes.html</loc></url>
+<url><loc>https://ecool50.github.io/PACE/reference/fitState.html</loc></url>
 <url><loc>https://ecool50.github.io/PACE/reference/index.html</loc></url>
 <url><loc>https://ecool50.github.io/PACE/reference/neighbourSlopes.html</loc></url>
 <url><loc>https://ecool50.github.io/PACE/reference/paceDecompose.html</loc></url>
@@ -19,6 +21,7 @@
 <url><loc>https://ecool50.github.io/PACE/reference/paceFit.html</loc></url>
 <url><loc>https://ecool50.github.io/PACE/reference/paceModel.html</loc></url>
 <url><loc>https://ecool50.github.io/PACE/reference/paceModelGaussian.html</loc></url>
+<url><loc>https://ecool50.github.io/PACE/reference/paceParams.html</loc></url>
 <url><loc>https://ecool50.github.io/PACE/reference/paceShrink.html</loc></url>
 <url><loc>https://ecool50.github.io/PACE/reference/pace_fit_streaming_gaussian.html</loc></url>
 <url><loc>https://ecool50.github.io/PACE/reference/pairVariance.html</loc></url>

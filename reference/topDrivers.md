@@ -8,8 +8,13 @@ focal-neighbour spatial relationship.
 ``` r
 topDrivers(object, ...)
 
+topDrivers(object) <- value
+
 # S4 method for class 'PACEFit'
 topDrivers(object, ...)
+
+# S4 method for class 'PACEFit'
+topDrivers(object) <- value
 ```
 
 ## Arguments
@@ -22,6 +27,10 @@ topDrivers(object, ...)
 - ...:
 
   Unused.
+
+- value:
+
+  A named list of per-pair driver tables, each with `scores`.
 
 ## Value
 

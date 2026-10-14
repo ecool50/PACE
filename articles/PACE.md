@@ -4,9 +4,9 @@
 
 ``` r
 
-if (!require("BiocManager")) install.packages("BiocManager")
-BiocManager::install("remotes")
-remotes::install_github("ecool50/PACE")
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("PACE")
 ```
 
 ## Introduction
@@ -109,66 +109,6 @@ fit <- paceFit(spe,
                contamination = "percell_hc",   # per-cell contamination correction
                dispersion    = "nb1",
                verbose       = FALSE)
-#>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.06 seconds.
-#>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.13 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.02 seconds.
-#>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.03 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.07 seconds.
-#>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.18 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.08 seconds.
-#>  - Fitting model with 417 mixture components.
-#>  - Model fitting took 0.29 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.00 seconds.
-#>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.03 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.07 seconds.
-#>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 0.16 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 430 likelihood matrix.
-#>  - Likelihood calculations took 0.09 seconds.
-#>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 0.19 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 628 likelihood matrix.
-#>  - Likelihood calculations took 0.12 seconds.
-#>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.90 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.07 seconds.
-#>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.41 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
-#>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
-#>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.58 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.01 seconds.
 fit
 #> class: PACEFit
 #> cell types (8): B_Cell, Dendritic_Cell, Endothelial, Macrophage, Myoepithelial, Stromal, T_Cell, Tumour
@@ -186,10 +126,74 @@ downstream layers (shrinkage, decomposition, drivers) without refitting:
 
 ``` r
 
-fit <- paceModel(spe, celltype_col = "cellType")   |>  # fit the mixed model
-       paceShrink()                                |>  # shrink neighbour slopes
-       paceDecompose(spe)                          |>  # variance decomposition
-       paceDrivers(spe)                                # per-pair driver scores
+staged <- paceModel(spe, celltype_col = "cellType", verbose = FALSE) |>
+          paceShrink()            |>   # shrink the neighbour slopes
+          paceDecompose(spe)      |>   # variance decomposition
+          paceDrivers(spe)             # per-pair driver scores
+#>  - Computing 278 x 313 likelihood matrix.
+#>  - Likelihood calculations took 0.09 seconds.
+#>  - Fitting model with 313 mixture components.
+#>  - Model fitting took 0.21 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 92 likelihood matrix.
+#>  - Likelihood calculations took 0.03 seconds.
+#>  - Fitting model with 92 mixture components.
+#>  - Model fitting took 0.05 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 404 likelihood matrix.
+#>  - Likelihood calculations took 0.11 seconds.
+#>  - Fitting model with 404 mixture components.
+#>  - Model fitting took 0.28 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 417 likelihood matrix.
+#>  - Likelihood calculations took 0.11 seconds.
+#>  - Fitting model with 417 mixture components.
+#>  - Model fitting took 0.45 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 92 likelihood matrix.
+#>  - Likelihood calculations took 0.00 seconds.
+#>  - Fitting model with 92 mixture components.
+#>  - Model fitting took 0.05 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 391 likelihood matrix.
+#>  - Likelihood calculations took 0.11 seconds.
+#>  - Fitting model with 391 mixture components.
+#>  - Model fitting took 0.24 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 430 likelihood matrix.
+#>  - Likelihood calculations took 0.12 seconds.
+#>  - Fitting model with 430 mixture components.
+#>  - Model fitting took 0.27 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 628 likelihood matrix.
+#>  - Likelihood calculations took 0.17 seconds.
+#>  - Fitting model with 628 mixture components.
+#>  - Model fitting took 0.41 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 404 likelihood matrix.
+#>  - Likelihood calculations took 0.11 seconds.
+#>  - Fitting model with 404 mixture components.
+#>  - Model fitting took 0.57 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.01 seconds.
+#>  - Computing 278 x 590 likelihood matrix.
+#>  - Likelihood calculations took 0.16 seconds.
+#>  - Fitting model with 590 mixture components.
+#>  - Model fitting took 0.85 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.01 seconds.
+
+# the same object, by either route
+all.equal(varianceDecomposition(staged), varianceDecomposition(fit))
+#> [1] TRUE
 ```
 
 The fit-construction primitives expose the neighbourhood and
@@ -199,7 +203,21 @@ contamination field directly, for inspection independently of a fit:
 
 kern <- buildNeighbourhood(spe, "cellType")   # Gaussian K_bio + technical K_tech
 W    <- ambientField(spe, "cellType")         # sparse E^tech contamination field
-anchorGenes(fit, spe)                         # per-cell-type contamination anchors
+
+vapply(kern, function(x) paste(dim(x), collapse = " x "), character(1))
+#>      K_bio     K_tech 
+#> "7898 x 8" "7898 x 8"
+dim(W)
+#> NULL
+head(anchorGenes(fit, spe), 3)                # per-cell-type contamination anchors
+#>         cellType n_anchors
+#> 1         B_Cell       129
+#> 2 Dendritic_Cell       141
+#> 3    Endothelial       129
+#>                                                            top_anchors
+#> 1  ERBB2, KRT7, POSTN, ANKRD30A, FOXA1, EPCAM, SCD, GATA3, CCND1, MLPH
+#> 2   ERBB2, KRT7, ANKRD30A, FOXA1, EPCAM, SCD, GATA3, CCND1, MLPH, FASN
+#> 3 ERBB2, KRT7, ANKRD30A, FOXA1, EPCAM, SCD, GATA3, MLPH, FASN, TACSTD2
 ```
 
 ## Variance decomposition
@@ -239,10 +257,10 @@ looks like.
 
 cc <- cellContamination(fit)
 head(cc, 3)
-#>   cell   celltype         rho contamFraction
-#> 1  442     Tumour 0.115043986    0.000000000
-#> 2  444     B_Cell 0.002827059    0.001557512
-#> 3  446 Macrophage 0.587792613    0.123800289
+#>   cell   celltype        rho contamFraction
+#> 1  442     Tumour 0.11504406    0.000000000
+#> 2  444     B_Cell 0.00282706    0.001557513
+#> 3  446 Macrophage 0.58779262    0.123800291
 round(tapply(cc$contamFraction, cc$celltype, median), 3)
 #>         B_Cell Dendritic_Cell    Endothelial     Macrophage  Myoepithelial 
 #>          0.091          0.083          0.018          0.073          0.038 
@@ -341,8 +359,8 @@ neighbourSlopes(fit) |>
          gene %in% c("MRC1", "APOC1")) |>
   select(gene, estimate_shrunk, lfsr)
 #>    gene estimate_shrunk         lfsr
-#> 1 APOC1       0.1301689 1.077057e-17
-#> 2  MRC1      -0.1494761 1.554312e-15
+#> 1 APOC1       0.1301689 1.077054e-17
+#> 2  MRC1      -0.1494760 1.443290e-15
 ```
 
 ## Visualising the proximity effect
@@ -406,7 +424,10 @@ round(as.numeric(object.size(fit_small)) / 1e6, 1)   # MB
 
 ``` r
 
-saveRDS(fit_small, "fit.rds", compress = "xz")
+path <- file.path(tempdir(), "fit.rds")
+saveRDS(fit_small, path, compress = "xz")
+round(file.size(path) / 1e6, 1)                      # MB on disk
+#> [1] 1
 ```
 
 Every readout above still works on the stripped fit, and re-decomposing
@@ -455,7 +476,7 @@ sessionInfo()
 #>  [9] Seqinfo_1.2.0               IRanges_2.46.0             
 #> [11] S4Vectors_0.50.3            BiocGenerics_0.58.1        
 #> [13] generics_0.1.4              MatrixGenerics_1.24.0      
-#> [15] matrixStats_1.5.0           PACE_0.99.12               
+#> [15] matrixStats_1.5.0           PACE_0.99.14               
 #> [17] BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
