@@ -91,3 +91,64 @@ def test_a_condition_term_refuses_rather_than_approximating():
     with pytest.raises(NotImplementedError, match="model.matrix"):
         pace_fit(counts, vec("raw_x.txt"), vec("raw_y.txt"), lines("raw_celltype.txt"),
                  condition=np.zeros(int(dim[0])))
+
+
+# --- several images -------------------------------------------------------
+# The packaged subset is one image, so it cannot tell a global neighbour search
+# from a per-image one. These split it on the median x and hold both settings to
+# R. The two R fits differ by 0.167 in U, so the pair discriminates: taking the
+# wrong branch is not a rounding error. Tolerances are the trigamma floor.
+
+@pytest.fixture(scope="module")
+def two_image_inputs():
+    dim = vec("raw_y_dim.txt", int)
+    counts = csc_matrix(
+        (vec("raw_y_x.txt"), vec("raw_y_i.txt", np.int32), vec("raw_y_p.txt", np.int32)),
+        shape=(int(dim[0]), int(dim[1])))
+    return counts, vec("raw_x.txt"), vec("raw_y.txt"), lines("raw_celltype.txt"), \
+        lines("two_image_label.txt")
+
+
+@pytest.mark.parametrize("kernel_per_image,tag", [(False, "global"), (True, "perimage")])
+def test_both_neighbour_scopes_match_r_on_two_images(two_image_inputs, kernel_per_image, tag):
+    counts, x, y, cell_type, image = two_image_inputs
+    fit = pace_fit(counts, x, y, cell_type, image=image,
+                   kernel_per_image=kernel_per_image, n_threads=1)
+    reference = vec(f"two_image_{tag}_U.txt").reshape(fit.U.shape, order="F")
+    np.testing.assert_allclose(fit.U, reference, rtol=0, atol=1e-06)
+    np.testing.assert_allclose(fit.alpha, vec(f"two_image_{tag}_alpha.txt"), rtol=0, atol=1e-05)
+
+
+def test_the_default_neighbour_scope_is_global_like_rs(two_image_inputs):
+    """R's `kernel_per_image` defaults to FALSE even with several images."""
+    counts, x, y, cell_type, image = two_image_inputs
+    fit = pace_fit(counts, x, y, cell_type, image=image, n_threads=1)
+    reference = vec("two_image_global_U.txt").reshape(fit.U.shape, order="F")
+    np.testing.assert_allclose(fit.U, reference, rtol=0, atol=1e-06)
+    assert fit.params["kernel_per_image"] is False
+
+
+# --- what must be refused rather than guessed ----------------------------
+
+def test_a_missing_cell_type_is_refused_not_turned_into_a_type(two_image_inputs):
+    """str(nan) is "nan", which would otherwise be a cell type like any other."""
+    counts, x, y, cell_type, _ = two_image_inputs
+    labels = list(cell_type)
+    labels[7] = np.nan
+    with pytest.raises(ValueError, match="every cell needs a cell type"):
+        pace_fit(counts, x, y, labels)
+
+
+def test_an_explicit_type_order_is_honoured(two_image_inputs):
+    """R's `types` argument, which is how a locked row order is reproduced."""
+    counts, x, y, cell_type, _ = two_image_inputs
+    reversed_types = sorted(set(cell_type))[::-1]
+    fit = pace_fit(counts, x, y, cell_type, types=reversed_types, n_threads=1)
+    assert fit.cell_types == reversed_types
+    assert fit.row_names[0] == f"{reversed_types[0]}::(Intercept)"
+
+
+def test_an_unknown_label_is_refused(two_image_inputs):
+    counts, x, y, cell_type, _ = two_image_inputs
+    with pytest.raises(ValueError, match="not in `types`"):
+        pace_fit(counts, x, y, cell_type, types=sorted(set(cell_type))[1:])

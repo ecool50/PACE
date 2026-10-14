@@ -59,21 +59,38 @@ EIGEN_INCLUDE_DIR=$(Rscript -e 'cat(system.file("include", package="RcppEigen"))
 | `pace_fit` | every stage above, in order: counts and coordinates to a fit |
 
 `pace_fit()` runs the whole pipeline from counts, coordinates and cell type
-labels, and reproduces the R package's fit bit for bit: every one of the 20,016
+labels, and reproduces `paceModel()` bit for bit: every one of the 20,016
 random effects on the packaged breast cancer subset, and every dispersion.
-The one caveat is the trigamma function, which R takes from its own math
-library and the core computes itself; the two agree to 1.8e-15, which thirteen
-IRLS iterations amplify to 8e-07 in the fitted effects.
-
-A condition term is not implemented. It needs R's `model.matrix` semantics,
-and approximating those would make the two disagree quietly, so `condition`
-raises instead.
+The caveat is the trigamma function, which R takes from its own math library
+and the core computes itself; the two agree to 1.8e-15, which thirteen IRLS
+iterations amplify to 8e-07 in the fitted effects. Against an R build using the
+core's trigamma, nothing differs at all.
 
 ```python
 import pace
 fit = pace.pace_fit(counts, x, y, cell_type)   # counts is cells by genes
 fit.U[fit.row_names.index("Macrophage::Tumour")]
 ```
+
+Two things to know before comparing a Python fit to an R one row by row:
+
+**Cell type order.** `types=None` sorts the observed labels, which is Python's
+byte order. R sorts under `LC_COLLATE`, so a label set mixing cases orders
+differently: R puts `epithelial` before `T-NK`, Python after. The fit is
+equivariant under a permutation of types, so the biology is unchanged, but the
+row order is not. Pass `types=` to match a given R fit, as you would in R.
+
+**Neighbour scope.** `kernel_per_image` defaults to `False`, as R's does: even
+with several images the neighbour search is global, which is what a cohort of
+fields of view from one section wants. Set it `True` when the images are
+separate samples. The contamination field is per-image either way.
+
+A condition term is not implemented. It needs R's `model.matrix` semantics,
+and approximating those would make the two disagree quietly, so `condition`
+raises instead. The ambient field is always materialised, with no equivalent of
+R's `ambient_mode = "stream"`, so a very large cohort needs the memory for the
+whole cells-by-genes product.
+
 
 `ambient_field()` returns compressed-column arrays rather than a matrix, so
 nothing here depends on scipy:

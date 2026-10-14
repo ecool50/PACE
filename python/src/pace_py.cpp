@@ -9,7 +9,9 @@
 #include <pybind11/stl.h>
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -338,6 +340,15 @@ py::dict random_design_block(const ColumnMajor& x_terms, const IntColumn& cell_g
   return out;
 }
 
+// How the verbose log names the warm-up. R prints "Inf" for an unbounded one
+// and the plain number otherwise, so a reported warm-up always matches the one
+// in force.
+std::string format_warmup(double value) {
+  if (!std::isfinite(value)) return value > 0 ? "Inf" : "-Inf";
+  if (value == std::floor(value)) return std::to_string(static_cast<long long>(value));
+  return std::to_string(value);
+}
+
 // ---------------------------------------------------------------------------
 // The IRLS loop: the fit itself.
 // ---------------------------------------------------------------------------
@@ -426,8 +437,17 @@ py::dict fit_irls(const ColumnMajor& x_fixed, std::int64_t p, const py::dict& z_
   }
 
   pace::IrlsLoopInputs inputs;
-  inputs.x1 = pace::Span<const double>(nullptr, 0);
-  inputs.x1_is_unit = options.contains("x1_is_unit") ? options["x1_is_unit"].cast<bool>() : true;
+  // R derives both of these from the fixed design (engine-streaming.R): x1 is
+  // its first column, and x1_is_unit is whether that column is all ones. Taking
+  // x1_is_unit from the caller instead let a p == 1 fit with a non-constant
+  // column build its linear predictor as if the column were ones while the
+  // solver used the real values, which is wrong without being an error.
+  const bool x_fixed_is_unit =
+      p == 1 && x_fixed.size() > 0 &&
+      std::all_of(x_fixed.data(), x_fixed.data() + x_fixed.size(),
+                  [](double value) { return value == 1.0; });
+  inputs.x1 = p == 1 && !x_fixed_is_unit ? span_of(x_fixed) : pace::Span<const double>(nullptr, 0);
+  inputs.x1_is_unit = x_fixed_is_unit;
   inputs.x_fixed = p == 1 ? pace::Span<const double>(nullptr, 0) : span_of(x_fixed);
   inputs.solve_x_fixed = span_of(x_fixed);
   inputs.p = p;
@@ -467,7 +487,7 @@ py::dict fit_irls(const ColumnMajor& x_fixed, std::int64_t p, const py::dict& z_
   opt.min_iter = get_i("min_iter", 12);
   opt.early_stop_tol = get_d("early_stop_tol", 2e-2);
   opt.alpha_warmup = get_d("alpha_warmup", 6);
-  opt.alpha_warmup_label = "6";
+  opt.alpha_warmup_label = format_warmup(opt.alpha_warmup);
   opt.nb2 = get_b("nb2", false);
   opt.gaussian = get_b("gaussian", false);
   opt.zero_collapse = get_b("zero_collapse", true);
@@ -480,6 +500,11 @@ py::dict fit_irls(const ColumnMajor& x_fixed, std::int64_t p, const py::dict& z_
   opt.d0_min = get_d("d0_min", 1);
   opt.use_reml = get_b("use_reml", false);
   opt.rd_diag = get_b("rd_diag", false);
+  // Explicit, because the struct's default order is deliberately not the
+  // declaration order and R's own two entry points disagree: pace_fit_streaming
+  // overrides fit_pace_mvpql_streaming's "hierarchical" with "adaptive", and
+  // "adaptive" is what every PACE fit actually uses.
+  opt.tau_shrinkage = static_cast<pace::TauShrinkage>(get_i("tau_shrinkage", 2));
   opt.verbose = get_b("verbose", false);
   opt.n_threads = static_cast<int>(get_i("n_threads", 1));
 

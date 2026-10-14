@@ -43,9 +43,35 @@ class PaceFit:
                 f"{'converged' if self.converged else 'NOT converged'})")
 
 
+def _is_missing(value) -> bool:
+    """Whether a label is absent: None, NaN, or a pandas NA.
+
+    NaN is not equal to itself, which catches float NaN and NaT. `pandas.NA`
+    goes one step further: comparing it to itself yields NA again, and taking
+    the truth of that raises. An undefined self-comparison is exactly what a
+    missing-value sentinel looks like, so that counts as missing too.
+    """
+    if value is None:
+        return True
+    try:
+        return bool(value != value)
+    except (TypeError, ValueError):
+        return True
+
+
 def _csc(matrix) -> dict:
     """A scipy CSC matrix as the plain arrays the core takes."""
     m = matrix.tocsc()
+    # The core indexes sparse matrices with int, and numpy would narrow an
+    # int64 index array to int32 silently: a wrapped column pointer reads past
+    # the end rather than failing. scipy only widens the indices when it has
+    # to, so this is reachable, and R cannot reach it because a dgCMatrix is
+    # int-indexed from the start.
+    limit = np.iinfo(np.int32).max
+    if m.nnz > limit or max(m.shape) > limit:
+        raise ValueError(
+            f"this matrix needs 64-bit indices ({m.nnz} stored values, shape {m.shape}) "
+            f"and the core takes 32-bit; the limit is {limit}")
     return {
         "indptr": np.ascontiguousarray(m.indptr, dtype=np.int32),
         "indices": np.ascontiguousarray(m.indices, dtype=np.int32),
@@ -82,10 +108,10 @@ def _anchors(x, y, counts_csc, type_code, image_code, n_types, n_cells,
     return out["mask"], int(core.sum())
 
 
-def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, h_bio=30.0, h_tech=5.0,
-             eps=None, condition=None, min_effective=30.0, within_image=True,
-             homotypic_fraction=0.5, n_iter=32, min_iter=12, chunk_size=128,
-             n_threads=1, verbose=False):
+def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
+             h_bio=30.0, h_tech=5.0, eps=None, condition=None, min_effective=30.0,
+             within_image=True, kernel_per_image=False, homotypic_fraction=0.5,
+             n_iter=32, min_iter=12, chunk_size=128, n_threads=1, verbose=False):
     """Fit PACE to a cells-by-genes count matrix.
 
     Parameters
@@ -97,10 +123,23 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, h_bio=30.0, h_t
     x, y
         Cell coordinates, in the same units as the bandwidths.
     cell_type
-        One label per cell. The fitting order is the sorted unique set, which
-        is what R uses when `types` is not given.
+        One label per cell.
+    types
+        The cell types, in the order they should index the random-effect rows.
+        None sorts the observed labels, which is Python's byte order and NOT
+        R's: R sorts under `LC_COLLATE`, so a label set mixing cases orders
+        differently ("epithelial" sorts before "T-NK" in R, after it here).
+        The fit is equivariant under a permutation of types, so the science is
+        unchanged, but the row order is not, and the two stop being
+        bit-identical. Pass the types explicitly to match a given R fit.
     image
         One label per cell, or None for a single image.
+    kernel_per_image
+        Whether to build neighbourhoods within each image rather than over all
+        cells at once. False, matching R: a cohort whose images are fields of
+        view of one section wants the global search. Set it True when the
+        images are separate samples. The contamination field is always
+        per-image regardless, as it is in R.
     condition
         Not implemented. Raises, rather than approximating R's model.matrix.
 
@@ -120,21 +159,41 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, h_bio=30.0, h_t
     n_cells = x.size
 
     labels = np.asarray(cell_type, dtype=object).ravel()
-    types = sorted({str(v) for v in labels})
+    # A missing label must not become a cell type. str(nan) is "nan", and if
+    # the types came from the same str() it would be a type like any other,
+    # with its own kernel column and random-effect block. R refuses here, and
+    # so does this.
+    missing = [i for i, v in enumerate(labels) if _is_missing(v)]
+    if missing:
+        raise ValueError(
+            f"every cell needs a cell type; {len(missing)} are missing "
+            f"(first at index {missing[0]})")
+    labels = np.asarray([str(v) for v in labels], dtype=object)
+
+    if types is None:
+        types = sorted(set(labels))
+    else:
+        types = [str(t) for t in types]
+        if len(set(types)) != len(types):
+            raise ValueError("types must not repeat")
+        unknown = sorted(set(labels) - set(types))
+        if unknown:
+            raise ValueError(f"these cell types are not in `types`: {unknown}")
     n_types = len(types)
     index = {t: i for i, t in enumerate(types)}
-    if any(v is None or str(v) not in index for v in labels):
-        raise ValueError("every cell needs a cell type; none may be missing")
-    type_code = np.ascontiguousarray([index[str(v)] for v in labels], dtype=np.int32)
+    type_code = np.ascontiguousarray([index[v] for v in labels], dtype=np.int32)
 
     if image is None:
         image_code = np.zeros(n_cells, dtype=np.int32)
         n_images = 1
     else:
         img = np.asarray(image, dtype=object).ravel()
-        levels = sorted({str(v) for v in img})
+        if any(_is_missing(v) for v in img):
+            raise ValueError("every cell needs an image; none may be missing")
+        img = np.asarray([str(v) for v in img], dtype=object)
+        levels = sorted(set(img))
         lookup = {v: i for i, v in enumerate(levels)}
-        image_code = np.ascontiguousarray([lookup[str(v)] for v in img], dtype=np.int32)
+        image_code = np.ascontiguousarray([lookup[v] for v in img], dtype=np.int32)
         n_images = len(levels)
 
     counts_csc = _csc(counts)
@@ -145,9 +204,14 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, h_bio=30.0, h_t
     n_genes = counts_csc["shape"][1]
     if genes is None:
         genes = [f"gene{i}" for i in range(n_genes)]
+    elif len(genes) != n_genes:
+        raise ValueError(f"genes has {len(genes)} names for {n_genes} columns of counts")
 
-    # Library size, the offset the model carries at coefficient one.
-    library = np.asarray(counts.tocsr().sum(axis=1)).ravel().astype(np.float64)
+    # Library size, the offset the model carries at coefficient one. Summed
+    # straight off the sparse matrix rather than through tocsr(), which would
+    # copy the whole thing; the counts are integers, so the sum is exact
+    # whatever order it accumulates in.
+    library = np.asarray(counts.sum(axis=1)).ravel().astype(np.float64)
     if np.any(library <= 0):
         raise ValueError("every cell needs at least one count; drop empty cells first")
     offset = np.asfortranarray(np.log(library))
@@ -156,8 +220,11 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, h_bio=30.0, h_t
         eps = 3.0 * h_bio
 
     # --- kernels, then the two corrections that make the slopes interpretable
+    # `image_code` is carried whether or not it is used: the core ignores the
+    # grouping entirely when per_group is false, and searches one global grid,
+    # which is what R does by default even with many images.
     kernels = _core.neighbour_kernels(x, y, type_code, n_types, image_code,
-                                      per_group=n_images > 1, h_bio=h_bio, h_tech=h_tech,
+                                      per_group=kernel_per_image, h_bio=h_bio, h_tech=h_tech,
                                       eps=eps, n_threads=n_threads)
     k_bio = kernels["k_bio"]
     n_dropped = 0
@@ -173,6 +240,11 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, h_bio=30.0, h_t
     # The solver reads the ambient PRODUCT, cells by genes, not the weight
     # matrix itself. Formed with the core's product because the summation order
     # is part of the answer; scipy's would differ in the last bits.
+    # NOTE: this materialises the whole n x G product, as R's default
+    # `ambient_mode = "cache"` does. R can also stream it, which is what makes a
+    # full transcriptome panel fit in memory; that mode is not exposed here, so
+    # a cohort of ~1M cells by ~5,000 genes needs several GB for this one array
+    # on top of the counts.
     field = _core.sparse_product(weights_matrix, counts_csc, n_threads)
     mask, n_core = _anchors(x, y, counts_csc, type_code, image_code, n_types, n_cells,
                             homotypic_fraction=homotypic_fraction, n_threads=n_threads)
@@ -208,7 +280,10 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, h_bio=30.0, h_t
         k_var[f, :] = np.diag(block_cov)
     k_var_norm = _core.normalise_rows_to_max(np.asfortranarray(k_var))
 
-    scale_of_row = np.ones(q)
+    # Zero, as R does: a row outside every cell-type block takes no scale. With
+    # the single block here every row is assigned below, so this only matters
+    # once an image-level block is added.
+    scale_of_row = np.zeros(q)
     for t in range(n_terms):
         for f in range(n_types):
             row = t * n_types + f
@@ -257,6 +332,7 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, h_bio=30.0, h_t
         cell_types=types, genes=list(genes), row_names=row_names,
         n_iter=int(fitted["n_iter"]), converged=bool(fitted["converged"]),
         params=dict(h_bio=h_bio, h_tech=h_tech, eps=eps, min_effective=min_effective,
-                    within_image=within_image, homotypic_fraction=homotypic_fraction,
+                    within_image=within_image, kernel_per_image=kernel_per_image,
+                    homotypic_fraction=homotypic_fraction,
                     n_images=n_images, n_dropped=n_dropped, n_core_cells=n_core),
     )
