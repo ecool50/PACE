@@ -7,6 +7,7 @@ not depend on which language you call it from.
 from ._core import (
     ambient_field,
     driver_scores,
+    fit_irls,
     mash,
     neighbour_kernels,
     pair_variance_pratt,
@@ -20,5 +21,6 @@ __all__ = [
     "neighbour_kernels",
     "ambient_field",
     "random_design_block",
+    "fit_irls",
 ]
 __version__ = "0.0.1"

@@ -15,7 +15,9 @@
 
 #include "decomposition.hpp"
 #include "neighbourhood.hpp"
+#include "irls_driver.hpp"
 #include "random_design.hpp"
+#include "special.hpp"
 #include "mash.hpp"
 
 namespace py = pybind11;
@@ -253,10 +255,14 @@ py::dict ambient_field(const ColumnMajor& x, const ColumnMajor& y, const IntColu
   py::array_t<int> indices(nnz);
   std::fill(indices.mutable_data(), indices.mutable_data() + nnz, 0);
   ColumnMajor data(nnz);
-  py::array_t<std::int64_t> indptr(n + 1);
+  // int32, because pace::CscView takes Span<const int> and these arrays
+  // are meant to feed straight back into the core.
+  py::array_t<int> indptr(n + 1);
   const std::vector<std::int64_t>& pointer = builder.column_pointer();
   auto indptr_out = indptr.mutable_unchecked<1>();
-  for (std::int64_t j = 0; j <= n; ++j) indptr_out(j) = pointer[static_cast<std::size_t>(j)];
+  for (std::int64_t j = 0; j <= n; ++j) {
+    indptr_out(j) = static_cast<int>(pointer[static_cast<std::size_t>(j)]);
+  }
 
   raise_if_failed(builder.fill(pace::Span<int>(indices.mutable_data(), nnz), out_span_of(data),
                                pace::Span<const double>(edge_fraction.data(), n), n_threads,
@@ -320,6 +326,217 @@ py::dict random_design_block(const ColumnMajor& x_terms, const IntColumn& cell_g
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// The IRLS loop: the fit itself.
+// ---------------------------------------------------------------------------
+
+// A compressed-column matrix handed over from Python. The arrays stay owned by
+// numpy, so the holder keeps them alive for as long as the view is used.
+struct CscHolder {
+  py::array_t<int> indptr, indices;
+  ColumnMajor data;
+  pace::CscView view;
+
+  CscHolder(const py::dict& d) {
+    indptr = d["indptr"].cast<py::array_t<int>>();
+    indices = d["indices"].cast<py::array_t<int>>();
+    data = d["data"].cast<ColumnMajor>();
+    const auto shape = d["shape"].cast<py::tuple>();
+    view.column_pointer = pace::Span<const int>(indptr.data(), indptr.size());
+    view.row_index = pace::Span<const int>(indices.data(), indices.size());
+    view.values = pace::Span<const double>(data.data(), data.size());
+    view.n_rows = shape[0].cast<std::int64_t>();
+    view.n_cols = shape[1].cast<std::int64_t>();
+  }
+};
+
+// One block of the random-effect design, as the loop reads it. Mirrors what
+// random_design_block() returns, so the two compose directly.
+struct BlockHolder {
+  ColumnMajor terms;
+  py::array_t<int> cell_group, group_start, cells_by_group;
+  std::vector<int> group_size;
+};
+
+py::dict fit_irls(const ColumnMajor& x_fixed, std::int64_t p, const py::dict& z_design,
+                  const py::list& blocks, const py::dict& counts, const py::dict& ambient,
+                  const ColumnMajor& offset, const ColumnMajor& alpha_init,
+                  const ColumnMajor& mask, const IntColumn& mask_index,
+                  std::int64_t n_mask_rows, const ColumnMajor& data_informed_weights,
+                  const ColumnMajor& sample_weight,
+                  std::int64_t n_cells, std::int64_t q_total, std::int64_t n_genes,
+                  const py::dict& options) {
+  const std::int64_t n = n_cells, q = q_total, g = n_genes;
+
+  CscHolder z(z_design), y(counts), e_tech(ambient);
+
+  // Blocks: hold every array alive, then build the core's views over them.
+  const std::size_t n_blocks = blocks.size();
+  std::vector<BlockHolder> held(n_blocks);
+  std::vector<pace::SolveBlock> solve_blocks(n_blocks);
+  std::vector<pace::TauBlock> tau_blocks(n_blocks);
+  for (std::size_t b = 0; b < n_blocks; ++b) {
+    const py::dict block = blocks[b].cast<py::dict>();
+    BlockHolder& h = held[b];
+    h.terms = block["terms"].cast<ColumnMajor>();
+    h.cell_group = block["cell_group"].cast<py::array_t<int>>();
+    h.group_start = block["group_start"].cast<py::array_t<int>>();
+    h.cells_by_group = block["cells_by_group"].cast<py::array_t<int>>();
+
+    const int n_terms = block["n_terms"].cast<int>();
+    const int n_groups = block["n_groups"].cast<int>();
+    solve_blocks[b].col_offset = block["col_offset"].cast<int>();
+    solve_blocks[b].n_terms = n_terms;
+    solve_blocks[b].n_groups = n_groups;
+
+    tau_blocks[b].col_offset = solve_blocks[b].col_offset;
+    tau_blocks[b].n_terms = n_terms;
+    tau_blocks[b].n_groups = n_groups;
+    tau_blocks[b].n_cols = block["n_cols"].cast<int>();
+
+    // group sizes, from the offsets the design already computed
+    const int* start = h.group_start.data();
+    h.group_size.resize(static_cast<std::size_t>(n_groups));
+    for (int gi = 0; gi < n_groups; ++gi) h.group_size[static_cast<std::size_t>(gi)] =
+        start[gi + 1] - start[gi];
+  }
+  // Spans only after every vector has stopped growing, so none can dangle.
+  for (std::size_t b = 0; b < n_blocks; ++b) {
+    BlockHolder& h = held[b];
+    solve_blocks[b].terms = pace::Span<const double>(h.terms.data(), h.terms.size());
+    solve_blocks[b].cell_group = pace::Span<const int>(h.cell_group.data(), h.cell_group.size());
+    solve_blocks[b].group_offsets =
+        pace::Span<const int>(h.group_start.data(), h.group_start.size());
+    solve_blocks[b].group_cells =
+        pace::Span<const int>(h.cells_by_group.data(), h.cells_by_group.size());
+    tau_blocks[b].group_size =
+        pace::Span<const int>(h.group_size.data(), static_cast<std::int64_t>(h.group_size.size()));
+  }
+
+  pace::IrlsLoopInputs inputs;
+  inputs.x1 = pace::Span<const double>(nullptr, 0);
+  inputs.x1_is_unit = options.contains("x1_is_unit") ? options["x1_is_unit"].cast<bool>() : true;
+  inputs.x_fixed = p == 1 ? pace::Span<const double>(nullptr, 0) : span_of(x_fixed);
+  inputs.solve_x_fixed = span_of(x_fixed);
+  inputs.p = p;
+  inputs.z = z.view;
+  inputs.solve_blocks = &solve_blocks;
+  inputs.tau_blocks = &tau_blocks;
+  inputs.counts.matrix = y.view;
+  inputs.counts.first_gene = 0;
+  inputs.ambient.streamed = false;
+  inputs.ambient.cached.matrix = e_tech.view;
+  inputs.ambient.cached.first_gene = 0;
+  inputs.offset = span_of(offset);
+  // The anchor mask and the data-informed weights are not optional in practice:
+  // without the weights every random effect comes back unshrunk.
+  inputs.sample_weight = span_of(sample_weight);
+  inputs.mask = span_of(mask);
+  inputs.mask_index = pace::Span<const int>(mask_index.data(), mask_index.size());
+  inputs.n_mask_rows = n_mask_rows;
+  inputs.data_informed_weights = span_of(data_informed_weights);
+  inputs.alpha_init = span_of(alpha_init);
+  inputs.n = n;
+  inputs.q = q;
+  inputs.n_genes = g;
+
+  pace::IrlsLoopOptions opt;
+  auto get_i = [&](const char* k, std::int64_t d) {
+    return options.contains(k) ? options[k].cast<std::int64_t>() : d; };
+  auto get_d = [&](const char* k, double d) {
+    return options.contains(k) ? options[k].cast<double>() : d; };
+  auto get_b = [&](const char* k, bool d) {
+    return options.contains(k) ? options[k].cast<bool>() : d; };
+  opt.n_iter = get_i("n_iter", 16);
+  opt.min_iter = get_i("min_iter", 12);
+  opt.early_stop_tol = get_d("early_stop_tol", 2e-2);
+  opt.alpha_warmup = get_d("alpha_warmup", 10);
+  opt.alpha_warmup_label = "10";
+  opt.nb2 = get_b("nb2", false);
+  opt.gaussian = get_b("gaussian", false);
+  opt.zero_collapse = get_b("zero_collapse", true);
+  opt.alpha_max_cells = get_d("alpha_max_cells", 0);
+  opt.fast_density = get_b("fast_density", true);
+  opt.interior_precision = static_cast<int>(get_i("interior_precision", 1));
+  opt.chunk_size = get_i("chunk_size", 128);
+  opt.sub_genes = get_i("sub_genes", 16);
+  opt.tau_max = get_d("tau_max", 100);
+  opt.d0_min = get_d("d0_min", 1);
+  opt.use_reml = get_b("use_reml", false);
+  opt.rd_diag = get_b("rd_diag", false);
+  opt.verbose = get_b("verbose", false);
+  opt.n_threads = static_cast<int>(get_i("n_threads", 1));
+
+  ColumnMajor beta({p, g}), u({q, g}), se_beta({p, g}), se_u({q, g});
+  ColumnMajor alpha(g), tau_g_array({q, g}), tau_flat(q), rho(n);
+  ColumnMajor h_tau({q, opt.n_iter}), h_alpha({g, opt.n_iter}), h_rel(opt.n_iter);
+  ColumnMajor h_rel_mean(opt.n_iter), h_nan(opt.n_iter), h_nonfinite(opt.n_iter);
+  ColumnMajor h_tau_max(opt.n_iter);
+  std::int64_t iterations_run = 0;
+  bool converged = false;
+
+  pace::IrlsLoopOutputs out;
+  out.beta = out_span_of(beta);
+  out.u = out_span_of(u);
+  out.se_beta = out_span_of(se_beta);
+  out.se_u = out_span_of(se_u);
+  out.alpha = out_span_of(alpha);
+  out.tau_g_array = out_span_of(tau_g_array);
+  out.tau_flat = out_span_of(tau_flat);
+  out.rho = out_span_of(rho);
+  out.history_tau_flat = out_span_of(h_tau);
+  out.history_alpha = out_span_of(h_alpha);
+  out.history_rel_delta = out_span_of(h_rel);
+  out.history_rel_delta_mean = out_span_of(h_rel_mean);
+  out.history_n_nan_genes = out_span_of(h_nan);
+  out.history_n_nonfinite = out_span_of(h_nonfinite);
+  out.history_tau_max_seen = out_span_of(h_tau_max);
+  out.iterations_run = &iterations_run;
+  out.converged = &converged;
+
+  // The standard errors are written on the final iteration only, so an
+  // unfinished fit must report NaN rather than the zeros out_span_of() leaves.
+  std::fill(se_beta.mutable_data(), se_beta.mutable_data() + se_beta.size(),
+            std::numeric_limits<double>::quiet_NaN());
+  std::fill(se_u.mutable_data(), se_u.mutable_data() + se_u.size(),
+            std::numeric_limits<double>::quiet_NaN());
+
+  pace::IrlsLoopReporter reporter;
+  std::vector<std::string> warnings;
+  reporter.message = [&](const std::string& text) { if (opt.verbose) py::print(text); };
+  reporter.warn = [&warnings](const std::string& text) { warnings.push_back(text); };
+  reporter.warn_nan_genes = [&warnings](std::int64_t iteration, pace::Span<const int>) {
+    warnings.push_back("non-finite genes at iteration " + std::to_string(iteration));
+  };
+
+  // The density is never reached on the canonical path: NB1 with fast_density
+  // uses the core's own likelihood. Anything else needs a real one.
+  pace::LogDensity density = [](double, double, double) {
+    return std::numeric_limits<double>::quiet_NaN();
+  };
+
+  {
+    py::gil_scoped_release release;   // the loop is C++ and may use threads
+    raise_if_failed(pace::run_irls_loop(inputs, opt, density, pace::trigamma, reporter, out,
+                                        pace::InterruptCheck()),
+                    "irls loop");
+  }
+
+  py::dict result;
+  result["B"] = beta;
+  result["U"] = u;
+  result["se_B"] = se_beta;
+  result["se_U"] = se_u;
+  result["alpha"] = alpha;
+  result["tau_g_array"] = tau_g_array;
+  result["tau_flat"] = tau_flat;
+  result["rho"] = rho;
+  result["n_iter"] = iterations_run;
+  result["converged"] = converged;
+  result["warnings"] = warnings;
+  return result;
+}
+
 }  // namespace
 
 PYBIND11_MODULE(_core, m) {
@@ -349,4 +566,12 @@ PYBIND11_MODULE(_core, m) {
   m.def("random_design_block", &random_design_block, py::arg("x_terms"),
         py::arg("cell_group"), py::arg("n_groups"),
         "One block of the random-effect design, in compressed-column form.");
+  m.def("fit_irls", &fit_irls, py::arg("x_fixed"), py::arg("p"), py::arg("z_design"),
+        py::arg("blocks"), py::arg("counts"), py::arg("ambient"), py::arg("offset"),
+        py::arg("alpha_init"), py::arg("mask") = ColumnMajor(0),
+        py::arg("mask_index") = IntColumn(0), py::arg("n_mask_rows") = 0,
+        py::arg("data_informed_weights") = ColumnMajor(0),
+        py::arg("sample_weight") = ColumnMajor(0), py::arg("n_cells"), py::arg("q_total"), py::arg("n_genes"),
+        py::arg("options") = py::dict(),
+        "The penalised quasi-likelihood IRLS loop: the fit itself.");
 }

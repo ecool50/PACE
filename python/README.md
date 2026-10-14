@@ -40,6 +40,7 @@ fails. The R package has the same requirement for the same reason.
 | `neighbour_kernels` | Gaussian and technical neighbour kernels from coordinates |
 | `ambient_field` | sparse cross-type contamination field, compressed-column |
 | `random_design_block` | one block of the random-effect design, plus the grouping |
+| `fit_irls` | the penalised quasi-likelihood loop: the fit itself |
 
 Fitting is still R only. `neighbour_kernels()`, `ambient_field()` and
 `random_design_block()` are its first stages and run standalone, but the IRLS
