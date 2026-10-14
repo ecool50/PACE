@@ -229,3 +229,61 @@ def test_it_can_become_dataframes_too(single_frame):
     _, frame = single_frame
     assert "SS_lineage" in frame.to_dataframe().columns
     assert list(frame.by_focal()["focal"]) == frame.focal_levels
+
+
+# --- pairwise spatial variance -------------------------------------------
+# The definition is particular and easy to get wrong: the focal's spatial share
+# comes from the OBSERVED single frame, and that one number is split across the
+# focal's neighbours by a Pratt attribution renormalised over the OFF-DIAGONAL
+# pairs alone. So a row sums to the focal's observed spatial share, and the
+# own-type pair is excluded rather than shown as a large diagonal.
+
+def _condition_fit(counts):
+    return pace.pace_fit(counts, vec("raw_x.txt"), vec("raw_y.txt"),
+                         lines("raw_celltype.txt"), genes=lines("raw_genes.txt"),
+                         condition=lines("cond2_label.txt"), condition_name="Arm",
+                         condition_levels=["PD", "PR"], n_threads=1)
+
+
+@pytest.mark.parametrize("tag,condition,block", [
+    ("pv", False, "spatial"), ("pvcs", True, "spatial"), ("pvcr", True, "responder")])
+def test_the_pair_table_matches_rs(counts, tag, condition, block):
+    fit = _condition_fit(counts) if condition else build(counts, False)
+    table = pace.pair_variance(fit, counts, block=block)
+    position = {key: i for i, key in enumerate(zip(table["focal"], table["neighbour"]))}
+    keys = list(zip(lines(f"{tag}_focal.txt"), lines(f"{tag}_neighbour.txt")))
+    assert len(keys) == table["val"].size
+    order = np.array([position[key] for key in keys])
+    np.testing.assert_allclose(table["val"][order], vec(f"{tag}_val.txt"),
+                               rtol=0, atol=1e-07)
+
+
+def test_each_focal_row_sums_to_its_observed_spatial_share(counts):
+    """The definition, pinned: observed share split across neighbours."""
+    fit = build(counts, False)
+    frame = pace.single_frame_decomposition(fit, counts)
+    table = pace.pair_variance(fit, counts, frame)
+    column = frame.block_names.index("Spatial %")
+    for row, focal in enumerate(frame.focal_levels):
+        rows = table["focal"] == focal
+        if not rows.any():
+            continue
+        assert abs(table["val"][rows].sum() - frame.focal_table[row, column]) < 1e-09
+
+
+def test_the_own_type_pair_is_excluded(counts):
+    fit = build(counts, False)
+    table = pace.pair_variance(fit, counts)
+    assert not np.any(table["focal"] == table["neighbour"])
+
+
+def test_the_responder_block_needs_a_condition(counts):
+    fit = build(counts, False)
+    with pytest.raises(ValueError, match="no responder block"):
+        pace.pair_variance(fit, counts, block="responder")
+
+
+def test_an_unknown_block_is_refused(counts):
+    fit = build(counts, False)
+    with pytest.raises(ValueError, match='block must be'):
+        pace.pair_variance(fit, counts, block="spillover")

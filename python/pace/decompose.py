@@ -395,3 +395,96 @@ def single_frame_decomposition(fit, counts, decomposition=None, *, n_threads=1):
         pct_residual=column("pct_residual"), ss_lineage=column("ss_lineage"),
         ss_within=column("ss_within"), denom=denom,
         focal_levels=present, focal_table=focal_table)
+
+
+# ---------------------------------------------------------------------------
+# Pairwise spatial variance
+# ---------------------------------------------------------------------------
+
+MIN_CELLS_FOR_PAIRS = 50     # R skips a focal with fewer, as too few to attribute
+
+
+def pair_variance(fit, counts, single_frame=None, *, block="spatial", resp_term=None,
+                  n_threads=1):
+    """For each focal type, how much of its variance each neighbour contributes.
+
+    This is the pair heatmap's table, and its definition is particular: the
+    focal's spatial share comes from the OBSERVED single frame, and that one
+    number is then split across the focal's neighbours by a Pratt attribution
+    renormalised over the off-diagonal pairs alone. So a row sums to the
+    focal's observed spatial share, and the own-type pair is excluded rather
+    than shown as a large diagonal.
+
+    Parameters
+    ----------
+    block
+        `"spatial"` for the baseline neighbour effect, or `"responder"` for its
+        interaction with a condition.
+
+    Returns
+    -------
+    A dict with `focal`, `neighbour` and `val` arrays, off-diagonal pairs only.
+    """
+    if block not in ("spatial", "responder"):
+        raise ValueError('block must be "spatial" or "responder"')
+    if single_frame is None:
+        single_frame = single_frame_decomposition(fit, counts, n_threads=n_threads)
+    if block == "responder" and single_frame.pct_responder is None:
+        raise ValueError('this fit has no responder block; use block="spatial"')
+
+    types = list(fit.cell_types)
+    n_types = len(types)
+    slab = n_types * n_types
+    column = single_frame.block_names.index(
+        "Spatial %" if block == "spatial" else "Responder spatial %")
+    share = dict(zip(single_frame.focal_levels, single_frame.focal_table[:, column]))
+
+    # Sigma is the covariance of the focal's own kernel columns over its own
+    # cells, which is that focal's slice; for the responder block it is the
+    # same with the condition indicator as a row scale.
+    kernel = fit.kernel
+    if block == "responder":
+        if resp_term is None:
+            resp_term = f"{fit.params['condition_name']}{fit.params['condition_levels'][-1]}"
+        level = resp_term[len(fit.params["condition_name"]):]
+        dummy = (fit.condition_code
+                 == fit.params["condition_levels"].index(level)).astype(np.float64)
+        kernel = kernel * dummy[:, None]
+    covariance = np.asarray(_core.group_covariances(
+        np.asfortranarray(kernel), fit.type_code, n_types, n_threads))
+
+    row_of = {name: i for i, name in enumerate(fit.row_names)}
+    sizes = np.bincount(fit.type_code, minlength=n_types)
+
+    focal_out, neighbour_out, value_out = [], [], []
+    for f, focal in enumerate(types):
+        if sizes[f] < MIN_CELLS_FOR_PAIRS or focal not in share:
+            continue
+        wanted = [(neighbour,
+                   f"{focal}::{neighbour}" if block == "spatial"
+                   else f"{focal}::{resp_term}:{neighbour}") for neighbour in types]
+        keep = [(neighbour, row_of[name]) for neighbour, name in wanted if name in row_of]
+        if not keep:
+            continue
+        neighbours = [n for n, _ in keep]
+        rows = [r for _, r in keep]
+        columns = [types.index(n) for n in neighbours]
+        sigma = covariance[f * slab:(f + 1) * slab].reshape(n_types, n_types, order="F")
+        pratt = _core.pair_variance_pratt(
+            np.asfortranarray(sigma[np.ix_(columns, columns)]),
+            np.asfortranarray(fit.U[rows, :]))
+
+        # off-diagonal only, then renormalised over what is left
+        v_pair = np.asarray(pratt["v_pair"])
+        off = [i for i, neighbour in enumerate(neighbours) if neighbour != focal]
+        total = v_pair[off].sum()
+        if not off or total == 0:
+            continue
+        for i in off:
+            focal_out.append(focal)
+            neighbour_out.append(neighbours[i])
+            value_out.append(share[focal] * v_pair[i] / total)
+
+    return {"focal": np.asarray(focal_out, dtype=object),
+            "neighbour": np.asarray(neighbour_out, dtype=object),
+            "val": np.asarray(value_out)}

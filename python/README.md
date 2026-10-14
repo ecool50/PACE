@@ -62,6 +62,7 @@ EIGEN_INCLUDE_DIR=$(Rscript -e 'cat(system.file("include", package="RcppEigen"))
 | `pace_decompose` | the per-gene, per-cell-type variance decomposition |
 | `single_frame_decomposition` | the observed decomposition R reports |
 | `pace_drivers` | per-pair driver tables, ranked |
+| `pair_variance` | each neighbour's share of a focal type's variance |
 | `fit_statistics` | the per-cell-type summaries the readouts are built on |
 
 `pace_fit()` runs the whole pipeline from counts, coordinates and cell type
@@ -254,6 +255,20 @@ Against R this gives the same pairs, the same genes in the same rank order, and
 all fourteen columns to 2e-7. Each pair also carries its status and how many of
 its calls are expected to have the wrong sign.
 
+## Which neighbour matters to which focal type
+
+`pair_variance()` is the pair heatmap's table. Its definition is particular, so
+it is worth stating: the focal type's spatial share comes from the **observed**
+single frame, and that one number is split across its neighbours by a Pratt
+attribution renormalised over the off-diagonal pairs alone. A row therefore
+sums to the focal's observed spatial share, and the own-type pair is left out
+rather than shown as a large diagonal.
+
+```python
+pace.pair_variance(fit, counts)                       # baseline
+pace.pair_variance(fit, counts, block="responder")    # condition cohorts
+```
+
 ## The whole pipeline
 
 ```python
@@ -263,4 +278,5 @@ stats  = pace.fit_statistics(fit, counts)
 blocks = pace.pace_decompose(fit, counts, stats=stats)
 frame  = pace.single_frame_decomposition(fit, counts, blocks)
 drive  = pace.pace_drivers(fit, slopes, blocks, stats)
+pairs  = pace.pair_variance(fit, counts, frame)
 ```
