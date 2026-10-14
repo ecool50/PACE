@@ -9,6 +9,7 @@ from .shrink import ShrunkenSlopes, pace_shrink
 from .stats import FitStatistics, fit_statistics, fitted_means
 from .decompose import (Decomposition, SingleFrameDecomposition, pace_decompose,
                         single_frame_decomposition)
+from .drivers import DriverTables, PairDrivers, pace_drivers
 from ._core import (
     ambient_field,
     anchor_mask,
@@ -55,5 +56,8 @@ __all__ = [
     "Decomposition",
     "single_frame_decomposition",
     "SingleFrameDecomposition",
+    "pace_drivers",
+    "DriverTables",
+    "PairDrivers",
 ]
 __version__ = "0.0.1"

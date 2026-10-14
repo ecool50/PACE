@@ -61,6 +61,7 @@ EIGEN_INCLUDE_DIR=$(Rscript -e 'cat(system.file("include", package="RcppEigen"))
 | `pace_shrink` | multivariate adaptive shrinkage of the fitted slopes |
 | `pace_decompose` | the per-gene, per-cell-type variance decomposition |
 | `single_frame_decomposition` | the observed decomposition R reports |
+| `pace_drivers` | per-pair driver tables, ranked |
 | `fit_statistics` | the per-cell-type summaries the readouts are built on |
 
 `pace_fit()` runs the whole pipeline from counts, coordinates and cell type
@@ -228,3 +229,38 @@ python -m pytest python/tests
 The mash tests hold the bindings to the same target as the R package: every
 neighbour slice of both canonical cohorts, compared gene by gene against mashr
 rather than by count, giving 1634 breast cancer and 426 melanoma calls.
+
+## Ranking the drivers of a pair
+
+`pace_drivers()` ranks, for each focal-neighbour pair, the genes mediating it:
+
+```python
+slopes = pace.pace_shrink(fit, null_correlation=False)
+stats = pace.fit_statistics(fit, counts)
+decomposition = pace.pace_decompose(fit, counts, stats=stats)
+drivers = pace.pace_drivers(fit, slopes, decomposition, stats)
+
+drivers["Macrophage", "Tumour"].to_dataframe().head()
+```
+
+The score is `b^2 * spec^2 * focal_mean`, with `b` the shrunken slope. Squaring
+the slope makes it direction-blind, so a gene pushed down near the neighbour
+ranks alongside one pushed up; the specificity and level keep a gene that is
+barely expressed in the focal type off the top of the table on a noisy slope.
+The filter is lfsr < 0.05 alone -- there is no specificity cut at this layer,
+since `spec` is already in the score.
+
+Against R this gives the same pairs, the same genes in the same rank order, and
+all fourteen columns to 2e-7. Each pair also carries its status and how many of
+its calls are expected to have the wrong sign.
+
+## The whole pipeline
+
+```python
+fit    = pace.fit_anndata(adata, "cell_type")
+slopes = pace.pace_shrink(fit, null_correlation=False)
+stats  = pace.fit_statistics(fit, counts)
+blocks = pace.pace_decompose(fit, counts, stats=stats)
+frame  = pace.single_frame_decomposition(fit, counts, blocks)
+drive  = pace.pace_drivers(fit, slopes, blocks, stats)
+```
