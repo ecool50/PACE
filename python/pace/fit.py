@@ -4,6 +4,9 @@ Every numerical stage lives in the compiled core and is shared with the R
 package. What this module does is order them, build the designs, and hand the
 solver what it expects -- the job `pace_fit_streaming()` does in R.
 
+`fit_anndata()` is a thin reader on top of `pace_fit()` for callers holding
+an AnnData rather than arrays.
+
 Only the no-condition path is implemented. A condition term brings in R's
 model.matrix semantics (contrasts, interaction expansion, level ordering), and
 guessing at those is how a translation diverges quietly, so `condition` raises
@@ -15,6 +18,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
+from scipy.sparse import csc_matrix, issparse
 
 from . import _core
 
@@ -153,6 +157,11 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
             "semantics -- contrasts, interaction expansion, level ordering -- and "
             "approximating those would make the fit disagree with the R package "
             "in ways that are hard to see.")
+
+    if hasattr(counts, "obsm"):
+        raise TypeError(
+            "pace_fit() takes a count matrix, not an AnnData; use "
+            "fit_anndata(adata, celltype_key) instead.")
 
     x = np.asfortranarray(np.asarray(x, dtype=np.float64).ravel())
     y = np.asfortranarray(np.asarray(y, dtype=np.float64).ravel())
@@ -336,3 +345,141 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
                     homotypic_fraction=homotypic_fraction,
                     n_images=n_images, n_dropped=n_dropped, n_core_cells=n_core),
     )
+
+
+# ---------------------------------------------------------------------------
+# AnnData
+# ---------------------------------------------------------------------------
+# `anndata` is not imported, and is not a dependency: everything below needs
+# only the attributes an AnnData exposes, so anything shaped like one works.
+
+
+def _anndata_counts(adata, layer):
+    """The count matrix, as compressed-column sparse, having checked it is counts.
+
+    This is the one check R never needs. `counts(spe)` names the assay it
+    wants, whereas `adata.X` is whatever the last preprocessing step left
+    there, very often normalised or log1p-transformed. PACE is a negative
+    binomial model on raw counts, so fitting those would converge, report
+    slopes, and mean nothing at all.
+    """
+    if layer is None:
+        matrix, source = adata.X, "adata.X"
+    else:
+        if layer not in adata.layers:
+            raise KeyError(
+                f'adata.layers has no "{layer}"; it has {list(adata.layers)}')
+        matrix, source = adata.layers[layer], f'adata.layers["{layer}"]'
+    if matrix is None:
+        raise ValueError(f"{source} is empty")
+
+    if issparse(matrix):
+        counts = matrix.tocsc()
+        values = counts.data
+    else:
+        values = np.asarray(matrix)
+        if values.ndim != 2:
+            raise ValueError(f"{source} must be two-dimensional, cells by genes")
+        counts = csc_matrix(values)
+        values = counts.data
+
+    if values.size:
+        if not np.all(np.isfinite(values)):
+            raise ValueError(f"{source} holds non-finite values")
+        if values.min() < 0:
+            raise ValueError(
+                f"{source} holds negative values, so it is not counts. PACE fits "
+                "counts; point `layer` at the raw ones.")
+        if not np.array_equal(values, np.rint(values)):
+            raise ValueError(
+                f"{source} is not integer-valued, so it looks normalised or "
+                "log-transformed rather than raw counts, and a negative binomial "
+                "fit of it would be meaningless. Pass the raw counts instead, "
+                'usually layer="counts" or adata.raw. If the values really are '
+                "counts and merely non-integer, call pace_fit() with the arrays "
+                "directly, which does not check.")
+    return counts
+
+
+def _anndata_coordinates(adata, spatial_key):
+    """The two spatial coordinates, from `obsm`."""
+    if spatial_key not in adata.obsm:
+        raise KeyError(
+            f'adata.obsm has no "{spatial_key}"; it has {list(adata.obsm)}. '
+            "Spatial coordinates are expected there, as cells by two columns, "
+            "which is where squidpy and the readers put them.")
+    coordinates = np.asarray(adata.obsm[spatial_key], dtype=np.float64)
+    if coordinates.ndim != 2:
+        raise ValueError(f'adata.obsm["{spatial_key}"] must be two-dimensional')
+    if coordinates.shape[1] != 2:
+        raise ValueError(
+            f'adata.obsm["{spatial_key}"] has {coordinates.shape[1]} columns and '
+            "PACE's kernels are two-dimensional. Rather than drop a dimension "
+            "quietly, add a two-column key, for instance "
+            f'adata.obsm["spatial_2d"] = adata.obsm["{spatial_key}"][:, :2], and '
+            'pass spatial_key="spatial_2d".')
+    return coordinates[:, 0], coordinates[:, 1]
+
+
+def _anndata_column(adata, key, what):
+    """One `obs` column as objects, keeping a missing value missing.
+
+    Deliberately not `.astype(str)`: that renders a missing label as the string
+    "nan", which would then be a cell type like any other.
+    """
+    if key not in adata.obs:
+        raise KeyError(f'adata.obs has no "{key}" for the {what}')
+    return np.asarray(adata.obs[key], dtype=object)
+
+
+def fit_anndata(adata, celltype_key, *, image_key=None, spatial_key="spatial",
+                layer=None, **kwargs):
+    """Fit PACE to an `AnnData`.
+
+    A reader over `pace_fit()`, which does the work. Coordinates come from
+    `obsm`, labels from `obs`, gene names from `var_names`, and the counts from
+    `X` or a layer.
+
+    Parameters
+    ----------
+    adata
+        An `AnnData`, or anything exposing `X`, `obs`, `obsm` and `var_names`.
+        It is never modified.
+    celltype_key
+        The `obs` column holding the cell type labels.
+    image_key
+        The `obs` column grouping cells into images or samples, or None for a
+        single image.
+    spatial_key
+        The `obsm` key holding the coordinates, cells by two columns. Defaults
+        to `"spatial"`, the squidpy convention.
+    layer
+        The layer holding raw counts, or None for `X`. Either way the values
+        are checked for being counts, because `X` is often normalised.
+    **kwargs
+        Passed to `pace_fit()`: `types`, `kernel_per_image`, `h_bio`, `h_tech`
+        and the rest. Read its docstring for the two places Python's defaults
+        are not R's.
+
+    Returns
+    -------
+    PaceFit
+    """
+    for attribute in ("X", "obs", "obsm", "var_names"):
+        if not hasattr(adata, attribute):
+            raise TypeError(
+                f"this does not look like an AnnData: no `{attribute}`. To fit "
+                "plain arrays, call pace_fit() instead.")
+
+    counts = _anndata_counts(adata, layer)
+    x, y = _anndata_coordinates(adata, spatial_key)
+    cell_type = _anndata_column(adata, celltype_key, "cell types")
+    image = _anndata_column(adata, image_key, "images") if image_key is not None else None
+
+    if counts.shape[0] != x.size:
+        raise ValueError(
+            f"the counts have {counts.shape[0]} rows and there are {x.size} sets of "
+            "coordinates; an AnnData is cells by genes, so these should agree")
+
+    return pace_fit(counts, x, y, cell_type, image=image,
+                    genes=list(adata.var_names), **kwargs)

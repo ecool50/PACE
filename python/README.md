@@ -57,6 +57,7 @@ EIGEN_INCLUDE_DIR=$(Rscript -e 'cat(system.file("include", package="RcppEigen"))
 | `fit_irls` | the penalised quasi-likelihood loop: the fit itself |
 | `sparse_product` | sparse-sparse product, in the core's summation order |
 | `pace_fit` | every stage above, in order: counts and coordinates to a fit |
+| `fit_anndata` | the same, reading an `AnnData` |
 
 `pace_fit()` runs the whole pipeline from counts, coordinates and cell type
 labels, and reproduces `paceModel()` bit for bit: every one of the 20,016
@@ -68,9 +69,23 @@ core's trigamma, nothing differs at all.
 
 ```python
 import pace
-fit = pace.pace_fit(counts, x, y, cell_type)   # counts is cells by genes
+
+fit = pace.fit_anndata(adata, "cell_type")             # from an AnnData
+fit = pace.pace_fit(counts, x, y, cell_type)           # or from arrays
 fit.U[fit.row_names.index("Macrophage::Tumour")]
 ```
+
+`fit_anndata()` reads the coordinates from `obsm["spatial"]`, the labels from
+`obs`, the gene names from `var_names`, and the counts from `X` or a `layer`.
+It never modifies the object, and `anndata` is not a dependency: it uses only
+the attributes an `AnnData` exposes, so anything shaped like one works.
+
+It checks that the counts are counts, which is the one thing the R package
+never has to: `counts(spe)` names the assay it wants, whereas `adata.X` holds
+whatever the last preprocessing step left there. A negative binomial fit of
+log-normalised values converges and reports slopes that mean nothing, so
+non-integer values are refused rather than fitted. Point `layer` at the raw
+counts, usually `layer="counts"`.
 
 Two things to know before comparing a Python fit to an R one row by row:
 

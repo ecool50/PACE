@@ -4,7 +4,7 @@ This package binds the same compiled core the R package uses, so results do
 not depend on which language you call it from.
 """
 
-from .fit import PaceFit, pace_fit
+from .fit import PaceFit, fit_anndata, pace_fit
 from ._core import (
     ambient_field,
     anchor_mask,
@@ -40,6 +40,7 @@ __all__ = [
     "group_column_means",
     "same_type_fraction",
     "pace_fit",
+    "fit_anndata",
     "PaceFit",
 ]
 __version__ = "0.0.1"
