@@ -87,14 +87,10 @@ def test_the_contamination_loadings_match_rs(fit):
     np.testing.assert_allclose(fit.rho, reference, rtol=1e-05, atol=0)
 
 
-def test_a_condition_term_refuses_rather_than_approximating():
-    dim = vec("raw_y_dim.txt", int)
-    counts = csc_matrix(
-        (vec("raw_y_x.txt"), vec("raw_y_i.txt", np.int32), vec("raw_y_p.txt", np.int32)),
-        shape=(int(dim[0]), int(dim[1])))
-    with pytest.raises(NotImplementedError, match="model.matrix"):
-        pace_fit(counts, vec("raw_x.txt"), vec("raw_y.txt"), lines("raw_celltype.txt"),
-                 condition=np.zeros(int(dim[0])))
+def test_a_one_level_condition_is_refused(fit):
+    counts, x, y, cell_type = _raw_inputs()
+    with pytest.raises(ValueError, match="at least two"):
+        pace_fit(counts, x, y, cell_type, condition=["PD"] * x.size)
 
 
 # --- several images -------------------------------------------------------
@@ -211,3 +207,68 @@ def test_normalising_does_not_touch_the_callers_matrix(fit):
     pace_fit(broken, x, y, cell_type, n_threads=1)
     assert broken.nnz == before[0]
     assert np.array_equal(broken.data, before[1])
+
+
+# --- a condition cohort --------------------------------------------------
+# `~ 1 + condition * (types)` over a `~ 1 + condition` fixed design. Two levels
+# pins the columns; THREE pins their order, because model.matrix() varies the
+# condition level fastest within each type and a two-level fit cannot show it.
+# Tolerances are the trigamma floor: these references are R's stock build.
+
+@pytest.mark.parametrize("tag,name,n_terms", [("cond2", "Arm", 18), ("cond3", "Arm3", 27)])
+def test_a_condition_fit_matches_r(tag, name, n_terms):
+    counts, x, y, cell_type = _raw_inputs()
+    fit = pace_fit(counts, x, y, cell_type, condition=lines(f"{tag}_label.txt"),
+                   condition_name=name, n_threads=1)
+    dim = vec(f"{tag}_U_dim.txt", int)
+    assert fit.U.shape == (int(dim[0]), int(dim[1]))
+    assert len(fit.params["term_names"]) == n_terms
+    np.testing.assert_allclose(
+        fit.U, vec(f"{tag}_U.txt").reshape(fit.U.shape, order="F"), rtol=0, atol=1e-06)
+    np.testing.assert_allclose(
+        fit.B, vec(f"{tag}_B.txt").reshape(fit.B.shape, order="F"), rtol=0, atol=1e-06)
+    np.testing.assert_allclose(fit.alpha, vec(f"{tag}_alpha.txt"), rtol=0, atol=1e-05)
+
+
+@pytest.mark.parametrize("tag,name", [("cond2", "Arm"), ("cond3", "Arm3")])
+def test_the_condition_rows_are_named_the_way_r_names_them(tag, name):
+    """The interaction order is R's, level innermost, not the obvious one."""
+    counts, x, y, cell_type = _raw_inputs()
+    fit = pace_fit(counts, x, y, cell_type, condition=lines(f"{tag}_label.txt"),
+                   condition_name=name, n_threads=1)
+    assert fit.row_names == lines(f"{tag}_rownames.txt")
+    assert fit.params["fixed_names"] == lines(f"{tag}_fixednames.txt")
+
+
+def test_the_condition_terms_take_their_prefix_from_the_name():
+    counts, x, y, cell_type = _raw_inputs()
+    fit = pace_fit(counts, x, y, cell_type, condition=lines("cond2_label.txt"),
+                   condition_name="Responder", n_threads=1)
+    assert "Responder::PR" not in fit.row_names
+    assert fit.params["fixed_names"] == ["(Intercept)", "ResponderPR"]
+    assert any(name.endswith("::ResponderPR:Tumour") for name in fit.row_names)
+
+
+def test_the_reference_level_is_the_first_and_is_dropped():
+    counts, x, y, cell_type = _raw_inputs()
+    flipped = pace_fit(counts, x, y, cell_type, condition=lines("cond2_label.txt"),
+                       condition_name="Arm", condition_levels=["PR", "PD"], n_threads=1)
+    assert flipped.params["fixed_names"] == ["(Intercept)", "ArmPD"]
+    # the same model, reparameterised: the intercept absorbs the other arm, so
+    # the fit is not the same numbers, only the same shape
+    assert flipped.U.shape == (144, 278)
+
+
+def test_a_missing_condition_is_refused():
+    counts, x, y, cell_type = _raw_inputs()
+    labels = list(lines("cond2_label.txt"))
+    labels[3] = np.nan
+    with pytest.raises(ValueError, match="every cell needs a condition"):
+        pace_fit(counts, x, y, cell_type, condition=labels, condition_name="Arm")
+
+
+def test_an_unknown_condition_label_is_refused():
+    counts, x, y, cell_type = _raw_inputs()
+    with pytest.raises(ValueError, match="not a level"):
+        pace_fit(counts, x, y, cell_type, condition=lines("cond2_label.txt"),
+                 condition_name="Arm", condition_levels=["PD"])

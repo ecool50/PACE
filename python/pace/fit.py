@@ -7,10 +7,12 @@ solver what it expects -- the job `pace_fit_streaming()` does in R.
 `fit_anndata()` is a thin reader on top of `pace_fit()` for callers holding
 an AnnData rather than arrays.
 
-Only the no-condition path is implemented. A condition term brings in R's
-model.matrix semantics (contrasts, interaction expansion, level ordering), and
-guessing at those is how a translation diverges quietly, so `condition` raises
-rather than approximating.
+A condition cohort needs the part of R's model.matrix that PACE actually uses:
+treatment contrasts, the expansion of `cond * (types)`, and the order the
+resulting columns come out in. That is reproduced here for the two formulas
+PACE builds rather than in general, and checked against R on a two-level and a
+three-level condition, because only the three-level case can show that the
+condition level varies fastest within each type.
 """
 from __future__ import annotations
 
@@ -61,6 +63,40 @@ def _is_missing(value) -> bool:
         return bool(value != value)
     except (TypeError, ValueError):
         return True
+
+
+def _treatment_contrasts(labels, levels, name):
+    """A factor as R's `model.matrix` codes it, under the default contrasts.
+
+    `contr.treatment` drops the first level as the reference and gives one 0/1
+    column per remaining level, named `paste0(column, level)`. The column name
+    is the name of the variable, which is why the prefix has to be passed in:
+    in R it comes from the colData column, and the terms it produces are what
+    `resp_term` and every downstream filter match against.
+    """
+    if len(levels) < 2:
+        raise ValueError(
+            f"`{name}` has only the level {levels!r}; a condition needs at least two")
+    dummies = np.zeros((len(labels), len(levels) - 1), order="F")
+    for column, level in enumerate(levels[1:]):
+        dummies[:, column] = (labels == level).astype(np.float64)
+    return dummies, [f"{name}{level}" for level in levels[1:]]
+
+
+def _neighbour_of_term(term, types):
+    """The neighbour type a random-effect term carries a slope on, or None.
+
+    R decides this with `grepl("(^|:)<type>$", term)`, so "Tumour" and
+    "ResponderPR:Tumour" both slope on Tumour while "(Intercept)" and
+    "ResponderPR" slope on nothing. Matching the string outright rather than by
+    regex is the same answer for an ordinary name and a safer one for a type
+    whose name holds a regex metacharacter, which in R can take another type's
+    variance.
+    """
+    for candidate in types:
+        if term == candidate or term.endswith(":" + candidate):
+            return candidate
+    return None
 
 
 def _csc(matrix) -> dict:
@@ -124,7 +160,8 @@ def _anchors(x, y, counts_csc, type_code, image_code, n_types, n_cells,
 
 
 def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
-             h_bio=30.0, h_tech=5.0, eps=None, condition=None, min_effective=30.0,
+             h_bio=30.0, h_tech=5.0, eps=None, condition=None,
+             condition_name="condition", condition_levels=None, min_effective=30.0,
              within_image=True, kernel_per_image=False, homotypic_fraction=0.5,
              n_iter=32, min_iter=12, chunk_size=128, n_threads=1, verbose=False):
     """Fit PACE to a cells-by-genes count matrix.
@@ -156,19 +193,24 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
         images are separate samples. The contamination field is always
         per-image regardless, as it is in R.
     condition
-        Not implemented. Raises, rather than approximating R's model.matrix.
+        One label per cell, or None. Given one, the model gains a condition
+        main effect in the fixed design and a condition-by-neighbour
+        interaction in the random-effect block, which is the responder layer:
+        `~ 1 + condition * (types)`, as in R.
+    condition_name
+        The name the condition's terms are built from, so a two-level
+        condition called "Responder" with levels PD and PR gives the term
+        `ResponderPR`. In R this is the colData column name; here it has to be
+        passed, because an array has no name. `fit_anndata()` uses the obs key.
+    condition_levels
+        The levels in order. The first is the reference and is dropped, as R's
+        default treatment contrasts drop it. None sorts the observed labels,
+        with the same caveat as `types`: that is byte order, not R's.
 
     Returns
     -------
     PaceFit
     """
-    if condition is not None:
-        raise NotImplementedError(
-            "a condition term is not implemented yet. It needs R's model.matrix "
-            "semantics -- contrasts, interaction expansion, level ordering -- and "
-            "approximating those would make the fit disagree with the R package "
-            "in ways that are hard to see.")
-
     if hasattr(counts, "obsm"):
         raise TypeError(
             "pace_fit() takes a count matrix, not an AnnData; use "
@@ -204,6 +246,25 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
     n_types = len(types)
     index = {t: i for i, t in enumerate(types)}
     type_code = np.ascontiguousarray([index[v] for v in labels], dtype=np.int32)
+
+    condition_labels = None
+    if condition is not None:
+        condition_labels = np.asarray(condition, dtype=object).ravel()
+        if condition_labels.size != n_cells:
+            raise ValueError(
+                f"condition has {condition_labels.size} entries for {n_cells} cells")
+        if any(_is_missing(v) for v in condition_labels):
+            raise ValueError("every cell needs a condition; none may be missing")
+        condition_labels = np.asarray([str(v) for v in condition_labels], dtype=object)
+        if condition_levels is None:
+            condition_levels = sorted(set(condition_labels))
+        else:
+            condition_levels = [str(level) for level in condition_levels]
+            if len(set(condition_levels)) != len(condition_levels):
+                raise ValueError("condition_levels must not repeat")
+            unknown = sorted(set(condition_labels) - set(condition_levels))
+            if unknown:
+                raise ValueError(f"these condition labels are not a level: {unknown}")
 
     if image is None:
         image_code = np.zeros(n_cells, dtype=np.int32)
@@ -271,14 +332,40 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
     mask, n_core = _anchors(x, y, counts_csc, type_code, image_code, n_types, n_cells,
                             homotypic_fraction=homotypic_fraction, n_threads=n_threads)
 
-    # --- the random-effect design: an intercept plus one slope per neighbour type
-    terms = np.asfortranarray(np.column_stack([np.ones(n_cells), k_bio]))
+    # --- the fixed design, and the random-effect term matrix
+    # Without a condition this is R's `~ 1 + <types>` over an intercept-only
+    # fixed design. With one it is `~ 1 + cond * (<types>)` over `~ 1 + cond`,
+    # and the column order is R's: main effects in formula order, then the
+    # interactions with the CONDITION LEVEL VARYING FASTEST within each type,
+    # which is what model.matrix() emits and is not the obvious order.
+    columns = [np.ones(n_cells)]
+    term_names = ["(Intercept)"]
+    if condition_labels is None:
+        fixed = np.ones((n_cells, 1))
+        fixed_names = ["(Intercept)"]
+    else:
+        dummies, dummy_names = _treatment_contrasts(
+            condition_labels, condition_levels, condition_name)
+        fixed = np.column_stack([np.ones(n_cells), dummies])
+        fixed_names = ["(Intercept)"] + dummy_names
+        columns.extend(dummies[:, j] for j in range(dummies.shape[1]))
+        term_names.extend(dummy_names)
+    columns.extend(k_bio[:, j] for j in range(n_types))
+    term_names.extend(types)
+    if condition_labels is not None:
+        for j, neighbour in enumerate(types):
+            for d, dummy_name in enumerate(dummy_names):
+                columns.append(dummies[:, d] * k_bio[:, j])
+                term_names.append(f"{dummy_name}:{neighbour}")
+
+    terms = np.asfortranarray(np.column_stack(columns))
+    fixed = np.asfortranarray(fixed)
+    p_fixed = fixed.shape[1]
     n_terms = terms.shape[1]
     design = _core.random_design_block(terms, type_code, n_types)
     q = n_types * n_terms
 
     # Row (type, term) of U, in the order the design lays them out.
-    term_names = ["(Intercept)"] + list(types)
     row_names = [f"{types[g]}::{term_names[t]}" for t in range(n_terms) for g in range(n_types)]
     # ONE-based, like R's match(): zero means "this row belongs to no cell-type
     # block" and the weight stays at one. Passing zero-based codes silently
@@ -306,12 +393,17 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
     # the single block here every row is assigned below, so this only matters
     # once an image-level block is added.
     scale_of_row = np.zeros(q)
-    for t in range(n_terms):
+    for t, term in enumerate(term_names):
+        # Which neighbour this term slopes on, by name rather than by position:
+        # with a condition the terms are no longer intercept-then-types, and
+        # "ResponderPR:Tumour" has to take Tumour's variance. A term that
+        # slopes on no neighbour, the intercept or a condition main effect,
+        # takes the detection profile unscaled.
+        neighbour = _neighbour_of_term(term, types)
+        scale = 1.0 if neighbour is None else None
+        column = None if neighbour is None else types.index(neighbour)
         for f in range(n_types):
-            row = t * n_types + f
-            # term 0 is the intercept and carries no neighbour; the rest are
-            # the slope on neighbour type (t - 1)
-            scale_of_row[row] = 1.0 if t == 0 else k_var_norm[f, t - 1]
+            scale_of_row[t * n_types + f] = scale if column is None else k_var_norm[f, column]
     weights = _core.data_informed_weights(detection, focal_of_row,
                                           np.asfortranarray(scale_of_row))
 
@@ -333,7 +425,7 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
         "cells_by_group": design["cells_by_group"],
     }
     fitted = _core.fit_irls(
-        x_fixed=np.asfortranarray(np.ones((n_cells, 1))), p=1,
+        x_fixed=fixed, p=p_fixed,
         z_design={"indptr": design["indptr"], "indices": design["indices"],
                   "data": design["data"], "shape": design["shape"]},
         blocks=[block], counts=counts_csc,
@@ -356,7 +448,10 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
         params=dict(h_bio=h_bio, h_tech=h_tech, eps=eps, min_effective=min_effective,
                     within_image=within_image, kernel_per_image=kernel_per_image,
                     homotypic_fraction=homotypic_fraction,
-                    n_images=n_images, n_dropped=n_dropped, n_core_cells=n_core),
+                    n_images=n_images, n_dropped=n_dropped, n_core_cells=n_core,
+                    condition_name=condition_name if condition_labels is not None else None,
+                    condition_levels=condition_levels, fixed_names=fixed_names,
+                    term_names=term_names),
     )
 
 
@@ -463,8 +558,22 @@ def _anndata_column(adata, key, what):
     return np.asarray(adata.obs[key], dtype=object)
 
 
-def fit_anndata(adata, celltype_key, *, image_key=None, spatial_key="spatial",
-                layer=None, **kwargs):
+def _categorical_levels(column):
+    """The levels R would use for a condition, or None to let `pace_fit` sort.
+
+    R takes them from `levels(factor(df[[condition_col]]))`, and `factor()` on
+    something already a factor keeps its order while dropping unused levels. A
+    pandas Categorical is the same idea, so its category order is honoured;
+    a plain column of strings has no order to honour and gets sorted.
+    """
+    if not hasattr(column, "cat"):
+        return None
+    observed = set(column.dropna().astype(str))
+    return [str(level) for level in column.cat.categories if str(level) in observed]
+
+
+def fit_anndata(adata, celltype_key, *, image_key=None, condition_key=None,
+                spatial_key="spatial", layer=None, **kwargs):
     """Fit PACE to an `AnnData`.
 
     A reader over `pace_fit()`, which does the work. Coordinates come from
@@ -481,6 +590,12 @@ def fit_anndata(adata, celltype_key, *, image_key=None, spatial_key="spatial",
     image_key
         The `obs` column grouping cells into images or samples, or None for a
         single image.
+    condition_key
+        The `obs` column holding the condition, or None. Its name becomes the
+        prefix of the condition's terms, exactly as the colData column name
+        does in R, so a column "Responder" with levels PD and PR gives the term
+        `ResponderPR`. A Categorical column's category order is used as the
+        level order, as R uses a factor's; a column of plain strings is sorted.
     spatial_key
         The `obsm` key holding the coordinates, cells by two columns. Defaults
         to `"spatial"`, the squidpy convention.
@@ -511,6 +626,14 @@ def fit_anndata(adata, celltype_key, *, image_key=None, spatial_key="spatial",
     x, y = _anndata_coordinates(adata, spatial_key)
     cell_type = _anndata_column(adata, celltype_key, "cell types")
     image = _anndata_column(adata, image_key, "images") if image_key is not None else None
+    if condition_key is not None:
+        condition = _anndata_column(adata, condition_key, "condition")
+        kwargs.setdefault("condition_name", condition_key)
+        levels = _categorical_levels(adata.obs[condition_key])
+        if levels is not None:
+            kwargs.setdefault("condition_levels", levels)
+    else:
+        condition = None
 
     # Gene names, as strings. Duplicates are refused for the reason R gives
     # when it refuses them: two different genes would share one row of the
@@ -531,4 +654,5 @@ def fit_anndata(adata, celltype_key, *, image_key=None, spatial_key="spatial",
             f"the counts have {counts.shape[0]} rows and there are {x.size} sets of "
             "coordinates; an AnnData is cells by genes, so these should agree")
 
-    return pace_fit(counts, x, y, cell_type, image=image, genes=genes, **kwargs)
+    return pace_fit(counts, x, y, cell_type, image=image, condition=condition,
+                    genes=genes, **kwargs)

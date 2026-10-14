@@ -215,3 +215,40 @@ def test_the_counts_arrays_are_not_written_through(adata):
     assert np.array_equal(held.X.data, before[0])
     assert np.array_equal(held.X.indices, before[1])
     assert np.array_equal(held.X.indptr, before[2])
+
+
+# --- a condition cohort through AnnData ----------------------------------
+
+def test_a_condition_key_matches_r(adata):
+    conditioned = adata.copy()
+    conditioned.obs["Arm"] = lines("cond2_label.txt")
+    fit = pace.fit_anndata(conditioned, "cellType", condition_key="Arm", n_threads=1)
+    np.testing.assert_allclose(
+        fit.U, vec("cond2_U.txt").reshape(fit.U.shape, order="F"), rtol=0, atol=1e-06)
+    assert fit.row_names == lines("cond2_rownames.txt")
+
+
+def test_the_obs_key_becomes_the_term_prefix(adata):
+    """As the colData column name does in R."""
+    conditioned = adata.copy()
+    conditioned.obs["Responder"] = lines("cond2_label.txt")
+    fit = pace.fit_anndata(conditioned, "cellType", condition_key="Responder", n_threads=1)
+    assert fit.params["fixed_names"] == ["(Intercept)", "ResponderPR"]
+
+
+def test_a_categorical_condition_keeps_its_category_order(adata):
+    """R honours a factor's level order; pandas categories are the same idea."""
+    conditioned = adata.copy()
+    conditioned.obs["Arm"] = pd.Categorical(
+        lines("cond2_label.txt"), categories=["PR", "PD"])
+    fit = pace.fit_anndata(conditioned, "cellType", condition_key="Arm", n_threads=1)
+    assert fit.params["condition_levels"] == ["PR", "PD"]
+    assert fit.params["fixed_names"] == ["(Intercept)", "ArmPD"]
+
+
+def test_an_unused_category_is_dropped_as_r_drops_it(adata):
+    conditioned = adata.copy()
+    conditioned.obs["Arm"] = pd.Categorical(
+        lines("cond2_label.txt"), categories=["PD", "PR", "CR"])
+    fit = pace.fit_anndata(conditioned, "cellType", condition_key="Arm", n_threads=1)
+    assert fit.params["condition_levels"] == ["PD", "PR"]

@@ -108,10 +108,19 @@ with several images the neighbour search is global, which is what a cohort of
 fields of view from one section wants. Set it `True` when the images are
 separate samples. The contamination field is per-image either way.
 
-A condition term is not implemented. It needs R's `model.matrix` semantics,
-and approximating those would make the two disagree quietly, so `condition`
-raises instead. The ambient field is always materialised, with no equivalent of
-R's `ambient_mode = "stream"`, so a very large cohort needs the memory for the
+**Condition cohorts.** Pass `condition_key` (or `condition=` and
+`condition_name=` for arrays) and the model gains a condition main effect in
+the fixed design and a condition-by-neighbour interaction in the random-effect
+block, which is the responder layer: `~ 1 + condition * (types)` over
+`~ 1 + condition`, as in R. The terms take their prefix from the column name,
+so a column `Responder` with levels PD and PR gives `ResponderPR` and
+`ResponderPR:Tumour`, and a Categorical's category order is honoured as R
+honours a factor's. Checked against R on a two-level and a three-level
+condition; the three-level case is the one that pins the column order, since
+`model.matrix()` varies the condition level fastest within each type.
+
+The ambient field is always materialised, with no equivalent of R's
+`ambient_mode = "stream"`, so a very large cohort needs the memory for the
 whole cells-by-genes product.
 
 
