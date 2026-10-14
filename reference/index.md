@@ -14,6 +14,8 @@
   : Per-cell contamination
 - [`cellTypes()`](https://ecool50.github.io/PACE/reference/cellTypes.md)
   : Cell types modelled
+- [`compactFit()`](https://ecool50.github.io/PACE/reference/compactFit.md)
+  : Drop the per-cell matrices from a fit
 - [`fitState()`](https://ecool50.github.io/PACE/reference/fitState.md) :
   Raw solver state
 - [`neighbourSlopes()`](https://ecool50.github.io/PACE/reference/neighbourSlopes.md)

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PACE</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.16</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -162,7 +162,7 @@ overall expression.</li>
 <p>The interaction term is named from the non-reference level of
 <code>condition_col</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span><span class="op">@</span><span class="va">params</span><span class="op">$</span><span class="va">resp_term</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/paceParams.html">paceParams</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">resp_term</span></span>
 <span><span class="co">#&gt; [1] "ResponderPD"</span></span></code></pre></div>
 <p>so <code>ResponderPD:Tumour</code> is the extra change in expression
 per unit of tumour proximity in the PD arm, on top of the
@@ -366,7 +366,7 @@ sections shown in the paper:</p>
 <span><span class="co">#&gt;  [9] IRanges_2.46.0              S4Vectors_0.50.3           </span></span>
 <span><span class="co">#&gt; [11] BiocGenerics_0.58.1         generics_0.1.4             </span></span>
 <span><span class="co">#&gt; [13] MatrixGenerics_1.24.0       matrixStats_1.5.0          </span></span>
-<span><span class="co">#&gt; [15] PACE_0.99.16                BiocStyle_2.40.0           </span></span>
+<span><span class="co">#&gt; [15] PACE_0.99.17                BiocStyle_2.40.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] tidyselect_1.2.1    viridisLite_0.4.3   farver_2.1.2       </span></span>

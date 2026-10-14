@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PACE</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.16</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,11 @@
       <small>Source: <a href="https://github.com/ecool50/PACE/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.17" id="pace-09917">PACE 0.99.17<a class="anchor" aria-label="anchor" href="#pace-09917"></a></h2>
+<ul><li>New <code><a href="../reference/compactFit.html">compactFit()</a></code> drops the per-cell matrices before saving a fit, which the vignette previously did by assigning into a slot.</li>
+<li>The vignettes read fits through accessors rather than <code>@</code>, which clears BiocCheck’s note about slot access in examples and vignettes.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.99.16" id="pace-09916">PACE 0.99.16<a class="anchor" aria-label="anchor" href="#pace-09916"></a></h2>
 <ul><li>New <code><a href="../reference/stashPACE.html">stashPACE()</a></code> copies a fit’s readouts into <code>metadata(spe)</code>, so results can travel with the data they came from. The solver state is not copied.</li>

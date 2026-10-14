@@ -97,7 +97,7 @@ The interaction term is named from the non-reference level of
 
 ``` r
 
-fit@params$resp_term
+paceParams(fit)$resp_term
 #> [1] "ResponderPD"
 ```
 
@@ -352,7 +352,7 @@ sessionInfo()
 #>  [9] IRanges_2.46.0              S4Vectors_0.50.3           
 #> [11] BiocGenerics_0.58.1         generics_0.1.4             
 #> [13] MatrixGenerics_1.24.0       matrixStats_1.5.0          
-#> [15] PACE_0.99.16                BiocStyle_2.40.0           
+#> [15] PACE_0.99.17                BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] tidyselect_1.2.1    viridisLite_0.4.3   farver_2.1.2       
