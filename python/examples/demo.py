@@ -11,6 +11,10 @@ from pathlib import Path
 import anndata
 import matplotlib
 matplotlib.use("Agg")
+# Type 42 embeds the fonts as TrueType, so the text stays selectable and
+# editable in Illustrator. The default, Type 3, is what journals bounce.
+matplotlib.rcParams["pdf.fonttype"] = 42
+matplotlib.rcParams["ps.fonttype"] = 42
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -79,19 +83,18 @@ print(drivers["Macrophage", "Tumour"].to_dataframe()
 
 # --- the figures -----------------------------------------------------------
 full, zoom = pace.plot_decomposition(frame)
-full.figure.tight_layout()
-full.figure.savefig(OUT / "py_decomposition.png", dpi=110)
+full.figure.savefig(OUT / "py_decomposition.pdf", bbox_inches="tight")
 
 axis = pace.plot_pair_heatmap(pairs, cell_types=fit.cell_types)
 axis.figure.tight_layout()
-axis.figure.savefig(OUT / "py_pairheatmap.png", dpi=110)
+axis.figure.savefig(OUT / "py_pairheatmap.pdf", bbox_inches="tight")
 
 left, right = pace.plot_drivers(drivers, "Macrophage", "Tumour", single_frame=frame)
 left.figure.tight_layout()
-left.figure.savefig(OUT / "py_drivers.png", dpi=110)
+left.figure.savefig(OUT / "py_drivers.pdf", bbox_inches="tight")
 
 panels = pace.plot_proximity(fit, counts, ["MRC1", "APOC1"], "Macrophage", "Tumour")
 panels[0].figure.tight_layout()
-panels[0].figure.savefig(OUT / "py_proximity.png", dpi=110)
+panels[0].figure.savefig(OUT / "py_proximity.pdf", bbox_inches="tight")
 
-print("\nwrote", ", ".join(sorted(p.name for p in OUT.glob("py_*.png"))))
+print("\nwrote", ", ".join(sorted(p.name for p in OUT.glob("py_*.pdf"))))

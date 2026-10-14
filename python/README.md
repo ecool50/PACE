@@ -293,6 +293,18 @@ pairs  = pace.pair_variance(fit, counts, frame)
 
 ## Figures
 
+Every panel returns matplotlib axes, so saving is ordinary matplotlib. For
+publication, write PDF with Type 42 fonts, which keeps the text selectable and
+editable and avoids the Type 3 fonts journals reject:
+
+```python
+import matplotlib
+matplotlib.rcParams["pdf.fonttype"] = 42
+
+axis, zoom = pace.plot_decomposition(frame)
+axis.figure.savefig("decomposition.pdf", bbox_inches="tight")
+```
+
 ```python
 pace.plot_decomposition(frame)                    # full bar + the rescaled zoom
 pace.plot_pair_heatmap(pairs, fit.cell_types)

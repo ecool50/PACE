@@ -104,8 +104,10 @@ def plot_decomposition(single_frame, ax=None, title="Per-focal decomposition",
     ax.tick_params(axis="x", rotation=45)
     for label in ax.get_xticklabels():
         label.set_horizontalalignment("right")
+    # Below the axis label, not on top of it: the tick labels are rotated, so
+    # the axis needs more room underneath than the default anchor leaves.
     ax.legend(frameon=False, fontsize=8, ncol=3, loc="upper center",
-              bbox_to_anchor=(0.5, -0.42), title="Block")
+              bbox_to_anchor=(0.5, -0.52), title="Block")
     _bare(ax)
     if zoom_ax is None:
         return ax
