@@ -9,15 +9,18 @@
 #include <pybind11/stl.h>
 
 #include <algorithm>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "decomposition.hpp"
 #include "neighbourhood.hpp"
+#include "count_stats.hpp"
 #include "hyperparameters.hpp"
 #include "irls_driver.hpp"
 #include "preprocess.hpp"
+#include "sparse_product.hpp"
 #include "random_design.hpp"
 #include "special.hpp"
 #include "mash.hpp"
@@ -232,12 +235,19 @@ py::dict ambient_field(const ColumnMajor& x, const ColumnMajor& y, const IntColu
   }
   if (n_angles < 1) throw std::runtime_error("n_angles must be positive");
 
-  // theta_k = 2 pi k / n_angles, matching the R quadrature exactly
+  // The angles R hands the core, reproduced bit for bit. R writes them as
+  //   seq(0, 2 * pi, length.out = n_angles + 1)[-1]
+  // and seq() divides ONCE and then multiplies, so theta_k = k * (2 pi / n),
+  // with the last element set to 2 pi exactly rather than computed. Writing it
+  // the obvious way instead, 2 pi * k / n, moves 352 of the 1000 angles by one
+  // ulp, which carries through the edge correction into the ambient field and
+  // on into the fit: it was worth 8e-07 in the random effects.
   std::vector<double> cos_theta(static_cast<std::size_t>(n_angles));
   std::vector<double> sin_theta(static_cast<std::size_t>(n_angles));
-  const double two_pi = 6.283185307179586476925286766559;
+  const double two_pi = 2.0 * 3.14159265358979323846;
+  const double step = two_pi / static_cast<double>(n_angles);
   for (int k = 0; k < n_angles; ++k) {
-    const double theta = two_pi * static_cast<double>(k + 1) / static_cast<double>(n_angles);
+    const double theta = k + 1 == n_angles ? two_pi : static_cast<double>(k + 1) * step;
     cos_theta[static_cast<std::size_t>(k)] = std::cos(theta);
     sin_theta[static_cast<std::size_t>(k)] = std::sin(theta);
   }
@@ -449,15 +459,19 @@ py::dict fit_irls(const ColumnMajor& x_fixed, std::int64_t p, const py::dict& z_
     return options.contains(k) ? options[k].cast<double>() : d; };
   auto get_b = [&](const char* k, bool d) {
     return options.contains(k) ? options[k].cast<bool>() : d; };
-  opt.n_iter = get_i("n_iter", 16);
+  // Every default here mirrors fit_pace_mvpql_streaming()'s in R, so a fit run
+  // through either language agrees without the caller restating them. They are
+  // not free choices: alpha_warmup decides the iteration at which the
+  // dispersion freezes, and moving it moves the fit.
+  opt.n_iter = get_i("n_iter", 32);
   opt.min_iter = get_i("min_iter", 12);
   opt.early_stop_tol = get_d("early_stop_tol", 2e-2);
-  opt.alpha_warmup = get_d("alpha_warmup", 10);
-  opt.alpha_warmup_label = "10";
+  opt.alpha_warmup = get_d("alpha_warmup", 6);
+  opt.alpha_warmup_label = "6";
   opt.nb2 = get_b("nb2", false);
   opt.gaussian = get_b("gaussian", false);
   opt.zero_collapse = get_b("zero_collapse", true);
-  opt.alpha_max_cells = get_d("alpha_max_cells", 0);
+  opt.alpha_max_cells = get_d("alpha_max_cells", std::numeric_limits<double>::infinity());
   opt.fast_density = get_b("fast_density", true);
   opt.interior_precision = static_cast<int>(get_i("interior_precision", 1));
   opt.chunk_size = get_i("chunk_size", 128);
@@ -505,7 +519,15 @@ py::dict fit_irls(const ColumnMajor& x_fixed, std::int64_t p, const py::dict& z_
 
   pace::IrlsLoopReporter reporter;
   std::vector<std::string> warnings;
-  reporter.message = [&](const std::string& text) { if (opt.verbose) py::print(text); };
+  // The loop below runs with the GIL released, and the reporter is called from
+  // that thread, so touching the Python side needs the GIL back first. Without
+  // this a verbose fit segfaults while a quiet one is fine, which is a very
+  // misleading symptom.
+  reporter.message = [&](const std::string& text) {
+    if (!opt.verbose) return;
+    py::gil_scoped_acquire hold;
+    py::print(text, py::arg("end") = "", py::arg("flush") = true);
+  };
   reporter.warn = [&warnings](const std::string& text) { warnings.push_back(text); };
   reporter.warn_nan_genes = [&warnings](std::int64_t iteration, pace::Span<const int>) {
     warnings.push_back("non-finite genes at iteration " + std::to_string(iteration));
@@ -638,6 +660,109 @@ py::dict standardise(const ColumnMajor& values) {
   return result;
 }
 
+// Mean of every gene within each cell group, or the detection rate when
+// `detection`. Cells coded -1 belong to no group; an empty group gives NaN,
+// as colMeans() of no rows does.
+ColumnMajor group_column_means(const py::dict& counts, const IntColumn& group, int n_groups,
+                               bool detection, int n_threads) {
+  CscHolder y(counts);
+  const std::int64_t n = y.view.n_rows, n_genes = y.view.n_cols;
+  if (group.size() != n) {
+    throw std::runtime_error("group must have one entry per cell; note the counts are "
+                             "cells by genes here, not genes by cells");
+  }
+  ColumnMajor means({static_cast<std::int64_t>(n_groups), n_genes});
+  raise_if_failed(pace::group_column_means(y.view, pace::Span<const int>(group.data(), n),
+                                           n_groups, detection, out_span_of(means), n_threads,
+                                           pace::InterruptCheck()),
+                  "group column means");
+  return means;
+}
+
+// Fraction of each cell's neighbours within `radius` that share its type. Used
+// to find homotypic-core cells, whose profiles are clean enough to anchor the
+// contamination field.
+ColumnMajor same_type_fraction(const ColumnMajor& x, const ColumnMajor& y,
+                               const IntColumn& cell_type, const IntColumn& image,
+                               double radius, int min_image_cells, int n_threads) {
+  const std::int64_t n = x.size();
+  if (y.size() != n || cell_type.size() != n || image.size() != n) {
+    throw std::runtime_error("every input must have one entry per cell");
+  }
+  ColumnMajor fraction(n);
+  raise_if_failed(pace::same_type_fraction(span_of(x), span_of(y),
+                                           pace::Span<const int>(cell_type.data(), n),
+                                           pace::Span<const int>(image.data(), n), radius,
+                                           min_image_cells, out_span_of(fraction), n_threads,
+                                           pace::InterruptCheck()),
+                  "same type fraction");
+  return fraction;
+}
+
+// Covariance of the kernel columns within each cell group, as n_groups slices
+// of p x p. Its diagonal is the per-focal variance of each neighbour column,
+// which is what scales the prior weights.
+ColumnMajor group_covariances(const ColumnMajor& values, const IntColumn& group, int n_groups,
+                              int n_threads) {
+  if (values.ndim() != 2) throw std::runtime_error("values must be n_cells x n_columns");
+  const std::int64_t n = values.shape(0), p = values.shape(1);
+  if (group.size() != n) throw std::runtime_error("group must have one entry per cell");
+  ColumnMajor covariance(static_cast<std::int64_t>(n_groups) * p * p);
+  raise_if_failed(pace::group_covariances(span_of(values), n, p,
+                                          pace::Span<const int>(group.data(), n), n_groups,
+                                          out_span_of(covariance), n_threads,
+                                          pace::InterruptCheck()),
+                  "group covariances");
+  return covariance;
+}
+
+// Scale every row to its own maximum and clamp at one, leaving a row with no
+// usable maximum at zero. The prior weights are scale-free across focals
+// because of this.
+ColumnMajor normalise_rows_to_max(const ColumnMajor& values) {
+  if (values.ndim() != 2) throw std::runtime_error("values must be 2-D");
+  const std::int64_t rows = values.shape(0), cols = values.shape(1);
+  ColumnMajor out({rows, cols});
+  std::copy(values.data(), values.data() + values.size(), out.mutable_data());
+  raise_if_failed(pace::normalise_rows_to_max(
+                      pace::Span<double>(out.mutable_data(), out.size()), rows, cols),
+                  "normalise rows");
+  return out;
+}
+
+// Sparse product, in compressed-column form. The ambient field the solver reads
+// is W @ Y, and it has to be formed with this rather than with scipy: the
+// summation order is part of the answer, and the R package routes the same
+// product through here for exactly that reason.
+py::dict sparse_product(const py::dict& left, const py::dict& right, int n_threads) {
+  CscHolder a(left), b(right);
+  if (a.view.n_cols != b.view.n_rows) {
+    throw std::runtime_error("left's columns must match right's rows");
+  }
+  std::vector<int> column_pointer, row_index;
+  std::vector<double> values;
+  raise_if_failed(pace::sparse_product_csc(a.view, b.view, 0, b.view.n_cols, column_pointer,
+                                           row_index, values, n_threads,
+                                           pace::InterruptCheck()),
+                  "sparse product");
+
+  const std::int64_t nnz = static_cast<std::int64_t>(values.size());
+  py::array_t<int> indptr(static_cast<std::int64_t>(column_pointer.size()));
+  py::array_t<int> indices(nnz);
+  ColumnMajor data(nnz);
+  std::copy(column_pointer.begin(), column_pointer.end(), indptr.mutable_data());
+  std::copy(row_index.begin(), row_index.end(), indices.mutable_data());
+  std::copy(values.begin(), values.end(), data.mutable_data());
+
+  py::dict out;
+  out["data"] = data;
+  out["indices"] = indices;
+  out["indptr"] = indptr;
+  out["shape"] = py::make_tuple(a.view.n_rows, b.view.n_cols);
+  out["nnz"] = nnz;
+  return out;
+}
+
 }  // namespace
 
 PYBIND11_MODULE(_core, m) {
@@ -687,4 +812,19 @@ PYBIND11_MODULE(_core, m) {
         "Per-(random effect, gene) prior weights from detection.");
   m.def("standardise", &standardise, py::arg("values"),
         "R's scale() of one column, with the divisor it used.");
+  m.def("group_column_means", &group_column_means, py::arg("counts"), py::arg("group"),
+        py::arg("n_groups"), py::arg("detection") = false, py::arg("n_threads") = 1,
+        "Per-group gene means, or detection rates.");
+  m.def("same_type_fraction", &same_type_fraction, py::arg("x"), py::arg("y"),
+        py::arg("cell_type"), py::arg("image"), py::arg("radius") = 30.0,
+        py::arg("min_image_cells") = 50, py::arg("n_threads") = 1,
+        "Fraction of each cell's neighbours sharing its type.");
+  m.def("group_covariances", &group_covariances, py::arg("values"), py::arg("group"),
+        py::arg("n_groups"), py::arg("n_threads") = 1,
+        "Covariance of the columns within each group, n_groups slices of p x p.");
+  m.def("normalise_rows_to_max", &normalise_rows_to_max, py::arg("values"),
+        "Scale each row to its own maximum, clamped at one.");
+  m.def("sparse_product", &sparse_product, py::arg("left"), py::arg("right"),
+        py::arg("n_threads") = 1,
+        "Sparse matrix product in compressed-column form.");
 }
