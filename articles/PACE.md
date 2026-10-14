@@ -149,7 +149,7 @@ staged <- paceModel(spe, celltype_col = "cellType", verbose = FALSE) |>
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.11 seconds.
+#>  - Likelihood calculations took 0.12 seconds.
 #>  - Fitting model with 417 mixture components.
 #>  - Model fitting took 0.45 seconds.
 #>  - Computing posterior matrices.
@@ -175,7 +175,7 @@ staged <- paceModel(spe, celltype_col = "cellType", verbose = FALSE) |>
 #>  - Computing 278 x 628 likelihood matrix.
 #>  - Likelihood calculations took 0.17 seconds.
 #>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.40 seconds.
+#>  - Model fitting took 0.41 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
@@ -390,6 +390,36 @@ tumour-marker signal in the macrophages, the drivers it promotes are
 genuine macrophage genes rather than tumour genes bleeding across cell
 boundaries.
 
+## Keeping results with the data
+
+A `PACEFit` is its own object, because a fit on a real cohort is large
+and usually outlives the session that made it. When you would rather the
+results travelled with the data,
+[`stashPACE()`](https://ecool50.github.io/PACE/reference/stashPACE.md)
+copies the readouts into `metadata(spe)`, leaving the solver state
+behind:
+
+``` r
+
+spe <- stashPACE(spe, fit)
+names(metadata(spe)$PACE)
+#> [1] "neighbourSlopes"       "varianceDecomposition" "topDrivers"           
+#> [4] "cellTypes"             "params"                "packageVersion"       
+#> [7] "stashedAt"
+```
+
+The three reporting layers are there, along with enough provenance to
+say which fit produced them. The solver state is not, which is why the
+stash is a fraction of the size of the fit:
+
+``` r
+
+c(fit = object.size(fit), stashed = object.size(metadata(spe)$PACE)) |>
+  format(units = "MB")
+#>       fit   stashed 
+#> "7162712" "2739200"
+```
+
 ## Saving a fit
 
 A fit holds the fitted means and the contamination log-offset as full
@@ -476,7 +506,7 @@ sessionInfo()
 #>  [9] Seqinfo_1.2.0               IRanges_2.46.0             
 #> [11] S4Vectors_0.50.3            BiocGenerics_0.58.1        
 #> [13] generics_0.1.4              MatrixGenerics_1.24.0      
-#> [15] matrixStats_1.5.0           PACE_0.99.15               
+#> [15] matrixStats_1.5.0           PACE_0.99.16               
 #> [17] BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):

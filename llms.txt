@@ -116,6 +116,8 @@ any and all feedback related to the package.
   : Response curve: binned means with the PACE slope overlaid
 - [`plotResponseMap()`](https://ecool50.github.io/PACE/reference/plotResponseMap.md)
   : Tissue maps and scatters for one exemplar image per arm
+- [`stashPACE()`](https://ecool50.github.io/PACE/reference/stashPACE.md)
+  : Stash PACE readouts in a SpatialExperiment
 - [`topDrivers()`](https://ecool50.github.io/PACE/reference/topDrivers.md)
   [`` `topDrivers<-`() ``](https://ecool50.github.io/PACE/reference/topDrivers.md)
   : Per-pair driver tables

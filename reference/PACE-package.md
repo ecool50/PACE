@@ -44,3 +44,7 @@ Authors:
 - John Ormerod
 
 - Ellis Patrick
+
+Other contributors:
+
+- Australian Government Research Training Program \[funder\]
