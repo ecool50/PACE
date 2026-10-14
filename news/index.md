@@ -1,5 +1,11 @@
 # Changelog
 
+## PACE 0.99.19
+
+- Declares its dependency on `S4Vectors`, which
+  [`stashPACE()`](https://ecool50.github.io/PACE/reference/stashPACE.md)
+  uses.
+
 ## PACE 0.99.18
 
 - Condition signals build their messages without

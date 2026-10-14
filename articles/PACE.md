@@ -131,63 +131,63 @@ staged <- paceModel(spe, celltype_col = "cellType", verbose = FALSE) |>
           paceDecompose(spe)      |>   # variance decomposition
           paceDrivers(spe)             # per-pair driver scores
 #>  - Computing 278 x 313 likelihood matrix.
-#>  - Likelihood calculations took 0.05 seconds.
+#>  - Likelihood calculations took 0.07 seconds.
 #>  - Fitting model with 313 mixture components.
-#>  - Model fitting took 0.10 seconds.
+#>  - Model fitting took 0.16 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
-#>  - Likelihood calculations took 0.01 seconds.
+#>  - Likelihood calculations took 0.02 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.03 seconds.
+#>  - Model fitting took 0.04 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.07 seconds.
+#>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.13 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 417 likelihood matrix.
-#>  - Likelihood calculations took 0.07 seconds.
-#>  - Fitting model with 417 mixture components.
 #>  - Model fitting took 0.22 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
+#>  - Computing 278 x 417 likelihood matrix.
+#>  - Likelihood calculations took 0.09 seconds.
+#>  - Fitting model with 417 mixture components.
+#>  - Model fitting took 0.37 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.00 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.03 seconds.
+#>  - Model fitting took 0.04 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 391 likelihood matrix.
-#>  - Likelihood calculations took 0.06 seconds.
+#>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 391 mixture components.
-#>  - Model fitting took 0.12 seconds.
+#>  - Model fitting took 0.20 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 430 likelihood matrix.
-#>  - Likelihood calculations took 0.07 seconds.
-#>  - Fitting model with 430 mixture components.
-#>  - Model fitting took 0.12 seconds.
-#>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
-#>  - Computing 278 x 628 likelihood matrix.
 #>  - Likelihood calculations took 0.10 seconds.
-#>  - Fitting model with 628 mixture components.
-#>  - Model fitting took 0.17 seconds.
+#>  - Fitting model with 430 mixture components.
+#>  - Model fitting took 0.20 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
+#>  - Computing 278 x 628 likelihood matrix.
+#>  - Likelihood calculations took 0.14 seconds.
+#>  - Fitting model with 628 mixture components.
+#>  - Model fitting took 0.28 seconds.
+#>  - Computing posterior matrices.
+#>  - Computation allocated took 0.00 seconds.
 #>  - Computing 278 x 404 likelihood matrix.
-#>  - Likelihood calculations took 0.07 seconds.
+#>  - Likelihood calculations took 0.09 seconds.
 #>  - Fitting model with 404 mixture components.
-#>  - Model fitting took 0.30 seconds.
+#>  - Model fitting took 0.51 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 #>  - Computing 278 x 590 likelihood matrix.
-#>  - Likelihood calculations took 0.09 seconds.
+#>  - Likelihood calculations took 0.13 seconds.
 #>  - Fitting model with 590 mixture components.
-#>  - Model fitting took 0.44 seconds.
+#>  - Model fitting took 0.74 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.01 seconds.
 
@@ -504,7 +504,7 @@ sessionInfo()
 #>  [9] Seqinfo_1.2.0               IRanges_2.46.0             
 #> [11] S4Vectors_0.50.3            BiocGenerics_0.58.1        
 #> [13] generics_0.1.4              MatrixGenerics_1.24.0      
-#> [15] matrixStats_1.5.0           PACE_0.99.18               
+#> [15] matrixStats_1.5.0           PACE_0.99.19               
 #> [17] BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
