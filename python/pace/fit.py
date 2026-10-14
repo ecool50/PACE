@@ -528,6 +528,25 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
     for text in fitted.get("warnings", []):
         warnings.warn(f"pace: {text}", stacklevel=2)
 
+    # R's final pass refuses a fit whose linear predictor is not finite
+    # ("eta must be finite", src/core/statistics.cpp), so a degenerate design
+    # errors there rather than returning anything. Python has no final pass to
+    # catch it, so check the coefficients directly: without this a fit that
+    # diverged comes back as a PaceFit full of NaN, which reads like a result.
+    # The standard errors are exempt, since they are deliberately NaN until the
+    # last iteration writes them.
+    bad_genes = ~(np.all(np.isfinite(fitted["B"]), axis=0)
+                  & np.all(np.isfinite(fitted["U"]), axis=0))
+    if np.any(bad_genes):
+        first = int(np.argmax(bad_genes))
+        raise FloatingPointError(
+            f"the fit did not converge to finite coefficients for "
+            f"{int(bad_genes.sum())} of {n_genes} genes (first: {genes[first]!r}). "
+            "This is a degenerate design rather than a numerical accident: the "
+            "usual causes are a cell type or condition level that no cell "
+            "carries, a condition level perfectly aligned with a cell type, or "
+            "counts that are not counts. R refuses the same fit.")
+
     return PaceFit(
         B=fitted["B"], U=fitted["U"], se_B=fitted["se_B"], se_U=fitted["se_U"],
         alpha=fitted["alpha"], tau=fitted["tau_flat"], rho=fitted["rho"],

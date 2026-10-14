@@ -368,6 +368,27 @@ def test_the_cores_warnings_reach_the_caller(monkeypatch):
         pace_fit(counts, x, y, cell_type, n_threads=1)
 
 
+def test_a_diverged_fit_raises_instead_of_returning_nan(monkeypatch):
+    """R's final pass refuses a non-finite eta; Python has no final pass.
+
+    The three inputs known to cause this are refused earlier now, so this
+    forces the state directly: the point is that there is a backstop at all,
+    for the routes nobody has found yet.
+    """
+    import pace.fit as module
+    real = module._core.fit_irls
+
+    def diverged(**kwargs):
+        out = real(**kwargs)
+        out["B"] = np.asfortranarray(np.full_like(out["B"], np.nan))
+        return out
+
+    monkeypatch.setattr(module._core, "fit_irls", diverged)
+    counts, x, y, cell_type = _raw_inputs()
+    with pytest.raises(FloatingPointError, match="finite coefficients"):
+        pace_fit(counts, x, y, cell_type, n_threads=1)
+
+
 def test_rows_with_no_data_behind_them_are_counted(fit):
     counts, x, y, cell_type = _raw_inputs()
     assert fit.params["n_structurally_zero"] == 0
