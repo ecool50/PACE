@@ -109,7 +109,20 @@ with several images the neighbour search is global, which is what a cohort of
 fields of view from one section wants. Set it `True` when the images are
 separate samples. The contamination field is per-image either way.
 
-**Condition cohorts.** Pass `condition_key` (or `condition=` and
+**Condition cohorts.** Name the reference arm. Unlike the cell type order,
+which only relabels the output, the condition's first level is what every other
+arm is contrasted against: it sets what the baseline neighbour slopes mean and
+which way the interaction points. R chooses it by locale collation and Python
+would choose it by byte order, and the two disagree on labels as ordinary as
+`{"Responder", "non-responder"}` -- where the fitted slopes then differ by 2
+rather than being reordered. Leaving `condition_levels` unset warns for exactly
+that reason.
+
+A numeric or boolean condition is refused: R would model such a column
+continuously, where treatment contrasts give a dummy per level, and the two are
+different fits.
+
+Pass `condition_key` (or `condition=` and
 `condition_name=` for arrays) and the model gains a condition main effect in
 the fixed design and a condition-by-neighbour interaction in the random-effect
 block, which is the responder layer: `~ 1 + condition * (types)` over

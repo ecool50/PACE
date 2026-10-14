@@ -272,3 +272,105 @@ def test_an_unknown_condition_label_is_refused():
     with pytest.raises(ValueError, match="not a level"):
         pace_fit(counts, x, y, cell_type, condition=lines("cond2_label.txt"),
                  condition_name="Arm", condition_levels=["PD"])
+
+
+# --- what the audit of the condition path turned up --------------------
+# Each of these produced an all-NaN fit, or a different fit from R's, in
+# silence. They are grouped because they share a cause: something that is
+# empty, or chosen by the wrong rule, and nothing saying so.
+
+def test_a_cell_type_with_no_cells_does_not_poison_the_fit():
+    """An empty type's detection rate is NaN from the core; R fills zero.
+
+    Reachable through the documented route: `types` is how a row order is
+    matched to R or shared across cohorts, so a type absent here is normal.
+    """
+    counts, x, y, cell_type = _raw_inputs()
+    fit = pace_fit(counts, x, y, cell_type, types=sorted(set(cell_type)) + ["Ghost"],
+                   n_threads=1)
+    assert np.all(np.isfinite(fit.U))
+    assert np.all(np.isfinite(fit.B))
+    assert fit.converged
+    ghost = [i for i, name in enumerate(fit.row_names) if name.startswith("Ghost::")]
+    assert np.array_equal(fit.U[ghost], np.zeros_like(fit.U[ghost]))
+
+
+def test_an_empty_cell_type_barely_moves_the_real_rows(fit):
+    """It adds all-zero rows, which shift the pooled variance components a little."""
+    counts, x, y, cell_type = _raw_inputs()
+    padded = pace_fit(counts, x, y, cell_type, types=sorted(set(cell_type)) + ["Ghost"],
+                      n_threads=1)
+    index = {name: i for i, name in enumerate(padded.row_names)}
+    rows = [index[name] for name in fit.row_names]
+    np.testing.assert_allclose(padded.U[rows], fit.U, rtol=0, atol=1e-05)
+
+
+def test_a_condition_level_no_cell_carries_is_refused():
+    """It would add an all-zero column and make every coefficient NaN."""
+    counts, x, y, cell_type = _raw_inputs()
+    with pytest.raises(ValueError, match="no cell carries the condition level"):
+        pace_fit(counts, x, y, cell_type, condition=lines("cond2_label.txt"),
+                 condition_name="Arm", condition_levels=["PD", "PR", "SD"])
+
+
+def test_a_numeric_condition_is_refused_rather_than_factored():
+    """R would model it continuously; applying contrasts instead is a different fit."""
+    counts, x, y, cell_type = _raw_inputs()
+    with pytest.raises(ValueError, match="numeric or boolean condition"):
+        pace_fit(counts, x, y, cell_type, condition=np.ones(x.size, dtype=int),
+                 condition_name="Arm")
+
+
+def test_inferring_the_reference_arm_warns():
+    """The reference arm changes the fit, and byte order is not R's rule."""
+    counts, x, y, cell_type = _raw_inputs()
+    with pytest.warns(UserWarning, match="reference arm"):
+        pace_fit(counts, x, y, cell_type, condition=lines("cond2_label.txt"),
+                 condition_name="Arm", n_threads=1)
+
+
+def test_naming_the_levels_does_not_warn():
+    counts, x, y, cell_type = _raw_inputs()
+    import warnings as _warnings
+    with _warnings.catch_warnings():
+        _warnings.simplefilter("error")
+        pace_fit(counts, x, y, cell_type, condition=lines("cond2_label.txt"),
+                 condition_name="Arm", condition_levels=["PD", "PR"], n_threads=1)
+
+
+def test_the_reference_arm_changes_the_fit_not_just_its_labels():
+    """Why the warning above exists: this is not a permutation."""
+    counts, x, y, cell_type = _raw_inputs()
+    labels = ["Responder" if v == "PR" else "non-responder"
+              for v in lines("cond2_label.txt")]
+    byte_order = pace_fit(counts, x, y, cell_type, condition=labels,
+                          condition_name="Resp",
+                          condition_levels=["Responder", "non-responder"], n_threads=1)
+    collated = pace_fit(counts, x, y, cell_type, condition=labels,
+                        condition_name="Resp",
+                        condition_levels=["non-responder", "Responder"], n_threads=1)
+    assert np.abs(byte_order.U - collated.U).max() > 1.0
+
+
+def test_the_cores_warnings_reach_the_caller(monkeypatch):
+    """R raises each of these; dropping them is what made a NaN fit silent."""
+    import pace.fit as module
+    real = module._core.fit_irls
+
+    def noisy(**kwargs):
+        out = real(**kwargs)
+        out["warnings"] = ["non-finite genes at iteration 2"]
+        return out
+
+    monkeypatch.setattr(module._core, "fit_irls", noisy)
+    counts, x, y, cell_type = _raw_inputs()
+    with pytest.warns(UserWarning, match="non-finite genes"):
+        pace_fit(counts, x, y, cell_type, n_threads=1)
+
+
+def test_rows_with_no_data_behind_them_are_counted(fit):
+    counts, x, y, cell_type = _raw_inputs()
+    assert fit.params["n_structurally_zero"] == 0
+    padded = pace_fit(counts, x, y, cell_type, types=sorted(set(cell_type)) + ["Ghost"],
+                      n_threads=1)
+    assert padded.params["n_structurally_zero"] == 10

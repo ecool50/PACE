@@ -16,6 +16,7 @@ condition level varies fastest within each type.
 """
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -74,6 +75,12 @@ def _is_missing(value) -> bool:
         return True
 
 
+def _is_numeric_condition(condition):
+    """Whether a condition arrived as numbers rather than labels."""
+    values = np.asarray(condition)
+    return values.dtype.kind in "biufc"
+
+
 def _treatment_contrasts(labels, levels, name):
     """A factor as R's `model.matrix` codes it, under the default contrasts.
 
@@ -101,6 +108,13 @@ def _neighbour_of_term(term, types):
     regex is the same answer for an ordinary name and a safer one for a type
     whose name holds a regex metacharacter, which in R can take another type's
     variance.
+
+    Be aware that this is a deliberate disagreement, not only a safer one: for
+    types named like "CD4.T" and "CD4_T", R's pattern for "CD4.T" also matches
+    the term "CD4_T", so R gives that row the wrong type's kernel variance and
+    the two languages then build different prior weights. The fitted slopes
+    barely moved on the data this was measured on, but the designs are not the
+    same.
     """
     for candidate in types:
         if term == candidate or term.endswith(":" + candidate):
@@ -187,6 +201,10 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
         One label per cell.
     types
         The cell types, in the order they should index the random-effect rows.
+        Note that R builds its formula by pasting the names together, without
+        backticks, so a name that is not a syntactic R name ("T-NK", "CD8+",
+        "arm 2") fails there outright. Such a panel fits here but has no R
+        counterpart to be compared against.
         None sorts the observed labels, which is Python's byte order and NOT
         R's: R sorts under `LC_COLLATE`, so a label set mixing cases orders
         differently ("epithelial" sorts before "T-NK" in R, after it here).
@@ -213,8 +231,17 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
         passed, because an array has no name. `fit_anndata()` uses the obs key.
     condition_levels
         The levels in order. The first is the reference and is dropped, as R's
-        default treatment contrasts drop it. None sorts the observed labels,
-        with the same caveat as `types`: that is byte order, not R's.
+        default treatment contrasts drop it.
+
+        This is NOT the same caveat as `types`, and the difference matters. A
+        permutation of `types` relabels the output and leaves the science
+        alone. The condition's first level is the arm everything else is
+        contrasted against, so it decides what the baseline neighbour slopes
+        mean and which way the interaction points. R picks it with
+        `levels(factor(...))` under `LC_COLLATE`; leaving this None picks it by
+        byte order, and the two disagree on labels as ordinary as
+        {"Responder", "non-responder"}, where the fitted slopes then differ by
+        2 rather than being reordered. Leaving it None warns for that reason.
 
     Returns
     -------
@@ -258,6 +285,14 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
 
     condition_labels = None
     if condition is not None:
+        if _is_numeric_condition(condition):
+            raise ValueError(
+                "a numeric or boolean condition is ambiguous: R would model such a "
+                "column CONTINUOUSLY, giving one fixed column of the raw values, "
+                "where this applies treatment contrasts and gives one dummy per "
+                "level. The two fits differ. Pass the labels as strings to get the "
+                "contrasts, and note that R's own responder term is derived wrongly "
+                "for a continuous condition, so there is no reference to match.")
         condition_labels = np.asarray(condition, dtype=object).ravel()
         if condition_labels.size != n_cells:
             raise ValueError(
@@ -267,6 +302,18 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
         condition_labels = np.asarray([str(v) for v in condition_labels], dtype=object)
         if condition_levels is None:
             condition_levels = sorted(set(condition_labels))
+            # Unlike `types`, this is not a relabelling. The first level is the
+            # reference the other arms are contrasted against, so it sets what
+            # the baseline slopes mean and which way the interaction points, and
+            # R picks it under LC_COLLATE where this picks it by byte order. On
+            # labels like {"Responder", "non-responder"} the two disagree and
+            # the fits are genuinely different, not permuted.
+            warnings.warn(
+                f"condition_levels was not given, so {condition_levels[0]!r} is the "
+                f"reference arm (byte order of {condition_levels}). R chooses it by "
+                "locale collation and may choose differently, which changes the fit "
+                "rather than reordering it. Pass condition_levels to be certain.",
+                stacklevel=2)
         else:
             condition_levels = [str(level) for level in condition_levels]
             if len(set(condition_levels)) != len(condition_levels):
@@ -274,6 +321,15 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
             unknown = sorted(set(condition_labels) - set(condition_levels))
             if unknown:
                 raise ValueError(f"these condition labels are not a level: {unknown}")
+            # And the other direction. A level no cell carries gives an all-zero
+            # dummy, which makes the fixed design singular and every coefficient
+            # NaN, with nothing to say why.
+            unused = [level for level in condition_levels
+                      if level not in set(condition_labels)]
+            if unused:
+                raise ValueError(
+                    f"no cell carries the condition level(s) {unused}, so they would "
+                    "add an all-zero column and make the fit singular; drop them")
 
     if image is None:
         image_code = np.zeros(n_cells, dtype=np.int32)
@@ -373,6 +429,13 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
     n_terms = terms.shape[1]
     design = _core.random_design_block(terms, type_code, n_types)
     q = n_types * n_terms
+    # How many random-effect rows have no data behind them at all: their design
+    # column is identically zero, so the row is identified only by the prior and
+    # comes back as whatever the prior says. A cell type absent from one
+    # condition arm produces a lot of these, and nothing else in the output
+    # distinguishes them from a genuine estimate of zero.
+    column_pointer = np.asarray(design["indptr"])
+    n_structurally_zero = int(np.sum(np.diff(column_pointer) == 0))
 
     # Row (type, term) of U, in the order the design lays them out.
     row_names = [f"{types[g]}::{term_names[t]}" for t in range(n_terms) for g in range(n_types)]
@@ -386,10 +449,18 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
     # how much the neighbour kernel actually varies over that focal's cells. A
     # slope estimated where the neighbour density barely moves gets little
     # prior weight; an intercept term takes the detection unscaled.
-    detection = _core.group_column_means(counts_csc, type_code, n_types, True, n_threads)
+    sizes = np.bincount(type_code, minlength=n_types)
+    detection = np.array(
+        _core.group_column_means(counts_csc, type_code, n_types, True, n_threads), order="F")
+    # A cell type with no cells has no detection rate, and the core says so with
+    # NaN. R starts the matrix at zero and fills only the types that have cells,
+    # so an empty type takes zero and the prior weights stay finite. Letting the
+    # NaN through poisons the whole weight matrix, and from there every
+    # coefficient in the fit: an empty type is reachable whenever `types` is
+    # passed explicitly, which is exactly what matching an R row order asks for.
+    detection[sizes == 0, :] = 0.0
     covariance = _core.group_covariances(np.asfortranarray(k_bio), type_code, n_types, n_threads)
     k_var = np.full((n_types, n_types), np.nan)
-    sizes = np.bincount(type_code, minlength=n_types)
     slab = n_types * n_types
     for f in range(n_types):
         if sizes[f] < 5:        # too few cells to carry a usable variance
@@ -419,6 +490,9 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
     if verbose:
         print(f"pace: {n_cells} cells x {n_genes} genes, {n_types} types, {n_images} image(s); "
               f"{n_dropped} sparse pairs dropped; {n_core} homotypic-core cells")
+        if n_structurally_zero:
+            print(f"pace: {n_structurally_zero} of {q} random-effect rows have an "
+                  "all-zero design column and are identified only by the prior")
 
     # --- the fit
     # Mind the indexing: the solver reads `cell_group` ONE-based, while
@@ -449,6 +523,11 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
                      n_threads=n_threads, verbose=verbose),
     )
 
+    # R raises every one of these as a warning. Dropping them is what made a
+    # NaN fit silent.
+    for text in fitted.get("warnings", []):
+        warnings.warn(f"pace: {text}", stacklevel=2)
+
     return PaceFit(
         B=fitted["B"], U=fitted["U"], se_B=fitted["se_B"], se_U=fitted["se_U"],
         alpha=fitted["alpha"], tau=fitted["tau_flat"], rho=fitted["rho"],
@@ -461,6 +540,7 @@ def pace_fit(counts, x, y, cell_type, image=None, *, genes=None, types=None,
                     within_image=within_image, kernel_per_image=kernel_per_image,
                     homotypic_fraction=homotypic_fraction,
                     n_images=n_images, n_dropped=n_dropped, n_core_cells=n_core,
+                    n_structurally_zero=n_structurally_zero,
                     condition_name=condition_name if condition_labels is not None else None,
                     condition_levels=condition_levels, fixed_names=fixed_names,
                     term_names=term_names),
@@ -577,6 +657,12 @@ def _categorical_levels(column):
     something already a factor keeps its order while dropping unused levels. A
     pandas Categorical is the same idea, so its category order is honoured;
     a plain column of strings has no order to honour and gets sorted.
+
+    An unused category is dropped here, which follows `.pace_prepare()` but not
+    `pace_fit_streaming()`: R hands the untouched factor to `model.matrix`,
+    which keeps the unused level as an all-zero column and makes the design
+    singular. R is inconsistent with itself on this, so the two cannot both be
+    matched; dropping is the one that fits.
     """
     if not hasattr(column, "cat"):
         return None
