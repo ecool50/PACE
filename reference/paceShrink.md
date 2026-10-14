@@ -77,7 +77,7 @@ fit <- paceShrink(fit)
 #>  - Computing 278 x 92 likelihood matrix.
 #>  - Likelihood calculations took 0.02 seconds.
 #>  - Fitting model with 92 mixture components.
-#>  - Model fitting took 0.05 seconds.
+#>  - Model fitting took 0.06 seconds.
 #>  - Computing posterior matrices.
 #>  - Computation allocated took 0.00 seconds.
 #>   [mashr] Dendritic_Cell: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 0, expected false sign = 0.0
@@ -93,7 +93,7 @@ fit <- paceShrink(fit)
 #>  - Fitting model with 417 mixture components.
 #>  - Model fitting took 0.45 seconds.
 #>  - Computing posterior matrices.
-#>  - Computation allocated took 0.00 seconds.
+#>  - Computation allocated took 0.01 seconds.
 #>   [mashr] Macrophage: 278 genes shrunk; gene-focal calls (lfsr<0.05) = 5, expected false sign = 0.0
 #>   [mashr] term 'Myoepithelial': fewer than two varying conditions, using independence
 #>  - Computing 278 x 92 likelihood matrix.
