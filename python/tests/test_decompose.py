@@ -148,3 +148,84 @@ def test_a_fit_without_the_kernel_says_so(counts):
     stripped = dataclasses.replace(build(counts, False), kernel=None)
     with pytest.raises(ValueError, match="does not carry `kernel`"):
         pace.pace_decompose(stripped, counts)
+
+
+# --- the observed single frame -------------------------------------------
+# This is the table R's varianceDecomposition() actually returns, and it is
+# not the five-block one: the magnitudes are observed (between-type sums of
+# squares of log1p(CP10k)) and only the within-type split comes from the fit.
+# So its observed columns should agree with R far more tightly than the
+# fitted ones, which carry the trigamma difference.
+
+@pytest.fixture(scope="module", params=[("sf", False), ("sfc", True)],
+                ids=["no-condition", "condition"])
+def single_frame(request, counts):
+    tag, condition = request.param
+    fit = build(counts, condition)
+    return tag, pace.single_frame_decomposition(fit, counts)
+
+
+def test_the_single_frame_rows_are_the_same_as_rs(single_frame):
+    tag, frame = single_frame
+    assert list(frame.gene) == lines(f"{tag}_gene.txt")
+    assert list(frame.focal) == lines(f"{tag}_focal.txt")
+    assert np.array_equal(frame.n_focal, vec(f"{tag}_n_focal.txt", int))
+
+
+def test_the_observed_sums_of_squares_match_rs_almost_exactly(single_frame):
+    """These come from the counts, not the fit, so nothing should drift."""
+    tag, frame = single_frame
+    for field, fixture in [("ss_lineage", "SS_lineage"), ("ss_within", "SS_within"),
+                           ("denom", "denom"), ("pct_celltype", "Cell_type")]:
+        np.testing.assert_allclose(getattr(frame, field), vec(f"{tag}_{fixture}.txt"),
+                                   rtol=1e-09, atol=1e-09, err_msg=field)
+
+
+def test_the_within_type_split_matches_rs(single_frame):
+    tag, frame = single_frame
+    for field, fixture in [("pct_spatial", "Spatial"), ("pct_spill", "Spillover"),
+                           ("pct_residual", "Residual")]:
+        np.testing.assert_allclose(getattr(frame, field), vec(f"{tag}_{fixture}.txt"),
+                                   rtol=0, atol=1e-04, err_msg=field)
+
+
+def test_only_a_condition_fit_has_a_responder_share(single_frame):
+    tag, frame = single_frame
+    if tag == "sfc":
+        np.testing.assert_allclose(frame.pct_responder,
+                                   vec("sfc_Responder_spatial.txt"), rtol=0, atol=1e-04)
+        assert "Responder spatial %" in frame.block_names
+    else:
+        assert frame.pct_responder is None
+        assert "Responder spatial %" not in frame.block_names
+
+
+def test_the_shares_sum_to_one_hundred(single_frame):
+    _, frame = single_frame
+    total = frame.pct_celltype + frame.pct_spatial + frame.pct_spill + frame.pct_residual
+    if frame.pct_responder is not None:
+        total = total + frame.pct_responder
+    finite = np.isfinite(total)
+    np.testing.assert_allclose(total[finite], 100.0, rtol=0, atol=1e-06)
+
+
+def test_the_per_focal_table_is_sum_of_squares_weighted(single_frame):
+    """block = 100 * sum(pct/100 * denom) / sum(denom), per focal."""
+    _, frame = single_frame
+    for row, focal in enumerate(frame.focal_levels):
+        rows = frame.focal == focal
+        weight = frame.denom[rows]
+        for column, name in enumerate(frame.block_names):
+            share = {"Cell type %": frame.pct_celltype, "Spatial %": frame.pct_spatial,
+                     "Responder spatial %": frame.pct_responder,
+                     "Spillover %": frame.pct_spill,
+                     "Residual %": frame.pct_residual}[name][rows]
+            expected = 100.0 * np.sum(share / 100.0 * weight) / np.sum(weight)
+            assert abs(frame.focal_table[row, column] - expected) < 1e-08
+
+
+def test_it_can_become_dataframes_too(single_frame):
+    pytest.importorskip("pandas")
+    _, frame = single_frame
+    assert "SS_lineage" in frame.to_dataframe().columns
+    assert list(frame.by_focal()["focal"]) == frame.focal_levels

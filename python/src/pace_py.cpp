@@ -920,7 +920,87 @@ py::dict decomposition_aggregates(const IntColumn& focal_code, int n_focals,
   return result;
 }
 
+// The observed single-frame statistics on y = log1p(CP10k): each type's mean,
+// its within-type sum of squares, and the global mean per gene.
+py::dict single_frame_statistics(const py::dict& counts, const ColumnMajor& n_count,
+                                 const IntColumn& group, int n_groups, int n_threads) {
+  CscHolder y(counts);
+  const std::int64_t n_genes = y.view.n_cols;
+  ColumnMajor focal_mean({static_cast<std::int64_t>(n_groups), n_genes});
+  ColumnMajor within_ss({static_cast<std::int64_t>(n_groups), n_genes});
+  ColumnMajor global_mean(n_genes);
+  raise_if_failed(pace::single_frame_statistics(
+                      y.view, span_of(n_count),
+                      pace::Span<const int>(group.data(), group.size()), n_groups,
+                      out_span_of(focal_mean), out_span_of(within_ss),
+                      out_span_of(global_mean), n_threads, pace::InterruptCheck()),
+                  "single frame statistics");
+  py::dict out;
+  out["focal_mean"] = focal_mean;
+  out["within_ss"] = within_ss;
+  out["global_mean"] = global_mean;
+  return out;
+}
+
+// The observed single-frame shares. Mind the two layouts: the inputs are
+// n_groups x n_genes column-major, so (type, gene) sits at type + gene *
+// n_groups, while the OUTPUTS are grouped by type, so (type, gene) sits at
+// type * n_genes + gene. R relies on exactly that, and they are not the same
+// order.
+py::dict single_frame_shares(const ColumnMajor& focal_mean, const ColumnMajor& within_ss,
+                             const ColumnMajor& global_mean, const IntColumn& group_size,
+                             const ColumnMajor& v_state, const ColumnMajor& v_responder,
+                             const ColumnMajor& v_spill, const ColumnMajor& v_disp,
+                             int n_threads) {
+  const int n_groups = static_cast<int>(group_size.size());
+  const std::int64_t n_genes = focal_mean.ndim() == 2 ? focal_mean.shape(1) : 0;
+  const std::int64_t rows = static_cast<std::int64_t>(n_groups) * n_genes;
+  const bool has_responder = v_responder.size() != 0;
+  ColumnMajor pct_celltype(rows), pct_spatial(rows), pct_spill(rows), pct_residual(rows);
+  ColumnMajor pct_responder(has_responder ? rows : 0);
+  ColumnMajor ss_lineage(rows), ss_within(rows), denom(rows);
+  py::array_t<int> keep(n_groups);
+  std::fill(keep.mutable_data(), keep.mutable_data() + n_groups, 0);
+
+  raise_if_failed(pace::single_frame_shares(
+                      span_of(focal_mean), span_of(within_ss), span_of(global_mean),
+                      pace::Span<const int>(group_size.data(), n_groups), n_groups, n_genes,
+                      span_of(v_state), span_of(v_responder), span_of(v_spill),
+                      span_of(v_disp), out_span_of(pct_celltype), out_span_of(pct_spatial),
+                      out_span_of(pct_responder), out_span_of(pct_spill),
+                      out_span_of(pct_residual), out_span_of(ss_lineage),
+                      out_span_of(ss_within), out_span_of(denom),
+                      pace::Span<int>(keep.mutable_data(), n_groups), n_threads,
+                      pace::InterruptCheck()),
+                  "single frame shares");
+  py::dict out;
+  out["pct_celltype"] = pct_celltype;
+  out["pct_spatial"] = pct_spatial;
+  out["pct_responder"] = pct_responder;
+  out["pct_spill"] = pct_spill;
+  out["pct_residual"] = pct_residual;
+  out["ss_lineage"] = ss_lineage;
+  out["ss_within"] = ss_within;
+  out["denom"] = denom;
+  out["keep"] = keep;
+  return out;
+}
+
+// Sum-of-squares weighted per-focal blocks of the observed single frame.
+ColumnMajor single_frame_focal_blocks(const IntColumn& focal_code, int n_focals,
+                                      const ColumnMajor& pct, int n_blocks,
+                                      const ColumnMajor& denom) {
+  const std::int64_t n_rows = focal_code.size();
+  ColumnMajor table({static_cast<std::int64_t>(n_focals), static_cast<std::int64_t>(n_blocks)});
+  raise_if_failed(pace::single_frame_focal_blocks(
+                      pace::Span<const int>(focal_code.data(), n_rows), n_focals, n_rows,
+                      span_of(pct), n_blocks, span_of(denom), out_span_of(table)),
+                  "single frame focal blocks");
+  return table;
+}
+
 }  // namespace
+
 
 
 PYBIND11_MODULE(_core, m) {
@@ -997,4 +1077,15 @@ PYBIND11_MODULE(_core, m) {
         py::arg("focal_code"), py::arg("n_focals"), py::arg("pct"), py::arg("components"),
         py::arg("spec"), py::arg("is_contaminated"),
         "Per-focal aggregate tables of the decomposition.");
+  m.def("single_frame_statistics", &single_frame_statistics, py::arg("counts"),
+        py::arg("n_count"), py::arg("group"), py::arg("n_groups"), py::arg("n_threads") = 1,
+        "Observed per-type means and within-type sums of squares on log1p(CP10k).");
+  m.def("single_frame_shares", &single_frame_shares, py::arg("focal_mean"),
+        py::arg("within_ss"), py::arg("global_mean"), py::arg("group_size"),
+        py::arg("v_state"), py::arg("v_responder"), py::arg("v_spill"), py::arg("v_disp"),
+        py::arg("n_threads") = 1,
+        "The observed single-frame decomposition shares.");
+  m.def("single_frame_focal_blocks", &single_frame_focal_blocks, py::arg("focal_code"),
+        py::arg("n_focals"), py::arg("pct"), py::arg("n_blocks"), py::arg("denom"),
+        "Sum-of-squares weighted per-focal blocks of the observed single frame.");
 }

@@ -242,3 +242,156 @@ def pace_decompose(fit, counts, *, resp_term=None, stats=None, nb1=True, n_threa
         pooled_table=np.asarray(aggregates["pooled"]),
         total_ss=np.asarray(aggregates["total_ss"]), n_rows=np.asarray(aggregates["n_rows"]),
         n_specific=np.asarray(aggregates["n_specific"]))
+
+
+# ---------------------------------------------------------------------------
+# The observed single frame
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class SingleFrameDecomposition:
+    """The observed single-frame decomposition, per (focal, gene).
+
+    The magnitudes here are observed rather than fitted: the cell-type share is
+    the between-type sum of squares of log1p(CP10k), and only the split of what
+    remains comes from the model. That is why this is the table R reports from
+    `varianceDecomposition()`, and why its percentages differ from the
+    five-block ones.
+    """
+
+    gene: np.ndarray
+    focal: np.ndarray
+    n_focal: np.ndarray
+    pct_celltype: np.ndarray
+    pct_spatial: np.ndarray
+    pct_responder: np.ndarray | None
+    pct_spill: np.ndarray
+    pct_residual: np.ndarray
+    ss_lineage: np.ndarray
+    ss_within: np.ndarray
+    denom: np.ndarray
+    focal_levels: list[str]
+    focal_table: np.ndarray     # focals x blocks, sum-of-squares weighted
+
+    def __len__(self) -> int:
+        return self.gene.size
+
+    def __repr__(self) -> str:
+        return (f"SingleFrameDecomposition({len(self)} gene-focal rows, "
+                f"{len(self.focal_levels)} focal types)")
+
+    @property
+    def block_names(self) -> list[str]:
+        names = ["Cell type %", "Spatial %"]
+        if self.pct_responder is not None:
+            names.append("Responder spatial %")
+        return names + ["Spillover %", "Residual %"]
+
+    def to_dataframe(self):
+        import pandas as pd
+        frame = pd.DataFrame({"focal": self.focal, "gene": self.gene,
+                              "Cell type %": self.pct_celltype,
+                              "Spatial %": self.pct_spatial})
+        if self.pct_responder is not None:
+            frame["Responder spatial %"] = self.pct_responder
+        frame["Spillover %"] = self.pct_spill
+        frame["Residual %"] = self.pct_residual
+        frame["SS_lineage"] = self.ss_lineage
+        frame["SS_within"] = self.ss_within
+        frame["denom"] = self.denom
+        frame["n_focal"] = self.n_focal
+        return frame
+
+    def by_focal(self):
+        import pandas as pd
+        frame = pd.DataFrame(self.focal_table, columns=self.block_names)
+        frame.insert(0, "focal", self.focal_levels)
+        return frame
+
+
+def single_frame_decomposition(fit, counts, decomposition=None, *, n_threads=1):
+    """The observed single-frame decomposition.
+
+    `decomposition` is a `pace_decompose()` result, which supplies the
+    within-cell-type split; it is computed if not given.
+    """
+    if decomposition is None:
+        decomposition = pace_decompose(fit, counts, n_threads=n_threads)
+
+    types = list(fit.cell_types)
+    n_types = len(types)
+    genes = np.asarray(fit.genes, dtype=object)
+    n_genes = genes.size
+    group_size = np.bincount(fit.type_code, minlength=n_types).astype(np.int32)
+
+    csc = counts.tocsc()
+    frame = _core.single_frame_statistics(
+        {"indptr": np.ascontiguousarray(csc.indptr, dtype=np.int32),
+         "indices": np.ascontiguousarray(csc.indices, dtype=np.int32),
+         "data": np.asfortranarray(csc.data, dtype=np.float64),
+         "shape": (int(csc.shape[0]), int(csc.shape[1]))},
+        n_count=np.asfortranarray(np.exp(fit.offset)), group=fit.type_code,
+        n_groups=n_types, n_threads=n_threads)
+
+    # The fit's within-type components, as n_types x n_genes with NaN where the
+    # decomposition dropped a row. Note the layout: these inputs are indexed
+    # (type, gene) with the TYPE varying fastest, where the decomposition's own
+    # output runs the other way round.
+    has_responder = bool(np.any(decomposition.v_state_responder != 0))
+    position = {(f, g): i for i, (f, g) in
+                enumerate(zip(decomposition.focal, decomposition.gene))}
+
+    def spread(values):
+        out = np.full((n_types, n_genes), np.nan, order="F")
+        for t, focal in enumerate(types):
+            for j, gene in enumerate(genes):
+                row = position.get((focal, gene))
+                if row is not None:
+                    out[t, j] = values[row]
+        return out
+
+    empty = np.asfortranarray(np.zeros((0, 0)))
+    shares = _core.single_frame_shares(
+        focal_mean=np.asfortranarray(frame["focal_mean"]),
+        within_ss=np.asfortranarray(frame["within_ss"]),
+        global_mean=np.asfortranarray(frame["global_mean"]),
+        group_size=group_size,
+        v_state=spread(decomposition.v_state_baseline),
+        v_responder=spread(decomposition.v_state_responder) if has_responder else empty,
+        v_spill=spread(decomposition.v_spill), v_disp=spread(decomposition.v_disp),
+        n_threads=n_threads)
+
+    # The outputs are grouped by type, so each kept type owns a contiguous run
+    # of n_genes rows.
+    kept = np.flatnonzero(np.asarray(shares["keep"]) == 1)
+    if kept.size == 0:
+        raise ValueError("no cell type has enough cells for the single-frame decomposition")
+    take = np.concatenate([np.arange(k * n_genes, (k + 1) * n_genes) for k in kept])
+
+    def column(name):
+        values = np.asarray(shares[name])
+        return values[take] if values.size else None
+
+    present = [types[k] for k in kept]
+    pct_responder = column("pct_responder") if has_responder else None
+    pct_columns = [column("pct_celltype"), column("pct_spatial")]
+    if pct_responder is not None:
+        pct_columns.append(pct_responder)
+    pct_columns += [column("pct_spill"), column("pct_residual")]
+    pct = np.asfortranarray(np.column_stack(pct_columns))
+    denom = column("denom")
+
+    focal_code = np.ascontiguousarray(np.repeat(np.arange(kept.size), n_genes), dtype=np.int32)
+    focal_table = np.asarray(_core.single_frame_focal_blocks(
+        focal_code=focal_code, n_focals=kept.size, pct=pct,
+        n_blocks=pct.shape[1], denom=np.asfortranarray(denom)))
+
+    return SingleFrameDecomposition(
+        gene=np.tile(genes, kept.size), focal=np.repeat(np.asarray(present, dtype=object), n_genes),
+        n_focal=np.repeat(group_size[kept], n_genes),
+        pct_celltype=column("pct_celltype"), pct_spatial=column("pct_spatial"),
+        pct_responder=pct_responder, pct_spill=column("pct_spill"),
+        pct_residual=column("pct_residual"), ss_lineage=column("ss_lineage"),
+        ss_within=column("ss_within"), denom=denom,
+        focal_levels=present, focal_table=focal_table)

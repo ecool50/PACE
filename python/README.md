@@ -60,6 +60,7 @@ EIGEN_INCLUDE_DIR=$(Rscript -e 'cat(system.file("include", package="RcppEigen"))
 | `fit_anndata` | the same, reading an `AnnData` |
 | `pace_shrink` | multivariate adaptive shrinkage of the fitted slopes |
 | `pace_decompose` | the per-gene, per-cell-type variance decomposition |
+| `single_frame_decomposition` | the observed decomposition R reports |
 | `fit_statistics` | the per-cell-type summaries the readouts are built on |
 
 `pace_fit()` runs the whole pipeline from counts, coordinates and cell type
@@ -191,9 +192,20 @@ dense cells-by-genes matrix -- so they are rebuilt a gene block at a time, which
 is what R does too; `fit_statistics()` exposes that step if you want it
 separately.
 
-Note that R's user-facing `varianceDecomposition()` returns a *different*
-table, the observed single-frame decomposition, which is not bound here yet.
-This is the five-block table underneath it, reached in R as
+`single_frame_decomposition()` gives the other table, the one R's
+`varianceDecomposition()` actually returns:
+
+```python
+frame = pace.single_frame_decomposition(fit, counts)
+frame.by_focal()            # one row per focal type, sum-of-squares weighted
+```
+
+Here the magnitudes are **observed** rather than fitted -- the cell-type share
+is the between-type sum of squares of `log1p(CP10k)` -- and only the split of
+what remains inside a cell type comes from the model. That is why its
+percentages differ from the five-block ones, and why its observed columns match
+R to 1e-11 while the fitted split matches to the trigamma floor. The five-block
+table above is what sits underneath it, reached in R as
 `fit@varianceDecomposition$blocks$gene_focal_5block`.
 
 

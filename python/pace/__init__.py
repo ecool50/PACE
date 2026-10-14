@@ -7,7 +7,8 @@ not depend on which language you call it from.
 from .fit import PaceFit, fit_anndata, pace_fit
 from .shrink import ShrunkenSlopes, pace_shrink
 from .stats import FitStatistics, fit_statistics, fitted_means
-from .decompose import Decomposition, pace_decompose
+from .decompose import (Decomposition, SingleFrameDecomposition, pace_decompose,
+                        single_frame_decomposition)
 from ._core import (
     ambient_field,
     anchor_mask,
@@ -52,5 +53,7 @@ __all__ = [
     "FitStatistics",
     "pace_decompose",
     "Decomposition",
+    "single_frame_decomposition",
+    "SingleFrameDecomposition",
 ]
 __version__ = "0.0.1"
