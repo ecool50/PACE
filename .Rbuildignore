@@ -14,4 +14,3 @@
 ^src/core/.*\.o$
 ^src/.*\.(o|so|dll)$
 ^tools$
-^python$
